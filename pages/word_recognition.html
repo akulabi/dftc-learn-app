@@ -65,7 +65,7 @@
   <!-- Header Bar -->
   <header class="w-full bg-white/90 backdrop-blur-md shadow-md py-2 px-4 flex justify-between items-center z-40 border-b-4 border-yellow-400">
     <div class="flex items-center gap-2 cursor-pointer" onclick="confirmReturnHome()">
-      <span class="text-3xl animate-bounce"> </span>
+      <span class="text-3xl animate-bounce">🎈</span>
       <div>
         <h1 class="text-lg sm:text-2xl font-black text-indigo-900 tracking-wide leading-none">幼稚園中英文認字大挑戰</h1>
         <p class="text-[10px] text-indigo-600 font-bold hidden sm:block">Kindergarten Chinese & English Word Recognition Game</p>
@@ -73,10 +73,10 @@
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleAudioMute()" id="muteBtn" class="p-2 bg-yellow-100 hover:bg-yellow-200 rounded-full text-yellow-700 font-bold border-2 border-yellow-400 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center shadow active:scale-95 transition" title="靜音切換">
-         
+        🔊
       </button>
       <button onclick="showLeaderboardModal()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-full text-xs sm:text-base border-2 border-purple-800 shadow flex items-center gap-1 active:scale-95 transition">
-          <span>龍虎榜</span>
+        🏆 <span>龍虎榜</span>
       </button>
     </div>
   </header>
@@ -87,26 +87,26 @@
     <!-- ================= 1. HOME SCREEN ================= -->
     <div id="homeScreen" class="w-full glass-card rounded-3xl p-4 sm:p-8 shadow-2xl text-center transition-all duration-300 max-h-[90vh] overflow-y-auto z-40">
       <div class="inline-block bg-yellow-300 text-indigo-950 font-black px-4 py-1 rounded-full text-xs sm:text-sm mb-3 shadow">
-          專為 K1 - K3 幼兒設計 ‧ 純廣東話/純英語發音 ‧ 全螢幕飄浮汽球
+        ✨ 專為 K1 - K3 幼兒設計 ‧ 純廣東話/純英語發音 ‧ 全螢幕飄浮汽球
       </div>
-      <h1 class="text-3xl sm:text-5xl font-black text-indigo-900 mb-2 tracking-tight">  全螢幕飄浮汽球認字  </h1>
+      <h1 class="text-3xl sm:text-5xl font-black text-indigo-900 mb-2 tracking-tight">🎈 全螢幕飄浮汽球認字 🎈</h1>
       <p class="text-gray-600 font-bold text-xs sm:text-base mb-5">汽球會在全螢幕頂層飄浮移動，點擊正確的汽球吧！</p>
 
       <!-- Step 1: Matching Mode Selection -->
       <div class="mb-5 bg-indigo-50/80 p-3 sm:p-4 rounded-2xl border-2 border-indigo-200 text-left">
         <label class="block text-indigo-950 font-black text-sm sm:text-lg mb-2">
-            選擇玩法模式 (Match Sub-Mode):
+          1️⃣ 選擇玩法模式 (Match Sub-Mode):
         </label>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button id="modePicToWord" onclick="setMatchMode('picToWord')" class="py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 transition-all flex items-center justify-center gap-3 shadow-md bg-yellow-400 border-yellow-600 text-indigo-950 scale-[1.02]">
-            <span class="text-3xl">  ➔  </span>
+            <span class="text-3xl">🖼️ ➔ 🔤</span>
             <div class="text-left">
               <div>看圖猜字</div>
               <div class="text-xs font-normal opacity-80">中間看圖片 ‧ 點擊飄浮字詞汽球</div>
             </div>
           </button>
           <button id="modeWordToPic" onclick="setMatchMode('wordToPic')" class="py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 border-gray-300 bg-white text-gray-600 hover:bg-yellow-100 transition-all flex items-center justify-center gap-3 shadow-md">
-            <span class="text-3xl">  ➔  </span>
+            <span class="text-3xl">🔤 ➔ 🖼️</span>
             <div class="text-left">
               <div>看詞猜圖</div>
               <div class="text-xs font-normal opacity-80">中間看字詞 ‧ 點擊飄浮圖片汽球</div>
@@ -118,27 +118,27 @@
       <!-- Step 2: Language & Mode Selection -->
       <div class="mb-5 bg-indigo-50/80 p-3 sm:p-4 rounded-2xl border-2 border-indigo-200 text-left">
         <label class="block text-indigo-950 font-black text-sm sm:text-lg mb-2">
-            選擇語言與關卡 (Language & Mode):
+          2️⃣ 選擇語言與關卡 (Language & Mode):
         </label>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <!-- Chinese 45s Challenge -->
           <button onclick="startGame('zh', 45)" class="py-3.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 transition flex flex-col items-center justify-center">
-            <span class="flex items-center gap-1">  中文 45秒挑戰</span>
+            <span class="flex items-center gap-1">🇭🇰 中文 45秒挑戰</span>
             <span class="text-[11px] font-bold bg-emerald-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">純廣東話 (2-3字)</span>
           </button>
           <!-- English 45s Challenge -->
           <button onclick="startGame('en', 45)" class="py-3.5 px-3 bg-blue-500 hover:bg-blue-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-blue-700 active:scale-95 transition flex flex-col items-center justify-center">
-            <span class="flex items-center gap-1">  英文 45秒挑戰</span>
+            <span class="flex items-center gap-1">🔤 英文 45秒挑戰</span>
             <span class="text-[11px] font-bold bg-blue-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">English Speed Challenge</span>
           </button>
           <!-- Unlimited Chinese Practice -->
           <button onclick="startGame('zh_practice', 0)" class="py-3.5 px-3 bg-purple-500 hover:bg-purple-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-purple-700 active:scale-95 transition flex flex-col items-center justify-center">
-            <span class="flex items-center gap-1">  無限時中文練習</span>
+            <span class="flex items-center gap-1">📖 無限時中文練習</span>
             <span class="text-[11px] font-bold bg-purple-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">廣東話 無壓力</span>
           </button>
           <!-- Unlimited English Practice -->
           <button onclick="startGame('en_practice', 0)" class="py-3.5 px-3 bg-indigo-500 hover:bg-indigo-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-indigo-700 active:scale-95 transition flex flex-col items-center justify-center">
-            <span class="flex items-center gap-1">  無限時英文練習</span>
+            <span class="flex items-center gap-1">📖 無限時英文練習</span>
             <span class="text-[11px] font-bold bg-indigo-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">English Unlimited</span>
           </button>
         </div>
@@ -147,7 +147,7 @@
       <!-- Category Settings Drawer (Collapsible) -->
       <div class="border-2 border-indigo-200 rounded-2xl bg-white overflow-hidden shadow-inner text-left">
         <button onclick="toggleCategoryDrawer()" class="w-full py-3 px-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-950 font-extrabold text-xs sm:text-base flex justify-between items-center transition">
-          <span class="flex items-center gap-2">  自訂學習類別 (已選: <span id="catCountBadge" class="text-indigo-600 font-black">11/11</span>)</span>
+          <span class="flex items-center gap-2">⚙️ 自訂學習類別 (已選: <span id="catCountBadge" class="text-indigo-600 font-black">11/11</span>)</span>
           <span id="drawerArrow" class="text-lg font-bold transition-transform duration-200">▼</span>
         </button>
         <div id="categoryDrawer" class="hidden p-3 bg-indigo-50/50">
@@ -184,13 +184,13 @@
 
         <!-- Timer Display -->
         <div id="timerContainer" class="flex items-center gap-2 bg-red-100 px-3.5 py-1 rounded-full border-2 border-red-400 shadow-inner">
-          <span class="text-red-500 font-black text-base sm:text-lg"> </span>
+          <span class="text-red-500 font-black text-base sm:text-lg">⏱️</span>
           <span id="timerText" class="text-xl sm:text-3xl font-black text-red-600">45</span>
         </div>
 
         <!-- Pause / Menu Button -->
         <button onclick="openPauseModal()" class="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-yellow-400 hover:bg-yellow-500 text-indigo-950 font-black rounded-xl text-xs sm:text-sm transition shadow border-b-2 border-yellow-600 active:scale-95 flex items-center gap-1">
-          <span> </span> <span>暫停</span>
+          <span>⏸️</span> <span>暫停</span>
         </button>
       </div>
 
@@ -203,7 +203,7 @@
           <!-- TARGET VIEW 1: Picture Mode (Enlarged Emoji) -->
           <div id="targetPicView" class="flex flex-col items-center">
             <div id="targetEmojiDisplay" class="text-7xl sm:text-9xl filter drop-shadow-md cursor-pointer transform hover:scale-105 transition" onclick="speakCurrentTarget()" title="點擊收聽發音">
-               
+              🐶
             </div>
             <span class="text-[11px] text-indigo-600 font-bold mt-2 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
               點擊圖片收聽題目發音
@@ -217,7 +217,7 @@
                 狗隻
               </span>
               <button onclick="speakCurrentTarget()" class="p-2 bg-yellow-400 hover:bg-yellow-500 text-indigo-950 rounded-xl text-xl shadow active:scale-95 transition border border-yellow-600" title="點擊收聽發音">
-                 
+                🔊
               </button>
             </div>
             <span class="text-[11px] text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
@@ -239,7 +239,7 @@
     <!-- ================= 3. GAME OVER MODAL ================= -->
     <div id="gameOverModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center border-4 border-yellow-400">
-        <div class="text-6xl mb-2"> </div>
+        <div class="text-6xl mb-2">🎉</div>
         <h2 class="text-3xl font-black text-indigo-950 mb-1">挑戰完成！</h2>
         <p class="text-gray-600 font-bold text-sm mb-4" id="gameOverMsg">好棒的嘗試！再接再厲！</p>
         
@@ -254,24 +254,24 @@
           <label class="block text-xs font-bold text-gray-600 mb-1">選擇頭像 (Select Avatar):</label>
           <div class="flex justify-center gap-3 mb-2">
             <label class="avatar-option cursor-pointer">
-              <input type="radio" name="playerAvatar" value=" " checked class="hidden">
-              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+              <input type="radio" name="playerAvatar" value="🦁" checked class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition">🦁</div>
             </label>
             <label class="avatar-option cursor-pointer">
-              <input type="radio" name="playerAvatar" value=" " class="hidden">
-              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+              <input type="radio" name="playerAvatar" value="🐰" class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition">🐰</div>
             </label>
             <label class="avatar-option cursor-pointer">
-              <input type="radio" name="playerAvatar" value=" " class="hidden">
-              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+              <input type="radio" name="playerAvatar" value="🐼" class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition">🐼</div>
             </label>
             <label class="avatar-option cursor-pointer">
-              <input type="radio" name="playerAvatar" value=" " class="hidden">
-              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+              <input type="radio" name="playerAvatar" value="🐱" class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition">🐱</div>
             </label>
             <label class="avatar-option cursor-pointer">
-              <input type="radio" name="playerAvatar" value=" " class="hidden">
-              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+              <input type="radio" name="playerAvatar" value="🚀" class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition">🚀</div>
             </label>
           </div>
           <label class="block text-xs font-bold text-gray-600 mb-1">輸入名字登錄龍虎榜 (Player Name):</label>
@@ -280,10 +280,10 @@
 
         <div class="flex gap-3">
           <button onclick="saveScoreAndClose()" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-lg shadow-md border-b-4 border-emerald-700 active:scale-95 transition">
-            儲存成績  
+            儲存成績 🏆
           </button>
           <button onclick="showHomeScreen()" class="flex-1 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-black rounded-xl text-lg shadow-md active:scale-95 transition">
-            返主頁  
+            返主頁 🏠
           </button>
         </div>
       </div>
@@ -292,13 +292,13 @@
     <!-- ================= 4. PAUSE / MENU MODAL ================= -->
     <div id="pauseModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center border-4 border-indigo-300">
-        <h2 class="text-2xl font-black text-indigo-900 mb-4">  遊戲暫停中</h2>
+        <h2 class="text-2xl font-black text-indigo-900 mb-4">⏸️ 遊戲暫停中</h2>
         <div class="space-y-3">
           <button onclick="resumeGame()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-lg shadow border-b-4 border-emerald-700 active:scale-95 transition">
-            繼續遊戲  
+            繼續遊戲 ▶️
           </button>
           <button onclick="showHomeScreen()" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-lg shadow border-b-4 border-rose-700 active:scale-95 transition">
-            返回主頁  
+            返回主頁 🏠
           </button>
         </div>
       </div>
@@ -308,8 +308,8 @@
     <div id="leaderboardModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border-4 border-purple-400 max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-black text-purple-900 flex items-center gap-2">  榮譽龍虎榜 Leaderboard</h2>
-          <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold"> </button>
+          <h2 class="text-2xl font-black text-purple-900 flex items-center gap-2">🏆 榮譽龍虎榜 Leaderboard</h2>
+          <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">✖</button>
         </div>
 
         <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
@@ -338,84 +338,84 @@
     // --- 1. VOCABULARY DATABASE (11 Categories, Strictly 2-3 Chinese Characters & English) ---
     const wordDatabase = [
       // 1. 動物 (Animals)
-      { id: "a1", cat: "動物", zh: "狗隻", en: "Dog", emoji: " " },
-      { id: "a2", cat: "動物", zh: "貓咪", en: "Cat", emoji: " " },
-      { id: "a3", cat: "動物", zh: "大象", en: "Elephant", emoji: " " },
-      { id: "a4", cat: "動物", zh: "兔子", en: "Rabbit", emoji: " " },
-      { id: "a5", cat: "動物", zh: "獅子", en: "Lion", emoji: " " },
-      { id: "a6", cat: "動物", zh: "長頸鹿", en: "Giraffe", emoji: " " },
-      { id: "a7", cat: "動物", zh: "熊貓", en: "Panda", emoji: " " },
-      { id: "a8", cat: "動物", zh: "老虎", en: "Tiger", emoji: " " },
+      { id: "a1", cat: "動物", zh: "狗隻", en: "Dog", emoji: "🐶" },
+      { id: "a2", cat: "動物", zh: "貓咪", en: "Cat", emoji: "🐱" },
+      { id: "a3", cat: "動物", zh: "大象", en: "Elephant", emoji: "🐘" },
+      { id: "a4", cat: "動物", zh: "兔子", en: "Rabbit", emoji: "🐰" },
+      { id: "a5", cat: "動物", zh: "獅子", en: "Lion", emoji: "🦁" },
+      { id: "a6", cat: "動物", zh: "長頸鹿", en: "Giraffe", emoji: "🦒" },
+      { id: "a7", cat: "動物", zh: "熊貓", en: "Panda", emoji: "🐼" },
+      { id: "a8", cat: "動物", zh: "老虎", en: "Tiger", emoji: "🐯" },
 
       // 2. 水果食物 (Food & Fruits)
-      { id: "f1", cat: "食物水果", zh: "蘋果", en: "Apple", emoji: " " },
-      { id: "f2", cat: "食物水果", zh: "香蕉", en: "Banana", emoji: " " },
-      { id: "f3", cat: "食物水果", zh: "草莓", en: "Strawberry", emoji: " " },
-      { id: "f4", cat: "食物水果", zh: "西瓜", en: "Watermelon", emoji: " " },
-      { id: "f5", cat: "食物水果", zh: "橙子", en: "Orange", emoji: " " },
-      { id: "f6", cat: "食物水果", zh: "葡萄", en: "Grapes", emoji: " " },
+      { id: "f1", cat: "食物水果", zh: "蘋果", en: "Apple", emoji: "🍎" },
+      { id: "f2", cat: "食物水果", zh: "香蕉", en: "Banana", emoji: "🍌" },
+      { id: "f3", cat: "食物水果", zh: "草莓", en: "Strawberry", emoji: "🍓" },
+      { id: "f4", cat: "食物水果", zh: "西瓜", en: "Watermelon", emoji: "🍉" },
+      { id: "f5", cat: "食物水果", zh: "橙子", en: "Orange", emoji: "🍊" },
+      { id: "f6", cat: "食物水果", zh: "葡萄", en: "Grapes", emoji: "🍇" },
 
       // 3. 交通工具 (Vehicles)
-      { id: "v1", cat: "交通", zh: "巴士", en: "Bus", emoji: " " },
-      { id: "v2", cat: "交通", zh: "飛機", en: "Airplane", emoji: " " },
-      { id: "v3", cat: "交通", zh: "火車", en: "Train", emoji: " " },
-      { id: "v4", cat: "交通", zh: "計程車", en: "Taxi", emoji: " " },
-      { id: "v5", cat: "交通", zh: "輪船", en: "Ship", emoji: " " },
-      { id: "v6", cat: "交通", zh: "單車", en: "Bicycle", emoji: " " },
+      { id: "v1", cat: "交通", zh: "巴士", en: "Bus", emoji: "🚌" },
+      { id: "v2", cat: "交通", zh: "飛機", en: "Airplane", emoji: "✈️" },
+      { id: "v3", cat: "交通", zh: "火車", en: "Train", emoji: "🚂" },
+      { id: "v4", cat: "交通", zh: "計程車", en: "Taxi", emoji: "🚕" },
+      { id: "v5", cat: "交通", zh: "輪船", en: "Ship", emoji: "🚢" },
+      { id: "v6", cat: "交通", zh: "單車", en: "Bicycle", emoji: "🚲" },
 
       // 4. 顏色形狀 (Colors & Shapes)
-      { id: "c1", cat: "顏色形狀", zh: "紅色", en: "Red", emoji: " " },
-      { id: "c2", cat: "顏色形狀", zh: "藍色", en: "Blue", emoji: " " },
-      { id: "c3", cat: "顏色形狀", zh: "黃色", en: "Yellow", emoji: " " },
-      { id: "c4", cat: "顏色形狀", zh: "綠色", en: "Green", emoji: " " },
-      { id: "c5", cat: "顏色形狀", zh: "圓形", en: "Circle", emoji: " " },
-      { id: "c6", cat: "顏色形狀", zh: "三角形", en: "Triangle", emoji: " " },
+      { id: "c1", cat: "顏色形狀", zh: "紅色", en: "Red", emoji: "🔴" },
+      { id: "c2", cat: "顏色形狀", zh: "藍色", en: "Blue", emoji: "🔵" },
+      { id: "c3", cat: "顏色形狀", zh: "黃色", en: "Yellow", emoji: "🟡" },
+      { id: "c4", cat: "顏色形狀", zh: "綠色", en: "Green", emoji: "🟢" },
+      { id: "c5", cat: "顏色形狀", zh: "圓形", en: "Circle", emoji: "⚪" },
+      { id: "c6", cat: "顏色形狀", zh: "三角形", en: "Triangle", emoji: "🔺" },
 
       // 5. 身體部位 (Body Parts)
-      { id: "b1", cat: "身體", zh: "眼睛", en: "Eyes", emoji: " " },
-      { id: "b2", cat: "身體", zh: "耳朵", en: "Ears", emoji: " " },
-      { id: "b3", cat: "身體", zh: "嘴巴", en: "Mouth", emoji: " " },
-      { id: "b4", cat: "身體", zh: "雙手", en: "Hands", emoji: " " },
-      { id: "b5", cat: "身體", zh: "腳丫", en: "Feet", emoji: " " },
+      { id: "b1", cat: "身體", zh: "眼睛", en: "Eyes", emoji: "👁️" },
+      { id: "b2", cat: "身體", zh: "耳朵", en: "Ears", emoji: "👂" },
+      { id: "b3", cat: "身體", zh: "嘴巴", en: "Mouth", emoji: "👄" },
+      { id: "b4", cat: "身體", zh: "雙手", en: "Hands", emoji: "🙌" },
+      { id: "b5", cat: "身體", zh: "腳丫", en: "Feet", emoji: "🦶" },
 
       // 6. 日常用品 (Daily Objects)
-      { id: "d1", cat: "日常用品", zh: "牙刷", en: "Toothbrush", emoji: " " },
-      { id: "d2", cat: "日常用品", zh: "水杯", en: "Cup", emoji: " " },
-      { id: "d3", cat: "日常用品", zh: "毛巾", en: "Towel", emoji: " " },
-      { id: "d4", cat: "日常用品", zh: "書包", en: "Schoolbag", emoji: " " },
-      { id: "d5", cat: "日常用品", zh: "雨傘", en: "Umbrella", emoji: " " },
+      { id: "d1", cat: "日常用品", zh: "牙刷", en: "Toothbrush", emoji: "🪥" },
+      { id: "d2", cat: "日常用品", zh: "水杯", en: "Cup", emoji: "🥤" },
+      { id: "d3", cat: "日常用品", zh: "毛巾", en: "Towel", emoji: "🧼" },
+      { id: "d4", cat: "日常用品", zh: "書包", en: "Schoolbag", emoji: "🎒" },
+      { id: "d5", cat: "日常用品", zh: "雨傘", en: "Umbrella", emoji: "☂️" },
 
       // 7. 自然天氣 (Weather & Nature)
-      { id: "n1", cat: "自然天氣", zh: "太陽", en: "Sun", emoji: " " },
-      { id: "n2", cat: "自然天氣", zh: "月亮", en: "Moon", emoji: " " },
-      { id: "n3", cat: "自然天氣", zh: "星星", en: "Star", emoji: " " },
-      { id: "n4", cat: "自然天氣", zh: "彩虹", en: "Rainbow", emoji: " " },
-      { id: "n5", cat: "自然天氣", zh: "下雨", en: "Rain", emoji: " " },
+      { id: "n1", cat: "自然天氣", zh: "太陽", en: "Sun", emoji: "☀️" },
+      { id: "n2", cat: "自然天氣", zh: "月亮", en: "Moon", emoji: "🌙" },
+      { id: "n3", cat: "自然天氣", zh: "星星", en: "Star", emoji: "⭐" },
+      { id: "n4", cat: "自然天氣", zh: "彩虹", en: "Rainbow", emoji: "🌈" },
+      { id: "n5", cat: "自然天氣", zh: "下雨", en: "Rain", emoji: "🌧️" },
 
       // 8. 情緒感受 (Emotions)
-      { id: "e1", cat: "情緒感受", zh: "開心", en: "Happy", emoji: " " },
-      { id: "e2", cat: "情緒感受", zh: "傷心", en: "Sad", emoji: " " },
-      { id: "e3", cat: "情緒感受", zh: "生氣", en: "Angry", emoji: " " },
-      { id: "e4", cat: "情緒感受", zh: "害怕", en: "Scared", emoji: " " },
-      { id: "e5", cat: "情緒感受", zh: "驚喜", en: "Surprised", emoji: " " },
+      { id: "e1", cat: "情緒感受", zh: "開心", en: "Happy", emoji: "😄" },
+      { id: "e2", cat: "情緒感受", zh: "傷心", en: "Sad", emoji: "😢" },
+      { id: "e3", cat: "情緒感受", zh: "生氣", en: "Angry", emoji: "😡" },
+      { id: "e4", cat: "情緒感受", zh: "害怕", en: "Scared", emoji: "😨" },
+      { id: "e5", cat: "情緒感受", zh: "驚喜", en: "Surprised", emoji: "😲" },
 
       // 9. 家居用品 (Furniture & Home)
-      { id: "h1", cat: "家居用品", zh: "睡床", en: "Bed", emoji: " " },
-      { id: "h2", cat: "家居用品", zh: "椅子", en: "Chair", emoji: " " },
-      { id: "h3", cat: "家居用品", zh: "台燈", en: "Lamp", emoji: " " },
-      { id: "h4", cat: "家居用品", zh: "時鐘", en: "Clock", emoji: " " },
+      { id: "h1", cat: "家居用品", zh: "睡床", en: "Bed", emoji: "🛏️" },
+      { id: "h2", cat: "家居用品", zh: "椅子", en: "Chair", emoji: "🪑" },
+      { id: "h3", cat: "家居用品", zh: "台燈", en: "Lamp", emoji: "💡" },
+      { id: "h4", cat: "家居用品", zh: "時鐘", en: "Clock", emoji: "⏰" },
 
       // 10. 運動娛樂 (Sports & Play)
-      { id: "sp1", cat: "運動娛樂", zh: "足球", en: "Football", emoji: " " },
-      { id: "sp2", cat: "運動娛樂", zh: "籃球", en: "Basketball", emoji: " " },
-      { id: "sp3", cat: "運動娛樂", zh: "滑梯", en: "Slide", emoji: " " },
-      { id: "sp4", cat: "運動娛樂", zh: "秋千", en: "Swing", emoji: " " },
+      { id: "sp1", cat: "運動娛樂", zh: "足球", en: "Football", emoji: "⚽" },
+      { id: "sp2", cat: "運動娛樂", zh: "籃球", en: "Basketball", emoji: "🏀" },
+      { id: "sp3", cat: "運動娛樂", zh: "滑梯", en: "Slide", emoji: "🛝" },
+      { id: "sp4", cat: "運動娛樂", zh: "秋千", en: "Swing", emoji: "🪵" },
 
       // 11. 數字 (Numbers)
-      { id: "num1", cat: "數字", zh: "數字一", en: "One", emoji: " " },
-      { id: "num2", cat: "數字", zh: "數字二", en: "Two", emoji: " " },
-      { id: "num3", cat: "數字", zh: "數字三", en: "Three", emoji: " " },
-      { id: "num4", cat: "數字", zh: "數字五", en: "Five", emoji: " " }
+      { id: "num1", cat: "數字", zh: "數字一", en: "One", emoji: "1️⃣" },
+      { id: "num2", cat: "數字", zh: "數字二", en: "Two", emoji: "2️⃣" },
+      { id: "num3", cat: "數字", zh: "數字三", en: "Three", emoji: "3️⃣" },
+      { id: "num4", cat: "數字", zh: "數字五", en: "Five", emoji: "5️⃣" }
     ];
 
     // Color Palettes for SVG Balloons
@@ -586,7 +586,7 @@
 
     function toggleAudioMute() {
       isAudioMuted = !isAudioMuted;
-      document.getElementById('muteBtn').innerText = isAudioMuted ? ' ' : ' ';
+      document.getElementById('muteBtn').innerText = isAudioMuted ? '🔇' : '🔊';
     }
 
     // --- GAME ENGINE ---
@@ -891,10 +891,10 @@
       document.getElementById('finalModeText').innerText = `${modeLabel} (${langLabel})`;
 
       if (score >= 60) {
-        document.getElementById('gameOverMsg').innerText = "  太棒了！你是不折不扣的認字小達人！";
+        document.getElementById('gameOverMsg').innerText = "🌟 太棒了！你是不折不扣的認字小達人！";
         confetti({ particleCount: 110, spread: 100, origin: { y: 0.5 } });
       } else {
-        document.getElementById('gameOverMsg').innerText = "  做得好！再試一次突破最高分吧！";
+        document.getElementById('gameOverMsg').innerText = "👏 做得好！再試一次突破最高分吧！";
       }
     }
 
@@ -911,7 +911,7 @@
     // --- LEADERBOARD (LOCALSTORAGE) ---
     function saveScoreAndClose() {
       const nameInput = document.getElementById('playerNameInput').value.trim() || '小天才';
-      const selectedAvatar = document.querySelector('input[name="playerAvatar"]:checked')?.value || ' ';
+      const selectedAvatar = document.querySelector('input[name="playerAvatar"]:checked')?.value || '🦁';
       
       const newRecord = {
         name: nameInput,
@@ -965,10 +965,10 @@
         const item = document.createElement('div');
         item.className = "flex justify-between items-center p-3 rounded-2xl bg-purple-50 border border-purple-100 font-bold text-sm";
         
-        const medal = idx === 0 ? ' ' : (idx === 1 ? ' ' : (idx === 2 ? ' ' : `#${idx + 1}`));
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
         const modeTag = rec.mode === 'picToWord' ? '看圖猜字' : '看詞猜圖';
         const langTag = rec.lang === 'en' ? 'EN' : '中文';
-        const avatar = rec.avatar || ' ';
+        const avatar = rec.avatar || '🦁';
 
         item.innerHTML = `
           <div class="flex items-center gap-2 sm:gap-3">
@@ -1004,4 +1004,3 @@
   </script>
 </body>
 </html>
-
