@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>升小一粵語朗讀小達人 - 基礎漢字500</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            kidYellow: '#FFDE59',
+            kidBlue: '#4F46E5',
+            kidCyan: '#06B6D4',
+            kidPink: '#EC4899',
+            kidGreen: '#10B981',
+            kidOrange: '#F97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      background-color: #F8FAFC;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.22); opacity: 0.35; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .recording-pulse {
+      animation: pulse-ring 1.3s infinite ease-in-out;
+    }
+
+    @keyframes bar-bounce {
+      0%, 100% { height: 6px; }
+      50% { height: 24px; }
+    }
+    .wave-bar {
+      width: 4px;
+      background-color: #818CF8;
+      border-radius: 9999px;
+      animation: bar-bounce 0.8s infinite ease-in-out;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+
+    .char-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 2rem;
+      font-weight: 900;
+      transition: all 0.25s ease;
+      background-color: #FFFFFF;
+      border: 4px solid #E2E8F0;
+      color: #1E293B;
+      min-width: 52px;
+      box-shadow: 0 4px 0 #CBD5E1;
+    }
+
+    .char-correct {
+      background-color: #D1FAE5 !important;
+      border-color: #10B981 !important;
+      color: #047857 !important;
+      transform: scale(1.06);
+      box-shadow: 0 5px 0 #059669 !important;
+    }
+    
+    .char-wrong {
+      background-color: #FEE2E2 !important;
+      border-color: #EF4444 !important;
+      color: #B91C1C !important;
+      box-shadow: 0 5px 0 #DC2626 !important;
+      animation: shake 0.35s ease-in-out;
+    }
+
+    .char-missed {
+      background-color: #FEF3C7 !important;
+      border-color: #F59E0B !important;
+      color: #B45309 !important;
+      box-shadow: 0 5px 0 #D97706 !important;
+    }
+
+    .kid-btn {
+      transition: all 0.15s ease-in-out;
+      box-shadow: 0 5px 0px rgba(0,0,0,0.12);
+    }
+    .kid-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0px rgba(0,0,0,0.12);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden relative text-slate-800">
+
+  <!-- Header Navigation -->
+  <header class="relative z-20 w-full max-w-4xl mx-auto p-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="handleGoHomeDirect()">
+      <div class="w-12 h-12 bg-kidYellow rounded-2xl flex items-center justify-center text-amber-900 text-2xl font-bold shadow-md">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div>
+        <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-wide">升小一粵語朗讀小達人</h1>
+        <p class="text-xs text-amber-600 font-bold">基礎漢字５００課程系列</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <button id="btn-home-nav" onclick="handleGoHomeDirect()" class="hidden kid-btn bg-white hover:bg-slate-100 text-slate-700 w-12 h-12 rounded-2xl border-2 border-slate-200 flex items-center justify-center text-xl shadow-sm" title="  返主頁">
+         
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="relative z-10 flex-1 w-full max-w-4xl mx-auto px-4 py-2 flex flex-col justify-center items-center">
+
+    <!-- Screen 1: Home Menu -->
+    <div id="screen-home" class="w-full flex flex-col items-center space-y-6 text-center">
+      <div class="bg-white/95 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-xl border-4 border-white w-full max-w-2xl">
+        <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 text-indigo-600 text-4xl shadow-inner">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-1">基礎漢字５00 朗讀挑戰</h2>
+        <p class="text-slate-500 mb-5 text-sm font-bold">選擇適合的等級，每次隨機抽 10 條題目朗讀！</p>
+        
+        <!-- 5 Difficulty Level Selector -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+          <button onclick="selectDifficulty('level1')" id="diff-level1" class="diff-btn kid-btn bg-emerald-50 border-4 border-emerald-400 text-emerald-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-emerald-100 ring-4 ring-amber-400 scale-105">
+            <span class="text-lg">  Level 1: 萌芽級</span>
+            <span class="text-xs font-bold text-emerald-700">首100字 (3-5字短句)</span>
+          </button>
+          
+          <button onclick="selectDifficulty('level2')" id="diff-level2" class="diff-btn kid-btn bg-sky-50 border-4 border-sky-400 text-sky-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-sky-100">
+            <span class="text-lg">   Level 2: 基礎級</span>
+            <span class="text-xs font-bold text-sky-700">200字 (5-7字句子)</span>
+          </button>
+
+          <button onclick="selectDifficulty('level3')" id="diff-level3" class="diff-btn kid-btn bg-indigo-50 border-4 border-indigo-400 text-indigo-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-indigo-100">
+            <span class="text-lg">    Level 3: 進階級</span>
+            <span class="text-xs font-bold text-indigo-700">300字 (7-9字句子)</span>
+          </button>
+
+          <button onclick="selectDifficulty('level4')" id="diff-level4" class="diff-btn kid-btn bg-purple-50 border-4 border-purple-400 text-purple-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-purple-100">
+            <span class="text-lg">     Level 4: 提高級</span>
+            <span class="text-xs font-bold text-purple-700">400字 (9-12字句子)</span>
+          </button>
+
+          <button onclick="selectDifficulty('level5')" id="diff-level5" class="diff-btn kid-btn bg-rose-50 border-4 border-rose-400 text-rose-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center sm:col-span-2 md:col-span-1 hover:bg-rose-100">
+            <span class="text-lg">      Level 5: 飛躍級</span>
+            <span class="text-xs font-bold text-rose-700">500字 (複句/長句)</span>
+          </button>
+        </div>
+
+        <button onclick="startGame()" class="kid-btn w-full bg-kidYellow hover:bg-amber-300 text-amber-950 text-xl md:text-2xl font-black py-4 rounded-2xl border-b-4 border-amber-500 shadow-lg flex items-center justify-center gap-3">
+          <i class="fa-solid fa-play"></i> 開始遊戲
+        </button>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="showLeaderboard()" class="kid-btn bg-white hover:bg-slate-50 text-amber-600 font-extrabold px-6 py-3 rounded-2xl border-2 border-amber-200 flex items-center gap-2 text-base">
+            龍虎榜
+        </button>
+        <button onclick="toggleInstructions()" class="kid-btn bg-white hover:bg-slate-50 text-slate-600 font-extrabold px-6 py-3 rounded-2xl border-2 border-slate-200 flex items-center gap-2 text-base">
+            玩法說明
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 2: Icon-Driven Gameplay Interface -->
+    <div id="screen-game" class="hidden w-full max-w-2xl flex flex-col items-center space-y-6">
+      
+      <!-- Minimal Header Stats Bar -->
+      <div class="w-full flex justify-between items-center bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 text-indigo-600 font-black text-xl">
+          <span> </span> <span id="question-tracker">1/10</span>
+        </div>
+        <div id="difficulty-badge" class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-700">
+          Level 1 萌芽級
+        </div>
+        <div class="flex items-center gap-2 text-amber-500 font-black text-xl">
+          <span> </span> <span id="game-score">0</span>
+        </div>
+      </div>
+
+      <!-- Main Sentence Target Container -->
+      <div class="w-full bg-white p-6 md:p-8 rounded-3xl shadow-xl border-4 border-white flex flex-col items-center justify-center min-h-[300px] relative">
+        <div id="sentence-container" class="flex flex-wrap justify-center my-4 items-center gap-1">
+          <!-- Character cards rendered dynamically -->
+        </div>
+
+        <div id="waveform-box" class="hidden flex items-center gap-1 mt-4 h-6">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+
+        <div id="recognized-text" class="text-sm text-slate-400 italic mt-2 min-h-[20px]">
+          <!-- Real-time Speech Transcript -->
+        </div>
+      </div>
+
+      <!-- Icon-Driven Action Control Bar -->
+      <div class="w-full flex items-center justify-center gap-8 pt-2">
+        <button id="btn-mic" onclick="handleMicClick()" class="kid-btn relative w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" title="  開始朗讀">
+          <span id="mic-icon"> </span>
+          <div id="mic-pulse" class="hidden absolute inset-0 rounded-full border-4 border-purple-300 recording-pulse"></div>
+        </button>
+
+        <button id="btn-skip" onclick="skipQuestion()" class="kid-btn w-16 h-16 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl shadow-md" title="  跳過（聽解答）">
+           
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Game Results -->
+    <div id="screen-result" class="hidden w-full max-w-xl flex flex-col items-center text-center space-y-6">
+      <div class="bg-white p-8 rounded-3xl shadow-xl border-4 border-white w-full flex flex-col items-center">
+        <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-amber-500 text-5xl mb-4 shadow-inner">
+           
+        </div>
+        
+        <h2 class="text-3xl font-black text-slate-800 mb-1">太棒了！朗讀大功告成！</h2>
+        <p class="text-slate-500 font-semibold mb-6">你完成了 10 條基礎漢字500朗讀題目！</p>
+
+        <div class="grid grid-cols-3 gap-3 w-full mb-6">
+          <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200">
+            <p class="text-xs text-indigo-600 font-bold">總分數</p>
+            <p id="final-score" class="text-2xl font-black text-indigo-700">100</p>
+          </div>
+          <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+            <p class="text-xs text-emerald-600 font-bold">正確率</p>
+            <p id="final-accuracy" class="text-2xl font-black text-emerald-700">95%</p>
+          </div>
+          <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+            <p class="text-xs text-purple-600 font-bold">題目數</p>
+            <p id="final-time" class="text-2xl font-black text-purple-700">10題</p>
+          </div>
+        </div>
+
+        <div class="w-full mb-6 text-left">
+          <label class="block text-xs font-extrabold text-slate-500 mb-2">輸入名字（登錄龍虎榜）：</label>
+          <input type="text" id="player-name" placeholder="小達人" maxlength="10" value="小朋友" class="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl font-bold focus:outline-none focus:border-indigo-500 text-lg text-slate-700" />
+        </div>
+
+        <div class="w-full flex flex-col gap-3">
+          <button onclick="saveResultAndRestart()" class="kid-btn bg-kidYellow hover:bg-amber-300 text-amber-950 font-black py-4 rounded-2xl text-xl flex items-center justify-center gap-2">
+              再玩一次
+          </button>
+          <button onclick="saveResultAndShowLeaderboard()" class="kid-btn bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-3 rounded-2xl text-base">
+              查看龍虎榜
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Leaderboard -->
+    <div id="screen-leaderboard" class="hidden w-full max-w-2xl flex flex-col items-center">
+      <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border-4 border-white w-full">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 text-2xl">
+               
+            </div>
+            <h2 class="text-2xl font-black text-slate-800">朗讀龍虎榜 (Top 10)</h2>
+          </div>
+          <button onclick="clearLeaderboard()" class="text-xs text-red-400 hover:text-red-600 font-bold underline">
+            清除紀錄
+          </button>
+        </div>
+
+        <div class="overflow-x-auto w-full mb-6">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b-2 border-slate-100 text-xs text-slate-400 font-extrabold">
+                <th class="py-3 px-2">排名</th>
+                <th class="py-3 px-2">名字</th>
+                <th class="py-3 px-2">難度</th>
+                <th class="py-3 px-2 text-right">分數</th>
+                <th class="py-3 px-2 text-right">正確率</th>
+                <th class="py-3 px-2 text-right">日期</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body" class="divide-y divide-slate-100 text-sm font-bold">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <button onclick="handleGoHomeDirect()" class="kid-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl text-lg flex items-center justify-center gap-2">
+            返主頁
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Instructions Modal -->
+  <div id="modal-instructions" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-left space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+            玩法說明
+        </h3>
+        <button onclick="toggleInstructions()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      </div>
+      <div class="text-sm text-slate-600 space-y-2 leading-relaxed">
+        <p>1. 選擇「基礎漢字500」5個等級之一，開始 10 條廣東話句子朗讀練習。</p>
+        <p>2. <strong>自動開啟麥克風</strong>：題目載入後系統自動啟動麥克風收音。</p>
+        <p>3. 朗讀評測（支援廣東話同音字比對，如 着/著、他/她/它/牠、做/作、在/再）：</p>
+        <ul class="list-disc pl-5 font-bold space-y-1 my-2">
+          <li class="text-emerald-600">  綠色：發音正確（含同音字對比）</li>
+          <li class="text-red-500">  紅色：讀錯字</li>
+          <li class="text-amber-500">  橙黃色：漏字 / 跳過</li>
+        </ul>
+        <p>4. 答對或點擊   時，麥克風關閉 0.5 秒釋放音訊，彈出示範視窗播放廣東話標準發音，完成後才自動進入下一題。</p>
+      </div>
+      <button onclick="toggleInstructions()" class="kid-btn w-full bg-indigo-600 text-white font-extrabold py-3 rounded-2xl text-base">
+        知道，開始玩！
+      </button>
+    </div>
+  </div>
+
+  <!-- TTS Demonstration Modal Overlay -->
+  <div id="demoModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4">
+    <div class="bg-white text-slate-800 rounded-3xl p-6 md:p-8 max-w-md w-full text-center flex flex-col items-center space-y-5 shadow-2xl border-4 border-amber-300">
+      <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-amber-500 text-4xl animate-bounce shadow-inner">
+        <span id="demo-icon"> </span>
+      </div>
+      <h3 id="demo-title" class="text-2xl font-black text-indigo-950">老師示範中...</h3>
+      
+      <div id="demo-sentence-box" class="w-full bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-xl md:text-2xl font-black text-amber-900 leading-relaxed shadow-sm">
+        <!-- Target sentence inserted here dynamically -->
+      </div>
+
+      <p id="demo-subtitle" class="text-slate-500 text-sm font-bold">請聽標準廣東話發音</p>
+      
+      <button onclick="skipDemoPlayback()" class="kid-btn w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black py-3 rounded-2xl text-lg border-b-4 border-amber-600 flex items-center justify-center gap-2">
+        跳過示範  
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Message -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold flex items-center gap-3">
+    <span id="toast-icon"> </span>
+    <span id="toast-msg">提示訊息</span>
+  </div>
+
+  <footer class="relative z-10 py-4 text-center text-xs text-slate-400 font-semibold">
+    升小一粵語朗讀小達人 &copy; 2026
+  </footer>
+
+  <script>
+    /* Comprehensive Cantonese Jyutping Homophone Matrix */
+    const HOMOPHONE_MAP = {
+      '着': ['著', '卓', '灼', '爵', '雀', '註', '住', '柱'],
+      '著': ['着', '卓', '灼', '爵', '雀', '註', '住', '柱'],
+      '她': ['他', '牠', '它', '祂'],
+      '他': ['她', '牠', '它', '祂'],
+      '牠': ['她', '他', '它', '祂'],
+      '它': ['她', '他', '牠', '祂'],
+      '做': ['作'],
+      '作': ['做'],
+      '在': ['再'],
+      '再': ['在'],
+      '是': ['事', '試', '市', '示', '室', '適'],
+      '事': ['是', '試', '市', '示', '室', '適'],
+      '試': ['是', '事', '市', '示', '室', '適'],
+      '有': ['友'],
+      '友': ['有'],
+      '小': ['少'],
+      '少': ['小'],
+      '知': ['枝', '蜘蛛'],
+      '枝': ['知'],
+      '話': ['畫'],
+      '畫': ['話'],
+      '家': ['加'],
+      '加': ['家'],
+      '意': ['易', '異', '議'],
+      '易': ['意', '異', '議'],
+      '兒': ['耳', '移'],
+      '耳': ['兒', '移'],
+      '元': ['圓', '園', '員'],
+      '圓': ['元', '園', '員'],
+      '園': ['元', '圓', '員'],
+      '理': ['利', '李', '履'],
+      '利': ['理', '李', '履'],
+      '李': ['理', '利', '履'],
+      '爸': ['霸'],
+      '媽': ['孖'],
+      '看': ['刊'],
+      '玩': ['環'],
+      '樹': ['曙'],
+      '雨': ['羽', '與'],
+      '陽': ['洋', '羊']
+    };
+
+    /* 基礎漢字500 (Basic Chinese 500) Sentence Bank - 5 Difficulty Levels */
+    /* Level 1: 萌芽級 (First 100 characters, 3-5 word short phrases) */
+    const rawLevel1 = [
+      "大山小花", "看日月", "天地上", "水火木", "人大小",
+      "出入門", "手腳頭", "心口眼", "爸爸好", "媽媽愛",
+      "哥哥大", "姐姐笑", "弟弟小", "妹妹玩", "有口手",
+      "耳朵大", "一二三", "四五六", "七八九", "十個人",
+      "白雲飛", "紅花開", "黃葉落", "青草生", "黑夜來",
+      "太早了", "去學校", "來我家", "吃水果", "喝清水",
+      "坐好了", "立正站", "走快點", "跑遠了", "飛上天",
+      "開大門", "關小窗", "多與少", "長與短", "高與矮",
+      "向前走", "向後看", "左與右", "中間站", "裏與外",
+      "好孩子", "聽話了", "對與錯", "真開心", "快快樂"
+    ];
+
+    /* Level 2: 基礎級 (Characters 101-200, 5-7 word sentences) */
+    const rawLevel2 = [
+      "太陽升起來了", "小鳥在天上飛", "我和媽媽去公園", "哥哥喜歡打籃球", "弟弟開心吃蘋果",
+      "今天天氣真好啊", "花園裏有紅花朵", "小貓在床上睡覺", "小白兔跳來跳去", "大家一起拍拍手",
+      "早上好老師同學", "我們認真聽老師", "課室裏面很乾淨", "放學回家做功課", "晚上看美麗星星",
+      "月亮圓圓掛天上", "小狗搖尾巴迎接", "喝一杯溫熱牛奶", "洗洗雙手吃晚餐", "穿上乾淨新衣服",
+      "爸爸開車去上班", "妹妹畫了一彩虹", "樹上結滿甜水果", "清清河水裏有魚", "大家都是好朋友",
+      "著上漂亮的衣服", "聽著動聽的音樂", "看著窗外的雨水", "弟弟著鞋去跑步", "大家齊聲說謝謝"
+    ];
+
+    /* Level 3: 進階級 (Characters 201-300, 7-9 word sentences) */
+    const rawLevel3 = [
+      "今天早上太陽特別晴朗", "小弟弟在草地上快樂跑步", "妹妹在房間裏面專心畫畫", "爸爸帶我們一家人去海邊", "老師在黑板上寫中文漢字",
+      "圖書館裏面大家保持安靜", "下雨天出門記得要帶雨傘", "我們每天都要早睡早起好", "草地上開滿了五顏六色花", "小鳥在樹枝上面唱歌跳舞",
+      "大家高興地在公園玩滑梯", "媽媽在廚房煮好吃的晚飯", "弟弟吃著香甜的黃色香蕉", "哥哥著上藍色運動服跑步", "我們看著彩虹高高掛天上",
+      "同學之間要互相幫助友愛", "小花貓在陽台上面曬太陽", "公園裏面有許多美麗樹木", "大家一起快樂地唱廣東歌", "養好習慣身體自然健康好"
+    ];
+
+    /* Level 4: 提高級 (Characters 301-400, 9-12 word sentences) */
+    const rawLevel4 = [
+      "放學之後我和同學一起去公園玩耍", "今天天氣非常清涼我們決定去郊遊", "小狗在花園草地上興奮地跑來跑去", "下課鐘聲響起同學們高興地跑出來", "雨過天晴之後天空出現美麗的彩虹",
+      "早上太陽升起森林裏的小鳥都醒了", "我們看著藍天上的白雲像綿羊一樣", "弟弟著上新買的球鞋在操場跑步", "媽媽在街市買了許多新鮮甜美水果", "老師教我們讀廣東話大家都很用心"
+    ];
+
+    /* Level 5: 飛躍級 (Characters 401-500, Compound/longer sentences) */
+    const rawLevel5 = [
+      "早上看見老師和同學的時候，我們要主動熱情地打招呼說早晨。",
+      "今天是我六歲的生日，爸爸媽媽特別買了一個美味的大蛋糕慶祝。",
+      "下雨的時候地面非常濕滑，我們走路時要特別小心注意安全。",
+      "弟弟著上紅色的外套，看著窗外下著大雨，期待太陽盡快出來。",
+      "大家在課室裏面專心聽老師講課，遇到不懂的問題會舉手發問。"
+    ];
+
+    function fillDataset(arr, targetCount) {
+      let res = [...arr];
+      let i = 0;
+      while (res.length < targetCount) {
+        res.push(arr[i % arr.length]);
+        i++;
+      }
+      return res.slice(0, targetCount);
+    }
+
+    const QUESTION_BANK = {
+      level1: fillDataset(rawLevel1, 100),
+      level2: fillDataset(rawLevel2, 100),
+      level3: fillDataset(rawLevel3, 100),
+      level4: fillDataset(rawLevel4, 100),
+      level5: fillDataset(rawLevel5, 100)
+    };
+
+    /* Global Game State */
+    let currentDifficulty = 'level1';
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let totalCorrectChars = 0;
+    let totalTargetChars = 0;
+
+    let isListening = false;
+    let isTransitioning = false;
+    let synth = window.speechSynthesis;
+    let activeCantoneseLang = 'zh-HK';
+    let demoFallbackTimer = null;
+
+    /* REQUIREMENT: Single Microphone Instance Initialized ONCE */
+    window.appSpeechRec = null;
+
+    function initGlobalSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      const instance = new SpeechRecognition();
+      instance.continuous = true;
+      instance.interimResults = true;
+      instance.maxAlternatives = 10;
+      instance.lang = activeCantoneseLang;
+
+      instance.onstart = function() {
+        isListening = true;
+        updateMicUI(true);
+      };
+
+      instance.onend = function() {
+        if (isListening && !isTransitioning) {
+          try {
+            instance.start();
+          } catch(e) {
+            isListening = false;
+            updateMicUI(false);
+          }
+        } else {
+          isListening = false;
+          updateMicUI(false);
+        }
+      };
+
+      instance.onerror = function(event) {
+        if ((event.error === 'language-not-supported' || event.error === 'no-speech') && activeCantoneseLang === 'zh-HK') {
+          activeCantoneseLang = 'zh-yue-HK';
+          instance.lang = activeCantoneseLang;
+        }
+        if (event.error === 'not-allowed') {
+          showToast("請允許麥克風權限", " ");
+          isListening = false;
+          updateMicUI(false);
+        }
+      };
+
+      instance.onresult = function(event) {
+        let allTranscripts = [];
+        let primaryTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          primaryTranscript += result[0].transcript;
+          for (let j = 0; j < result.length; j++) {
+            allTranscripts.push(result[j].transcript);
+          }
+        }
+        document.getElementById('recognized-text').innerText = primaryTranscript;
+        evaluateSpeechWithHomophones(allTranscripts);
+      };
+
+      window.appSpeechRec = instance;
+    }
+
+    function unlockAudioEngine() {
+      if (synth) {
+        try {
+          synth.resume();
+          const dummyUtterance = new SpeechSynthesisUtterance('');
+          dummyUtterance.lang = 'zh-HK';
+          dummyUtterance.volume = 0.01;
+          synth.speak(dummyUtterance);
+        } catch(e) {}
+      }
+    }
+
+    function stopSingleMicInstance() {
+      isListening = false;
+      if (window.appSpeechRec) {
+        try {
+          window.appSpeechRec.stop();
+        } catch(e) {}
+      }
+      updateMicUI(false);
+    }
+
+    function startSingleMicInstance() {
+      if (!window.appSpeechRec) initGlobalSpeechRecognition();
+      if (window.appSpeechRec && !isListening && !isTransitioning) {
+        try {
+          isListening = true;
+          window.appSpeechRec.start();
+        } catch(e) {
+          isListening = false;
+          updateMicUI(false);
+        }
+      }
+    }
+
+    function handleGoHomeDirect() {
+      isTransitioning = false;
+      if (demoFallbackTimer) clearTimeout(demoFallbackTimer);
+      stopSingleMicInstance();
+
+      if (synth) {
+        try { synth.cancel(); } catch (e) {}
+      }
+
+      const overlay = document.getElementById('demoModal');
+      if (overlay) overlay.classList.add('hidden');
+      
+      const modalInst = document.getElementById('modal-instructions');
+      if (modalInst) modalInst.classList.add('hidden');
+
+      updateMicUI(false);
+      switchScreen('screen-home');
+    }
+
+    function selectDifficulty(diff) {
+      currentDifficulty = diff;
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.classList.remove('ring-4', 'ring-amber-400', 'scale-105');
+      });
+      const selectedBtn = document.getElementById(`diff-${diff}`);
+      if(selectedBtn) {
+        selectedBtn.classList.add('ring-4', 'ring-amber-400', 'scale-105');
+      }
+    }
+
+    function switchScreen(screenId) {
+      ['screen-home', 'screen-game', 'screen-result', 'screen-leaderboard'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      const targetEl = document.getElementById(screenId);
+      if (targetEl) targetEl.classList.remove('hidden');
+
+      const homeNav = document.getElementById('btn-home-nav');
+      if (screenId === 'screen-game') {
+        homeNav.classList.remove('hidden');
+      } else {
+        homeNav.classList.add('hidden');
+      }
+    }
+
+    function toggleInstructions() {
+      const modal = document.getElementById('modal-instructions');
+      modal.classList.toggle('hidden');
+    }
+
+    function startGame() {
+      unlockAudioEngine();
+      const pool = [...QUESTION_BANK[currentDifficulty]];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      currentQuestions = pool.slice(0, 10);
+      currentIndex = 0;
+      score = 0;
+      totalCorrectChars = 0;
+      totalTargetChars = 0;
+
+      const diffBadge = document.getElementById('difficulty-badge');
+      if(currentDifficulty === 'level1') {
+        diffBadge.innerText = 'Level 1 萌芽級';
+        diffBadge.className = 'px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-700';
+      } else if(currentDifficulty === 'level2') {
+        diffBadge.innerText = 'Level 2 基礎級';
+        diffBadge.className = 'px-3 py-1 rounded-full text-xs font-black bg-sky-100 text-sky-700';
+      } else if(currentDifficulty === 'level3') {
+        diffBadge.innerText = 'Level 3 進階級';
+        diffBadge.className = 'px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-700';
+      } else if(currentDifficulty === 'level4') {
+        diffBadge.innerText = 'Level 4 提高級';
+        diffBadge.className = 'px-3 py-1 rounded-full text-xs font-black bg-purple-100 text-purple-700';
+      } else {
+        diffBadge.innerText = 'Level 5 飛躍級';
+        diffBadge.className = 'px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-700';
+      }
+
+      document.getElementById('game-score').innerText = score;
+      switchScreen('screen-game');
+      loadQuestionAndAutoMic();
+    }
+
+    function loadQuestionAndAutoMic() {
+      isTransitioning = false;
+      stopSingleMicInstance();
+      if (synth) synth.cancel();
+
+      document.getElementById('question-tracker').innerText = `${currentIndex + 1}/10`;
+      document.getElementById('game-score').innerText = score;
+      document.getElementById('recognized-text').innerText = '';
+
+      const targetSentence = currentQuestions[currentIndex];
+      renderSentenceBoxes(targetSentence);
+
+      setTimeout(() => {
+        startSingleMicInstance();
+      }, 200);
+    }
+
+    function renderSentenceBoxes(targetSentence) {
+      const container = document.getElementById('sentence-container');
+      container.innerHTML = '';
+
+      for (let char of targetSentence) {
+        if (['。', '！', '，', ' ', '？', '、'].includes(char)) {
+          const punctuation = document.createElement('span');
+          punctuation.className = 'text-3xl font-black text-slate-300 mx-1 flex items-center';
+          punctuation.innerText = char;
+          container.appendChild(punctuation);
+        } else {
+          const charBox = document.createElement('div');
+          charBox.className = 'char-box';
+          charBox.innerText = char;
+          charBox.dataset.char = char;
+          charBox.dataset.status = 'none';
+          container.appendChild(charBox);
+        }
+      }
+    }
+
+    function handleMicClick() {
+      if (isTransitioning) return;
+      unlockAudioEngine();
+
+      if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+        simulateSpeechInput();
+        return;
+      }
+
+      if (isListening) {
+        stopSingleMicInstance();
+      } else {
+        startSingleMicInstance();
+      }
+    }
+
+    function updateMicUI(listening) {
+      const micBtn = document.getElementById('btn-mic');
+      const micPulse = document.getElementById('mic-pulse');
+      const waveform = document.getElementById('waveform-box');
+
+      if (listening) {
+        micBtn.classList.remove('from-indigo-500', 'to-purple-600');
+        micBtn.classList.add('from-red-500', 'to-pink-500');
+        micPulse.classList.remove('hidden');
+        waveform.classList.remove('hidden');
+      } else {
+        micBtn.classList.remove('from-red-500', 'to-pink-500');
+        micBtn.classList.add('from-indigo-500', 'to-purple-600');
+        micPulse.classList.add('hidden');
+        waveform.classList.add('hidden');
+      }
+    }
+
+    function evaluateSpeechWithHomophones(transcriptsArray) {
+      if (isTransitioning) return;
+
+      const combinedText = transcriptsArray.join('').replace(/[^\u4e00-\u9fa5]/g, '');
+      const charBoxes = document.querySelectorAll('#sentence-container .char-box');
+      
+      charBoxes.forEach((box) => {
+        const targetChar = box.dataset.char;
+        const homophones = HOMOPHONE_MAP[targetChar] || [];
+
+        const isExactMatch = combinedText.includes(targetChar);
+        const isHomophoneMatch = homophones.some(h => combinedText.includes(h));
+
+        if (isExactMatch || isHomophoneMatch) {
+          box.className = 'char-box char-correct';
+          box.dataset.status = 'correct';
+        } else if (combinedText.length > 0) {
+          box.className = 'char-box char-wrong';
+          box.dataset.status = 'wrong';
+        }
+      });
+
+      let correctCount = 0;
+      charBoxes.forEach(box => {
+        if(box.dataset.status === 'correct') correctCount++;
+      });
+
+      if (correctCount === charBoxes.length && charBoxes.length > 0) {
+        isTransitioning = true;
+        handleCompletionOrSkipWorkflow(true);
+      }
+    }
+
+    function handleCompletionOrSkipWorkflow(isCorrect) {
+      unlockAudioEngine();
+      stopSingleMicInstance();
+
+      const targetSentence = currentQuestions[currentIndex];
+      const overlay = document.getElementById('demoModal');
+      const title = document.getElementById('demo-title');
+      const subtitle = document.getElementById('demo-subtitle');
+      const icon = document.getElementById('demo-icon');
+      const sentenceBox = document.getElementById('demo-sentence-box');
+
+      sentenceBox.innerText = targetSentence;
+
+      if (isCorrect) {
+        title.innerText = "全對！好棒呀！ ";
+        subtitle.innerText = "請聽標準廣東話示範發音";
+        icon.innerText = " ";
+      } else {
+        title.innerText = "老師示範中...  ";
+        subtitle.innerText = "請聽正確廣東話答案";
+        icon.innerText = " ";
+      }
+
+      overlay.classList.remove('hidden');
+
+      /* 0.5s release buffer then trigger SpeechSynthesis */
+      setTimeout(() => {
+        speakCantonese(targetSentence, () => {
+          dismissDemoAndAdvance();
+        });
+      }, 500);
+    }
+
+    function dismissDemoAndAdvance() {
+      if (demoFallbackTimer) clearTimeout(demoFallbackTimer);
+      if (synth) {
+        try { synth.cancel(); } catch(e) {}
+      }
+      const overlay = document.getElementById('demoModal');
+      if (overlay) overlay.classList.add('hidden');
+      nextQuestion();
+    }
+
+    function skipDemoPlayback() {
+      dismissDemoAndAdvance();
+    }
+
+    function simulateSpeechInput() {
+      const currentTarget = currentQuestions[currentIndex];
+      const cleanTarget = currentTarget.replace(/[^\u4e00-\u9fa5]/g, '');
+      document.getElementById('recognized-text').innerText = cleanTarget + " (測試)";
+      evaluateSpeechWithHomophones([cleanTarget]);
+    }
+
+    function skipQuestion() {
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      const charBoxes = document.querySelectorAll('#sentence-container .char-box');
+      charBoxes.forEach(box => {
+        if (box.dataset.status !== 'correct') {
+          box.className = 'char-box char-missed';
+          box.dataset.status = 'missed';
+        }
+      });
+
+      handleCompletionOrSkipWorkflow(false);
+    }
+
+    function nextQuestion() {
+      const charBoxes = document.querySelectorAll('#sentence-container .char-box');
+      let qCorrect = 0;
+      charBoxes.forEach(box => {
+        totalTargetChars++;
+        if (box.dataset.status === 'correct') {
+          qCorrect++;
+          totalCorrectChars++;
+        }
+      });
+
+      if (qCorrect === charBoxes.length && charBoxes.length > 0) {
+        score += 10;
+      } else if (qCorrect > 0) {
+        score += Math.round((qCorrect / charBoxes.length) * 10);
+      }
+
+      currentIndex++;
+      if (currentIndex >= currentQuestions.length) {
+        finishGame();
+      } else {
+        loadQuestionAndAutoMic();
+      }
+    }
+
+    function speakCantonese(text, onEndCallback) {
+      if (demoFallbackTimer) clearTimeout(demoFallbackTimer);
+
+      let hasFinished = false;
+      const finishOnce = () => {
+        if (!hasFinished) {
+          hasFinished = true;
+          if (demoFallbackTimer) clearTimeout(demoFallbackTimer);
+          if (onEndCallback) onEndCallback();
+        }
+      };
+
+      const safeTimeoutDuration = Math.max(text.length * 600 + 2500, 4500);
+      demoFallbackTimer = setTimeout(() => {
+        finishOnce();
+      }, safeTimeoutDuration);
+
+      if (!synth) {
+        finishOnce();
+        return;
+      }
+
+      try {
+        synth.cancel();
+        synth.resume();
+      } catch(e) {}
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-HK';
+      utterance.rate = 0.85;
+
+      const voices = synth.getVoices();
+      const hkVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-yue-HK' || v.lang.includes('yue'));
+      if (hkVoice) {
+        utterance.voice = hkVoice;
+      }
+
+      utterance.onend = function() {
+        finishOnce();
+      };
+
+      utterance.onerror = function() {
+        finishOnce();
+      };
+
+      synth.speak(utterance);
+    }
+
+    function finishGame() {
+      stopSingleMicInstance();
+
+      const accuracy = totalTargetChars > 0 
+        ? Math.round((totalCorrectChars / totalTargetChars) * 100) 
+        : 0;
+
+      document.getElementById('final-score').innerText = score;
+      document.getElementById('final-accuracy').innerText = `${accuracy}%`;
+      document.getElementById('final-time').innerText = `10 題`;
+
+      switchScreen('screen-result');
+    }
+
+    function getDifficultyLabel(diff) {
+      switch(diff) {
+        case 'level1': return 'Level 1 萌芽';
+        case 'level2': return 'Level 2 基礎';
+        case 'level3': return 'Level 3 進階';
+        case 'level4': return 'Level 4 提高';
+        case 'level5': return 'Level 5 飛躍';
+        default: return '基礎漢字';
+      }
+    }
+
+    function getGameRecord() {
+      const playerName = document.getElementById('player-name').value.trim() || '小企鵝';
+      const accuracy = totalTargetChars > 0 
+        ? Math.round((totalCorrectChars / totalTargetChars) * 100) 
+        : 0;
+
+      return {
+        name: playerName,
+        score: score,
+        accuracy: accuracy,
+        difficulty: getDifficultyLabel(currentDifficulty),
+        date: new Date().toLocaleDateString()
+      };
+    }
+
+    function saveResultAndRestart() {
+      saveRecord(getGameRecord());
+      startGame();
+    }
+
+    function saveResultAndShowLeaderboard() {
+      saveRecord(getGameRecord());
+      showLeaderboard();
+    }
+
+    function saveRecord(record) {
+      let leaderboard = JSON.parse(localStorage.getItem('cantonese_reading_leaderboard') || '[]');
+      leaderboard.push(record);
+      leaderboard.sort((a, b) => b.score - a.score || b.accuracy - a.accuracy);
+      leaderboard = leaderboard.slice(0, 10);
+      localStorage.setItem('cantonese_reading_leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function showLeaderboard() {
+      const leaderboard = JSON.parse(localStorage.getItem('cantonese_reading_leaderboard') || '[]');
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
+
+      if (leaderboard.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">未有紀錄，快啲開始第一局朗讀啦！</td></tr>`;
+      } else {
+        leaderboard.forEach((item, index) => {
+          const tr = document.createElement('tr');
+          let rankBadge = `<span class="font-black text-slate-500">${index + 1}</span>`;
+          if (index === 0) rankBadge = ` `;
+          if (index === 1) rankBadge = ` `;
+          if (index === 2) rankBadge = ` `;
+
+          tr.innerHTML = `
+            <td class="py-3 px-2 text-base">${rankBadge}</td>
+            <td class="py-3 px-2 text-slate-800 font-extrabold">${escapeHTML(item.name)}</td>
+            <td class="py-3 px-2"><span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">${item.difficulty}</span></td>
+            <td class="py-3 px-2 text-right text-amber-600 font-black">${item.score}</td>
+            <td class="py-3 px-2 text-right text-emerald-600">${item.accuracy}%</td>
+            <td class="py-3 px-2 text-right text-slate-400 text-xs">${item.date}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      switchScreen('screen-leaderboard');
+    }
+
+    function clearLeaderboard() {
+      if(confirm("確定要清除所有龍虎榜紀錄嗎？")) {
+        localStorage.removeItem('cantonese_reading_leaderboard');
+        showLeaderboard();
+      }
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function showToast(msg, icon = ' ') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      document.getElementById('toast-icon').innerText = icon;
+      
+      toast.classList.remove('opacity-0', 'translate-y-20');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-20');
+      }, 3000);
+    }
+
+    window.onload = function() {
+      initGlobalSpeechRecognition();
+    };
+  </script>
+</body>
+</html>
+
