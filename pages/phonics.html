@@ -102,7 +102,7 @@
     <header class="w-full max-w-5xl mx-auto flex items-center justify-between z-10 px-2 py-1">
         <div class="flex items-center gap-3">
             <div id="mascot" class="w-14 h-14 sm:w-16 sm:h-16 bg-bubbleYellow rounded-full border-4 border-amber-400 flex items-center justify-center shadow-lg relative cursor-pointer active:scale-95 transition" onclick="repeatSpeech()">
-                <div class="text-3xl sm:text-4xl"> </div>
+                <div class="text-3xl sm:text-4xl">🐱</div>
                 <div id="speakBadge" class="hidden absolute -bottom-1 -right-1 bg-bubbleGreen text-white text-xs px-2 py-0.5 rounded-full border-2 border-white flex items-center gap-1 shadow">
                     <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave"></span>
                     <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.15s"></span>
@@ -207,53 +207,53 @@
 
         // Multi-Layered Emoji System (200+ Words)
         const PRIMARY_EMOJI_DICT = {
-            "CAT": " ", "CATS": " ", "KITTY": " ", "DOG": " ", "DOGS": " ", "PUPPY": " ", "FISH": " ", "FISHES": " ",
-            "BIRD": " ", "BIRDS": " ", "SHEEP": " ", "DUCK": " ", "DUCKS": " ", "PIG": " ", "PIGS": " ", "COW": " ",
-            "BEAR": " ", "LION": " ", "FROG": " ", "FROGS": " ", "RABBIT": " ", "BUNNY": " ", "MOUSE": " ", "HORSE": " ",
-            "BEE": " ", "BEES": " ", "MONKEY": " ", "FOX": " ", "OWL": " ", "SNAKE": " ", "TURTLE": " ", "TIGER": " ",
-            "PANDA": " ", "KOALA": " ", "BUG": " ", "ANT": " ", "CRAB": " ", "WHALE": " ", "SHARK": " ", "BAT": " ",
-            "GOAT": " ", "DEER": " ", "CAMEL": " ", "WOLF": " ", "DONKEY": " ", "GIRAFFE": " ", "ELEPHANT": " ",
+            "CAT": "🐱", "CATS": "🐱", "KITTY": "🐱", "DOG": "🐶", "DOGS": "🐶", "PUPPY": "🐶", "FISH": "🐟", "FISHES": "🐟",
+            "BIRD": "🐦", "BIRDS": "🐦", "SHEEP": "🐑", "DUCK": "🦆", "DUCKS": "🦆", "PIG": "🐷", "PIGS": "🐷", "COW": "🐮",
+            "BEAR": "🐻", "LION": "🦁", "FROG": "🐸", "FROGS": "🐸", "RABBIT": "🐰", "BUNNY": "🐰", "MOUSE": "🐭", "HORSE": "🐴",
+            "BEE": "🐝", "BEES": "🐝", "MONKEY": "🐒", "FOX": "🦊", "OWL": "🦉", "SNAKE": "🐍", "TURTLE": "🐢", "TIGER": "🐯",
+            "PANDA": "🐼", "KOALA": "🐨", "BUG": "🐛", "ANT": "🐜", "CRAB": "🦀", "WHALE": "🐳", "SHARK": "🦈", "BAT": "🦇",
+            "GOAT": "🐐", "DEER": "🦌", "CAMEL": "🐪", "WOLF": "🐺", "DONKEY": "🫏", "GIRAFFE": "🦒", "ELEPHANT": "🐘",
 
-            "MOTHER": " ", "MOM": " ", "FATHER": " ", "DAD": " ", "BROTHER": " ", "SISTER": " ", "BABY": " ", 
-            "KING": " ", "QUEEN": " ", "BOY": " ", "GIRL": " ", "MAN": " ", "WOMAN": " ", "FRIEND": " ",
+            "MOTHER": "👩", "MOM": "👩", "FATHER": "👨", "DAD": "👨", "BROTHER": "👦", "SISTER": "👧", "BABY": "👶", 
+            "KING": "👑", "QUEEN": "👸", "BOY": "👦", "GIRL": "👧", "MAN": "👨", "WOMAN": "👩", "FRIEND": "🧑‍🤝‍🧑",
 
-            "APPLE": " ", "APPLES": " ", "BANANA": " ", "CAKE": " ", "MILK": " ", "PIZZA": " ", "BREAD": " ", "EGG": " ",
-            "CORN": " ", "NUT": " ", "SOUP": " ", "RICE": " ", "MEAT": " ", "TACO": " ", "DONUT": " ", "COOKIE": " ",
-            "CANDY": " ", "JUICE": " ", "WATER": " ", "TEA": " ", "PEAR": " ", "PEACH": " ", "GRAPE": " ", "LEMON": " ",
-            "CHERRY": " ", "BERRY": " ", "BURGER": " ", "FRIES": " ", "ICE": " ", "JAM": " ", "MELON": " ", "HONEY": " ",
+            "APPLE": "🍎", "APPLES": "🍎", "BANANA": "🍌", "CAKE": "🎂", "MILK": "🥛", "PIZZA": "🍕", "BREAD": "🍞", "EGG": "🥚",
+            "CORN": "🌽", "NUT": "🥜", "SOUP": "🥣", "RICE": "🍚", "MEAT": "🍖", "TACO": "🌮", "DONUT": "🍩", "COOKIE": "🍪",
+            "CANDY": "🍬", "JUICE": "🧃", "WATER": "💧", "TEA": "🍵", "PEAR": "🍐", "PEACH": "🍑", "GRAPE": "🍇", "LEMON": "🍋",
+            "CHERRY": "🍒", "BERRY": "🍓", "BURGER": "🍔", "FRIES": "🍟", "ICE": "🧊", "JAM": "🍯", "MELON": "🍈", "HONEY": "🍯",
 
-            "CAR": " ", "CARS": " ", "BUS": " ", "BIKE": " ", "BOAT": " ", "PLANE": " ", "TRAIN": " ", "SHIP": " ",
-            "TAXI": " ", "TRUCK": " ", "ROCKET": " ", "VAN": " ", "AMBULANCE": " ", "COP": " ", "POLICE": " ",
+            "CAR": "🚗", "CARS": "🚗", "BUS": "🚌", "BIKE": "🚲", "BOAT": "⛵", "PLANE": "✈️", "TRAIN": "🚂", "SHIP": "🚢",
+            "TAXI": "🚕", "TRUCK": "🚛", "ROCKET": "🚀", "VAN": "🚐", "AMBULANCE": "🚑", "COP": "🚔", "POLICE": "🚔",
 
-            "SUN": " ", "SUNNY": " ", "MOON": " ", "STAR": " ", "STARS": " ", "RAIN": " ", "RAINY": " ", "FIRE": " ",
-            "TREE": " ", "TREES": " ", "FLOWER": " ", "FLOWERS": " ", "SNOW": " ", "WIND": " ", "LEAF": " ", "CLOUD": " ",
-            "CLOUDS": " ", "WAVE": " ", "HILL": " ", "MUD": " ", "PARK": " ", "SKY": " ", "SEA": " ",
+            "SUN": "☀️", "SUNNY": "☀️", "MOON": "🌙", "STAR": "⭐", "STARS": "⭐", "RAIN": "🌧️", "RAINY": "🌧️", "FIRE": "🔥",
+            "TREE": "🌳", "TREES": "🌳", "FLOWER": "🌸", "FLOWERS": "🌸", "SNOW": "❄️", "WIND": "💨", "LEAF": "🍃", "CLOUD": "☁️",
+            "CLOUDS": "☁️", "WAVE": "🌊", "HILL": "⛰️", "MUD": "🟤", "PARK": "🏞️", "SKY": "🌌", "SEA": "🌊",
 
-            "TABLE": " ", "CANDLE": " ", "BED": " ", "BOX": " ", "DOOR": " ", "KEY": " ", "BELL": " ", "CLOCK": " ",
-            "LAMP": " ", "CHAIR": " ", "CUP": " ", "MUG": " ", "FORK": " ", "SPOON": " ", "DISH": " ", "RING": " ",
-            "COIN": " ", "SOAP": " ", "BAG": " ", "MAP": " ", "FLAG": " ", "BOTTLE": " ", "TOWEL": " ", "PHONE": " ",
+            "TABLE": "🪵", "CANDLE": "🕯️", "BED": "🛏️", "BOX": "📦", "DOOR": "🚪", "KEY": "🔑", "BELL": "🔔", "CLOCK": "⏰",
+            "LAMP": "💡", "CHAIR": "🪑", "CUP": "🥤", "MUG": "☕", "FORK": "🍴", "SPOON": "🥄", "DISH": "🍽️", "RING": "💍",
+            "COIN": "🪙", "SOAP": "🧼", "BAG": "🎒", "MAP": "🗺️", "FLAG": "🚩", "BOTTLE": "🍾", "TOWEL": "🧖", "PHONE": "📱",
 
-            "CLOSE": " ", "CLOSED": " ", "CLOSING": " ", "SHUT": " ", "LOCK": " ", "OPEN": " ", "RUN": " ", "RUNNING": " ",
-            "WALK": " ", "FLY": " ", "FLYING": " ", "SWIM": " ", "SLEEP": " ", "SLEEPING": " ", "EAT": " ", "EATING": " ",
-            "DRINK": " ", "READ": " ", "WRITE": " ", "SING": " ", "DANCE": " ", "JUMP": " ", "PLAY": " ", "STOP": " ",
+            "CLOSE": "🚪", "CLOSED": "🚪", "CLOSING": "🚪", "SHUT": "🚪", "LOCK": "🔒", "OPEN": "🔓", "RUN": "🏃", "RUNNING": "🏃",
+            "WALK": "🚶", "FLY": "✈️", "FLYING": "✈️", "SWIM": "🏊", "SLEEP": "😴", "SLEEPING": "😴", "EAT": "🍽️", "EATING": "🍽️",
+            "DRINK": "🥤", "READ": "📖", "WRITE": "✏️", "SING": "🎤", "DANCE": "💃", "JUMP": "🦘", "PLAY": "🎮", "STOP": "🛑",
 
-            "BALL": " ", "BOOK": " ", "BOOKS": " ", "PEN": " ", "PENCIL": " ", "HOUSE": " ", "HOME": " ", "HAT": " ",
-            "DRUM": " ", "TOY": " ", "GAME": " ", "KITE": " ", "PAPER": " ", "CRAYON": " ", "CROWN": " ", "GIFT": " ",
+            "BALL": "⚽", "BOOK": "📖", "BOOKS": "📖", "PEN": "✏️", "PENCIL": "✏️", "HOUSE": "🏠", "HOME": "🏠", "HAT": "🎩",
+            "DRUM": "🥁", "TOY": "🧸", "GAME": "🎮", "KITE": "🪁", "PAPER": "📄", "CRAYON": "🖍️", "CROWN": "👑", "GIFT": "🎁",
 
-            "EYE": " ", "EYES": " ", "EAR": " ", "NOSE": " ", "HAND": " ", "FOOT": " ", "FEET": " ", "ARM": " ",
-            "LEG": " ", "LIPS": " ", "TOOTH": " ", "TEETH": " ", "BONE": " ", "BRAIN": " ", "FACE": " ", "HEART": " ",
+            "EYE": "👁️", "EYES": "👁️", "EAR": "👂", "NOSE": "👃", "HAND": "✋", "FOOT": "🦶", "FEET": "🦶", "ARM": "🦾",
+            "LEG": "🦵", "LIPS": "👄", "TOOTH": "🦷", "TEETH": "🦷", "BONE": "🦴", "BRAIN": "🧠", "FACE": "😀", "HEART": "❤️",
 
-            "RED": " ", "BLUE": " ", "GREEN": " ", "YELLOW": " ", "PURPLE": " ", "PINK": " ", "BLACK": " ", "WHITE": " ",
-            "ORANGE": " ", "GOLD": " ", "SQUARE": " ", "CIRCLE": " "
+            "RED": "🔴", "BLUE": "🔵", "GREEN": "🟢", "YELLOW": "🟡", "PURPLE": "🟣", "PINK": "🩷", "BLACK": "⚫", "WHITE": "⚪",
+            "ORANGE": "🟠", "GOLD": "🪙", "SQUARE": "⏹️", "CIRCLE": "🟠"
         };
 
         const SEMANTIC_CLUSTERS = [
-            { keywords: ["CLOSE", "SHUT", "DOOR", "LOCK", "GATE"], emoji: " " },
-            { keywords: ["HAPPY", "SMILE", "JOY", "GLAD", "FUN"], emoji: " " },
-            { keywords: ["SAD", "CRY", "TEARS", "UPSET"], emoji: " " },
-            { keywords: ["HOT", "WARM", "HEAT", "SUNNY"], emoji: " " },
-            { keywords: ["COLD", "FREEZE", "ICE", "SNOW"], emoji: " " },
-            { keywords: ["LOVE", "LIKE", "CARE", "HEART"], emoji: " " }
+            { keywords: ["CLOSE", "SHUT", "DOOR", "LOCK", "GATE"], emoji: "🚪" },
+            { keywords: ["HAPPY", "SMILE", "JOY", "GLAD", "FUN"], emoji: "😀" },
+            { keywords: ["SAD", "CRY", "TEARS", "UPSET"], emoji: "😢" },
+            { keywords: ["HOT", "WARM", "HEAT", "SUNNY"], emoji: "☀️" },
+            { keywords: ["COLD", "FREEZE", "ICE", "SNOW"], emoji: "❄️" },
+            { keywords: ["LOVE", "LIKE", "CARE", "HEART"], emoji: "❤️" }
         ];
 
         function getEmojiMatch(word) {
@@ -315,7 +315,7 @@
             for (let i = 0; i < 6; i++) {
                 const star = document.createElement('div');
                 star.className = 'pop-star text-xl';
-                star.innerHTML = ['★', '✦', ' ', '●'][Math.floor(Math.random() * 4)];
+                star.innerHTML = ['★', '✦', '♥', '●'][Math.floor(Math.random() * 4)];
                 star.style.color = colors[Math.floor(Math.random() * colors.length)];
                 star.style.left = `${x}px`;
                 star.style.top = `${y}px`;
@@ -725,7 +725,7 @@
 
                 wordUtt.onstart = () => {
                     highlightWordBlock(wIdx);
-                    statusLabel.textContent = `${wordStr.toUpperCase()}!  `;
+                    statusLabel.textContent = `${wordStr.toUpperCase()}! 🎉`;
                 };
 
                 if (wIdx === rawWords.length - 1) {
@@ -808,4 +808,3 @@
     </script>
 </body>
 </html>
-
