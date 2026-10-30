@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kid Learning Hub</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Child Friendly Google Fonts (Fredoka & Comic Neue) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Application JavaScript Logic / Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fredoka', 'sans-serif'],
+                        comic: ['Comic Neue', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-full font-sans antialiased bg-gradient-to-br from-amber-100 via-sky-100 to-pink-100 text-slate-800 p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto space-y-4">
+        <!-- Header -->
+        <header class="bg-white border-4 border-yellow-300 rounded-2xl p-4 flex items-center space-x-3 shadow-md">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold shadow-md shadow-pink-300/50 transform -rotate-3 shrink-0">
+                <i class="fa-solid fa-rocket text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl text-sky-600 tracking-wide">Kid Learning Hub 🌟</h1>
+            </div>
+        </header>
+
+        <!-- Main Page List -->
+        <main class="bg-white border-4 border-sky-200 rounded-3xl p-4 shadow-xl space-y-3">
+            <!-- Search Input -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-sky-400 text-sm"></i>
+                <input type="text" id="search-input" placeholder="Search pages..." class="w-full bg-sky-50 text-sm text-slate-700 placeholder-sky-400 pl-10 pr-4 py-2.5 rounded-2xl border-2 border-sky-200 focus:outline-none focus:border-sky-400 transition-colors font-bold">
+            </div>
+
+            <!-- List Container (Always 2 Columns) -->
+            <div id="pages-list" class="grid grid-cols-2 gap-3">
+                <!-- Items populated by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // List of pages inside the /pages/ directory
+        const pagesList = [
+            { id: '1', title: 'Chinese Speaking', file: 'chinese_speaking.html', icon: 'fa-house-chimney', color: 'bg-amber-400 text-white' },
+            { id: '2', title: 'Maths 10 Game', file: 'maths_ten.html', icon: 'fa-gamepad', color: 'bg-pink-400 text-white' },
+            { id: '3', title: 'Phonics Keyboard', file: 'phonics.html', icon: 'fa-face-smile', color: 'bg-sky-400 text-white' },
+            { id: '4', title: 'Sentence Builder', file: 'sentence_builder.html', icon: 'fa-palette', color: 'bg-purple-400 text-white' },
+            { id: '5', title: 'Word Recognition', file: 'word_recognition.html', icon: 'fa-book-open', color: 'bg-emerald-400 text-white' }
+        ];
+
+        // DOM Elements
+        const pagesListContainer = document.getElementById('pages-list');
+        const searchInput = document.getElementById('search-input');
+
+        // Render Page List
+        function renderPages(query = '') {
+            pagesListContainer.innerHTML = '';
+            
+            const filteredPages = pagesList.filter(page => 
+                page.title.toLowerCase().includes(query.toLowerCase()) || 
+                page.file.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filteredPages.length === 0) {
+                pagesListContainer.innerHTML = `
+                    <div class="col-span-2 py-8 text-center text-slate-400 font-bold text-sm">
+                        <i class="fa-solid fa-face-frown text-2xl mb-2 text-sky-300 block"></i>
+                        No pages found matching "${query}"
+                    </div>
+                `;
+                return;
+            }
+
+            filteredPages.forEach(page => {
+                const fullPath = `pages/${page.file}`;
+                const link = document.createElement('a');
+                
+                link.href = fullPath;
+                link.target = '_blank';
+                link.className = 'group flex items-center justify-between p-3 rounded-2xl border-2 border-sky-100 bg-white hover:border-sky-300 hover:bg-sky-50 transition-all shadow-sm hover:shadow-md hover:scale-[1.02]';
+
+                link.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl ${page.color} flex items-center justify-center shrink-0 text-base font-bold shadow-sm transition-transform group-hover:rotate-6">
+                            <i class="fa-solid ${page.icon}"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="font-bold text-sm text-slate-800">${page.title}</div>
+                        </div>
+                    </div>
+                    <div class="p-2 text-sky-400 group-hover:text-sky-600 transition-colors">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                    </div>
+                `;
+
+                pagesListContainer.appendChild(link);
+            });
+        }
+
+        // Search Input Event Listener
+        searchInput.addEventListener('input', (e) => {
+            renderPages(e.target.value.trim());
+        });
+
+        window.addEventListener('DOMContentLoaded', () => renderPages());
+    </script>
+</body>
+</html>
