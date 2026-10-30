@@ -473,7 +473,7 @@
             // Trailing 'Y' Sound
             if (uppercaseWord.endsWith('Y') && uppercaseWord.length > 1) {
                 const body = uppercaseWord.slice(0, -1);
-                if (!/[AEIOU]/.test(body) || body.length <= 2) {
+                if (['SKY', 'WHY', 'FLY'].includes(uppercaseWord)) {
                     const onsetData = parseOnsetPhonetics(body, 'y');
                     return [{
                         text: uppercaseWord.toLowerCase(),
@@ -483,7 +483,41 @@
                         rimeSpoken: 'eye',
                         combinedSpoken: uppercaseWord.toLowerCase()
                     }];
+                } else {
+                    const onsetData = parseOnsetPhonetics(body, 'y');
+                    return [{
+                        text: uppercaseWord.toLowerCase(),
+                        onset: body.toLowerCase(),
+                        rime: 'y',
+                        onsetArSpoken: onsetData.spoken,
+                        rimeSpoken: 'ee',
+                        combinedSpoken: body.toLowerCase() + 'ee'
+                    }];
                 }
+            }
+
+            // Trailing '-SE' Suffix Pattern (e.g. HOUSE -> H + OUSE, CLOSE -> CL + OSE)
+            if (uppercaseWord.endsWith('SE') && uppercaseWord.length > 2) {
+                const stem = uppercaseWord.slice(0, -2); // e.g. "HOU" for HOUSE
+                let onset = '', rimeBody = stem;
+
+                const firstVowelIdx = stem.search(/[aeiouy]/i);
+                if (firstVowelIdx > 0) {
+                    onset = stem.slice(0, firstVowelIdx);
+                    rimeBody = stem.slice(firstVowelIdx);
+                }
+
+                const onsetData = parseOnsetPhonetics(onset, rimeBody[0]);
+                const fullRime = rimeBody + 'se'; // e.g. "ouse"
+
+                return [{
+                    text: uppercaseWord.toLowerCase(),
+                    onset: onset.toLowerCase(),
+                    rime: fullRime.toLowerCase(),
+                    onsetArSpoken: onsetData.spoken,
+                    rimeSpoken: rimeBody.toLowerCase() + 's', // e.g. "ou" + "s"
+                    combinedSpoken: onset.toLowerCase() + rimeBody.toLowerCase() + 's'
+                }];
             }
 
             // Magic 'E' Pattern
