@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>升小一英文聽寫大冒險 | Kids English Spelling Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            pink: '#FF6B9B',
+                            yellow: '#FFD166',
+                            green: '#06D6A0',
+                            blue: '#118AB2',
+                            purple: '#8338EC',
+                            dark: '#073B4C'
+                        }
+                    },
+                    keyframes: {
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(-4%)' },
+                            '50%': { transform: 'translateY(0)' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.88)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-8px)' },
+                            '40%, 80%': { transform: 'translateX(8px)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 0 0 rgba(17, 138, 178, 0.4)' },
+                            '50%': { boxShadow: '0 0 0 12px rgba(17, 138, 178, 0)' }
+                        }
+                    },
+                    animation: {
+                        'bounce-soft': 'bounceSoft 2s infinite ease-in-out',
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'shake': 'shake 0.4s ease-in-out',
+                        'pulse-glow': 'pulseGlow 1.5s infinite ease-in-out'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+            min-height: 100vh;
+            user-select: none;
+        }
+        .key-btn {
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            color: #334155;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border-radius: 0.75rem;
+            flex: 1;
+            max-width: 44px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #94a3b8;
+            transition: all 0.08s ease;
+        }
+        @media (min-width: 640px) {
+            .key-btn { font-size: 1.25rem; height: 52px; max-width: 54px; }
+        }
+        .key-btn:hover { background-color: #f1f5f9; }
+        .key-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #94a3b8;
+        }
+        .custom-card {
+            box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 p-2 sm:p-4">
+
+    <!-- Top Navigation Header -->
+    <header class="max-w-4xl w-full mx-auto flex items-center justify-between p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-sm mb-3">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-full bg-brand-yellow flex items-center justify-center text-2xl shadow-sm">
+                🦁
+            </div>
+            <div>
+                <h1 class="font-black text-lg leading-tight text-brand-dark">Listen & Spell!</h1>
+                <p class="text-xs text-gray-500 font-bold">升小一英文聽寫大冒險</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button id="speedToggleBtn" onclick="toggleSlowSpeed()" class="px-2.5 py-1.5 rounded-xl bg-amber-100 text-amber-800 font-bold text-xs hover:bg-amber-200 transition flex items-center gap-1">
+                <i class="fas fa-gauge-simple-high"></i> <span id="speedText">正常語速 (0.8x)</span>
+            </button>
+            <button id="audioToggleBtn" onclick="toggleAudio()" class="px-3 py-1.5 rounded-xl bg-purple-100 text-brand-purple font-bold text-xs hover:bg-purple-200 transition flex items-center gap-1.5">
+                <i id="audioIcon" class="fas fa-volume-up"></i> <span id="audioText" class="hidden sm:inline">聲音開啟</span>
+            </button>
+            <button onclick="showLeaderboardModal()" class="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition flex items-center gap-1.5">
+                <i class="fas fa-trophy text-amber-500"></i> <span class="hidden sm:inline">龍虎榜</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl w-full mx-auto flex-1 flex flex-col justify-center items-center">
+
+        <!-- STEP 1: Welcome & Setup Screen -->
+        <section id="welcomeScreen" class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 custom-card text-center animate-pop">
+            <div class="relative w-24 h-24 mx-auto mb-3 bg-amber-100 rounded-full flex items-center justify-center border-4 border-brand-yellow animate-bounce-soft">
+                <span id="selectedAvatarDisplay" class="text-5xl">🐶</span>
+                <span class="absolute -top-2 -right-2 bg-brand-pink text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shadow">Hello!</span>
+            </div>
+
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-1">升小一英文聽寫大冒險</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mb-4">聽發音、睇提示，串出正確英文單字！</p>
+
+            <form onsubmit="handleStartGame(event)" class="space-y-4">
+                <!-- Avatar Selector -->
+                <div class="text-left">
+                    <label class="block text-xs font-bold text-gray-600 mb-1 ml-1">選擇小角色 Choose Mascot:</label>
+                    <div class="flex justify-between gap-1" id="avatarGroup">
+                        <button type="button" onclick="selectAvatar('🐶')" class="avatar-btn active text-2xl p-2 rounded-xl border-2 border-brand-blue bg-blue-50">🐶</button>
+                        <button type="button" onclick="selectAvatar('🐱')" class="avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200">🐱</button>
+                        <button type="button" onclick="selectAvatar('🐰')" class="avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200">🐰</button>
+                        <button type="button" onclick="selectAvatar('🦁')" class="avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200">🦁</button>
+                        <button type="button" onclick="selectAvatar('🐼')" class="avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200">🐼</button>
+                        <button type="button" onclick="selectAvatar('🦄')" class="avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200">🦄</button>
+                    </div>
+                </div>
+
+                <div class="text-left">
+                    <label class="block text-xs font-bold text-gray-600 mb-1 ml-1">你的名字 Your Name:</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"><i class="fas fa-user-astronaut"></i></span>
+                        <input type="text" id="playerNameInput" required maxlength="15" placeholder="例如: Alex / 小明" 
+                               class="w-full pl-11 pr-4 py-3 rounded-2xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:border-brand-blue focus:outline-none transition bg-slate-50">
+                    </div>
+                </div>
+
+                <!-- Difficulty Selection -->
+                <div class="text-left pt-1">
+                    <label class="block text-xs font-bold text-gray-600 mb-1 ml-1">選擇單字難度 Word Length:</label>
+                    <div class="grid grid-cols-3 gap-2" id="difficultyGroup">
+                        <button type="button" onclick="selectDifficulty(0)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100" data-diff="0">
+                            <span class="block text-sm">🔀 混合</span>
+                            <span class="text-[9px] text-purple-500 font-bold uppercase">All Levels</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(3)" class="diff-btn active p-2.5 rounded-xl border-2 border-brand-blue bg-blue-50 text-brand-blue font-bold text-center transition hover:bg-blue-100" data-diff="3">
+                            <span class="block text-sm">3 個字</span>
+                            <span class="text-[9px] text-blue-500 uppercase">Level 1</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(4)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100" data-diff="4">
+                            <span class="block text-sm">4 個字</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Level 2</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(5)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100" data-diff="5">
+                            <span class="block text-sm">5 個字</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Level 3</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(6)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100" data-diff="6">
+                            <span class="block text-sm">6 個字</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Level 4</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(7)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100" data-diff="7">
+                            <span class="block text-sm">7 個字</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Level 5</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty(8)" class="diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100 col-span-3" data-diff="8">
+                            <span class="block text-sm">8 個字 (挑戰級 Challenge)</span>
+                            <span class="text-[9px] text-rose-500 uppercase font-bold">Primary 1 Advanced</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 mt-2 bg-brand-green hover:bg-emerald-500 text-white font-extrabold text-xl rounded-2xl shadow-lg shadow-emerald-200 transform active:scale-95 transition flex items-center justify-center gap-2">
+                    <span>開始 10 題挑戰 START!</span> <i class="fas fa-play"></i>
+                </button>
+            </form>
+        </section>
+
+        <!-- STEP 2: Quiz Game Interface -->
+        <section id="quizScreen" class="w-full hidden flex-col items-center animate-pop space-y-3">
+            
+            <!-- Progress & Header Bar -->
+            <div class="w-full flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl custom-card">
+                <div class="flex items-center gap-2">
+                    <span class="w-9 h-9 rounded-full bg-amber-100 text-2xl flex items-center justify-center shadow-inner" id="playerAvatar">🐶</span>
+                    <span id="displayName" class="font-bold text-slate-700 text-sm sm:text-base">Player</span>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-gray-400 font-bold uppercase">Question</span>
+                    <span id="currentQuestionNum" class="text-xl font-black text-brand-blue">1</span>
+                    <span class="text-sm font-bold text-gray-400">/ 10</span>
+                </div>
+
+                <div class="flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                    <i class="fas fa-star text-amber-400 text-base"></i>
+                    <span id="currentScore" class="font-extrabold text-amber-600 text-base">0</span>
+                </div>
+            </div>
+
+            <!-- Main Question Card -->
+            <div class="w-full bg-white rounded-3xl p-4 sm:p-6 custom-card flex flex-col items-center relative overflow-hidden">
+                
+                <div class="w-full flex justify-between items-center mb-2">
+                    <span id="categoryBadge" class="bg-purple-100 text-brand-purple font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wide">
+                        <i class="fas fa-headphones me-1"></i> 聽讀音串字
+                    </span>
+
+                    <!-- Big Audio Replay Button -->
+                    <button id="replayBtn" onclick="speakCurrentWord()" class="px-4 py-2.5 rounded-2xl bg-brand-blue hover:bg-sky-600 text-white font-black text-sm sm:text-base transition flex items-center gap-2 shadow-lg shadow-sky-200 active:scale-95 animate-pulse-glow">
+                        <i id="replayIcon" class="fas fa-volume-high text-xl"></i> 
+                        <span>🔊 再聽一次 Replay</span>
+                    </button>
+                </div>
+
+                <!-- Word Image / Emoji Artwork Display -->
+                <div class="relative w-36 h-36 sm:w-40 sm:h-40 my-1 rounded-2xl bg-slate-50 border-4 border-slate-100 flex flex-col items-center justify-center p-2 shadow-inner cursor-pointer" onclick="speakCurrentWord()">
+                    <span id="wordEmoji" class="text-7xl sm:text-8xl filter drop-shadow-md">🐱</span>
+                    <span class="text-[10px] text-gray-400 font-bold mt-1">點擊可重聽發音</span>
+                </div>
+
+                <!-- Gradual Hint Box (Shows hints on wrong attempts, DOES NOT reveal full answer immediately) -->
+                <div id="hintContainer" class="w-full max-w-md my-2">
+                    <div id="hintBox" class="p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-900 text-xs sm:text-sm font-bold text-center transition-all animate-pop">
+                        <div class="flex items-center justify-center gap-1.5 text-amber-600 font-extrabold mb-1">
+                            <i class="fas fa-lightbulb"></i> <span id="hintTitle">提示：準備聽發音打字</span>
+                        </div>
+                        <div id="hintMessage" class="text-slate-700">請仔細聽音，打出正確單字！</div>
+                        <div id="letterPatternDisplay" class="mt-2 text-xl tracking-widest font-black font-mono text-brand-blue hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Word Input Box -->
+                <div class="my-2 w-full max-w-sm flex flex-col items-center">
+                    <div id="displayInputBox" class="w-full py-3 px-4 rounded-2xl border-3 border-brand-blue bg-slate-50 min-h-[58px] flex items-center justify-center font-black text-2xl sm:text-3xl tracking-widest text-slate-800 shadow-inner">
+                        <span id="userInputText" class="text-brand-blue"></span>
+                        <span id="cursor" class="w-0.5 h-7 bg-brand-blue animate-pulse ml-0.5"></span>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-2 w-full max-w-sm mt-1">
+                    <button onclick="backspaceLetter()" class="px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-sm rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5">
+                        <i class="fas fa-backspace"></i> 刪除 Del
+                    </button>
+                    <button id="submitBtn" onclick="submitAnswer()" class="flex-1 py-3 bg-brand-green hover:bg-emerald-500 text-white font-extrabold text-base rounded-xl transition shadow-md shadow-emerald-200 active:scale-95 flex items-center justify-center gap-2">
+                        <span>提交 Submit</span> <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- On-screen Keyboard -->
+            <div id="virtualKeyboard" class="w-full bg-white/90 backdrop-blur-md rounded-3xl p-3 custom-card flex flex-col gap-1.5">
+                <div class="flex justify-center gap-1 sm:gap-1.5">
+                    <button class="key-btn" onclick="typeLetter('Q')">Q</button>
+                    <button class="key-btn" onclick="typeLetter('W')">W</button>
+                    <button class="key-btn" onclick="typeLetter('E')">E</button>
+                    <button class="key-btn" onclick="typeLetter('R')">R</button>
+                    <button class="key-btn" onclick="typeLetter('T')">T</button>
+                    <button class="key-btn" onclick="typeLetter('Y')">Y</button>
+                    <button class="key-btn" onclick="typeLetter('U')">U</button>
+                    <button class="key-btn" onclick="typeLetter('I')">I</button>
+                    <button class="key-btn" onclick="typeLetter('O')">O</button>
+                    <button class="key-btn" onclick="typeLetter('P')">P</button>
+                </div>
+                <div class="flex justify-center gap-1 sm:gap-1.5">
+                    <button class="key-btn" onclick="typeLetter('A')">A</button>
+                    <button class="key-btn" onclick="typeLetter('S')">S</button>
+                    <button class="key-btn" onclick="typeLetter('D')">D</button>
+                    <button class="key-btn" onclick="typeLetter('F')">F</button>
+                    <button class="key-btn" onclick="typeLetter('G')">G</button>
+                    <button class="key-btn" onclick="typeLetter('H')">H</button>
+                    <button class="key-btn" onclick="typeLetter('J')">J</button>
+                    <button class="key-btn" onclick="typeLetter('K')">K</button>
+                    <button class="key-btn" onclick="typeLetter('L')">L</button>
+                </div>
+                <div class="flex justify-center gap-1 sm:gap-1.5">
+                    <button class="key-btn" onclick="typeLetter('Z')">Z</button>
+                    <button class="key-btn" onclick="typeLetter('X')">X</button>
+                    <button class="key-btn" onclick="typeLetter('C')">C</button>
+                    <button class="key-btn" onclick="typeLetter('V')">V</button>
+                    <button class="key-btn" onclick="typeLetter('B')">B</button>
+                    <button class="key-btn" onclick="typeLetter('N')">N</button>
+                    <button class="key-btn" onclick="typeLetter('M')">M</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: Quiz Completion Screen -->
+        <section id="resultScreen" class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 custom-card text-center hidden animate-pop">
+            <div id="resultMascot" class="text-7xl mb-2 animate-bounce-soft">🎉</div>
+            <h2 class="text-2xl font-black text-slate-800" id="resultTitle">太棒了！完成 10 題聽寫！</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mb-4">Great job on finishing the listening spelling challenge!</p>
+
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 mb-5">
+                <span class="block text-xs font-bold text-amber-600 uppercase tracking-wider">你的總得分 Final Score</span>
+                <div class="flex justify-center items-baseline gap-1 my-1">
+                    <span id="finalScore" class="text-5xl font-black text-amber-500">100</span>
+                    <span class="text-xl font-bold text-amber-400">PTS</span>
+                </div>
+                <div id="starsContainer" class="flex justify-center gap-2 text-2xl text-amber-400 mt-2">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-left mb-6">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="block text-[11px] font-bold text-gray-400 uppercase">學生 Student</span>
+                    <span id="resultPlayerName" class="font-extrabold text-slate-700 text-sm">Alex</span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="block text-[11px] font-bold text-gray-400 uppercase">答對題數 Accuracy</span>
+                    <span id="resultAccuracy" class="font-extrabold text-slate-700 text-sm">10 / 10</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="restartQuiz()" class="w-full py-3.5 bg-brand-blue hover:bg-sky-600 text-white font-extrabold text-lg rounded-2xl shadow-lg shadow-sky-200 transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-redo"></i> 再玩一次 Play Again
+                </button>
+                <button onclick="showLeaderboardModal()" class="w-full py-3.5 bg-amber-100 hover:bg-amber-200 text-amber-800 font-extrabold text-base rounded-2xl transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-trophy text-amber-500"></i> 查看龍虎榜 Leaderboard
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-5 sm:p-6 custom-card animate-pop max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center font-bold">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-800">高分龍虎榜 Leaderboard</h3>
+                </div>
+                <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold p-1">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="flex gap-1 overflow-x-auto py-3 no-scrollbar border-b border-slate-100 text-xs font-bold" id="leaderboardTabs">
+                <button onclick="filterLeaderboard('all')" class="tab-btn active px-3 py-1.5 rounded-lg bg-brand-blue text-white whitespace-nowrap" data-tab="all">全部 All</button>
+                <button onclick="filterLeaderboard('0')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="0">混合</button>
+                <button onclick="filterLeaderboard('3')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="3">3字</button>
+                <button onclick="filterLeaderboard('4')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="4">4字</button>
+                <button onclick="filterLeaderboard('5')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="5">5字</button>
+                <button onclick="filterLeaderboard('6')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="6">6字</button>
+                <button onclick="filterLeaderboard('7')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="7">7字</button>
+                <button onclick="filterLeaderboard('8')" class="tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap" data-tab="8">8字</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto my-3 space-y-2 pr-1" id="leaderboardList">
+                <!-- Filled dynamically -->
+            </div>
+
+            <div class="pt-2 text-center">
+                <button onclick="closeLeaderboardModal()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-sm rounded-xl transition">
+                    關閉 Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Correct/Wrong Feedback Toast -->
+    <div id="feedbackBanner" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden animate-pop">
+        <div id="feedbackBox" class="px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-white font-extrabold text-lg">
+            <span id="feedbackIcon" class="text-2xl">👏</span>
+            <span id="feedbackMessage">答對了！Correct!</span>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Massive Word Database (50+ words per length category)
+         */
+        const WORD_DATABASE = {
+            3: [
+                { word: "CAT", meaning: "貓咪", phonic: "/kæt/", emoji: "🐱" },
+                { word: "DOG", meaning: "小狗", phonic: "/dɒɡ/", emoji: "🐶" },
+                { word: "SUN", meaning: "太陽", phonic: "/sʌn/", emoji: "☀️" },
+                { word: "BUS", meaning: "巴士", phonic: "/bʌs/", emoji: "🚌" },
+                { word: "PEN", meaning: "原子筆", phonic: "/pen/", emoji: "🖊️" },
+                { word: "PIG", meaning: "小豬", phonic: "/pɪɡ/", emoji: "🐷" },
+                { word: "HAT", meaning: "帽子", phonic: "/hæt/", emoji: "🎩" },
+                { word: "BOX", meaning: "盒子", phonic: "/bɒks/", emoji: "📦" },
+                { word: "CUP", meaning: "水杯", phonic: "/kʌp/", emoji: "🥤" },
+                { word: "FOX", meaning: "狐狸", phonic: "/fɒks/", emoji: "🦊" },
+                { word: "ANT", meaning: "螞蟻", phonic: "/ænt/", emoji: "🐜" },
+                { word: "BAT", meaning: "蝙蝠", phonic: "/bæt/", emoji: "🦇" },
+                { word: "BED", meaning: "睡床", phonic: "/bed/", emoji: "🛏️" },
+                { word: "BEE", meaning: "蜜蜂", phonic: "/biː/", emoji: "🐝" },
+                { word: "BOY", meaning: "男孩子", phonic: "/bɔɪ/", emoji: "👦" },
+                { word: "CAR", meaning: "私家車", phonic: "/kɑːr/", emoji: "🚗" },
+                { word: "COW", meaning: "乳牛", phonic: "/kaʊ/", emoji: "🐮" },
+                { word: "EGG", meaning: "雞蛋", phonic: "/eɡ/", emoji: "🥚" },
+                { word: "FAN", meaning: "風扇", phonic: "/fæn/", emoji: "🌀" },
+                { word: "FLY", meaning: "蒼蠅", phonic: "/flaɪ/", emoji: "🪰" },
+                { word: "ICE", meaning: "冰塊", phonic: "/aɪs/", emoji: "🧊" },
+                { word: "KEY", meaning: "鎖匙", phonic: "/kiː/", emoji: "🔑" },
+                { word: "LEG", meaning: "腿部", phonic: "/leɡ/", emoji: "🦵" },
+                { word: "MAP", meaning: "地圖", phonic: "/mæp/", emoji: "🗺️" },
+                { word: "NUT", meaning: "堅果", phonic: "/nʌt/", emoji: "🥜" },
+                { word: "OWL", meaning: "貓頭鷹", phonic: "/aʊl/", emoji: "🦉" },
+                { word: "PIE", meaning: "餡餅", phonic: "/paɪ/", emoji: "🥧" },
+                { word: "RAT", meaning: "老鼠", phonic: "/ræt/", emoji: "🐀" },
+                { word: "RED", meaning: "紅色", phonic: "/red/", emoji: "🔴" },
+                { word: "SEA", meaning: "大海", phonic: "/siː/", emoji: "🌊" },
+                { word: "SKY", meaning: "天空", phonic: "/skaɪ/", emoji: "🌤️" },
+                { word: "TOY", meaning: "玩具", phonic: "/tɔɪ/", emoji: "🧸" },
+                { word: "VAN", meaning: "客貨車", phonic: "/væn/", emoji: "🚐" },
+                { word: "BAG", meaning: "書包", phonic: "/bæɡ/", emoji: "🎒" },
+                { word: "CAP", meaning: "鴨舌帽", phonic: "/kæp/", emoji: "🧢" },
+                { word: "DAY", meaning: "白天", phonic: "/deɪ/", emoji: "🌞" },
+                { word: "JAM", meaning: "果醬", phonic: "/dʒæm/", emoji: "🥫" },
+                { word: "LIP", meaning: "嘴唇", phonic: "/lɪp/", emoji: "👄" },
+                { word: "MAN", meaning: "男人", phonic: "/mæn/", emoji: "👨" },
+                { word: "MOP", meaning: "拖把", phonic: "/mɒp/", emoji: "🧹" },
+                { word: "NET", meaning: "魚網", phonic: "/net/", emoji: "🕸️" },
+                { word: "PIN", meaning: "大頭針", phonic: "/pɪn/", emoji: "📌" },
+                { word: "RUN", meaning: "跑步", phonic: "/rʌn/", emoji: "🏃" },
+                { word: "SIT", meaning: "坐下", phonic: "/sɪt/", emoji: "🪑" },
+                { word: "TAG", meaning: "標籤", phonic: "/tæɡ/", emoji: "🏷️" },
+                { word: "TUB", meaning: "浴缸", phonic: "/tʌb/", emoji: "🛁" },
+                { word: "WEB", meaning: "蜘蛛網", phonic: "/web/", emoji: "🕸️" },
+                { word: "ZOO", meaning: "動物園", phonic: "/zuː/", emoji: "🦁" },
+                { word: "ARM", meaning: "手臂", phonic: "/ɑːm/", emoji: "🦾" },
+                { word: "EAR", meaning: "耳朵", phonic: "/ɪər/", emoji: "👂" },
+                { word: "EYE", meaning: "眼睛", phonic: "/aɪ/", emoji: "👁️" }
+            ],
+            4: [
+                { word: "DUCK", meaning: "鴨子", phonic: "/dʌk/", emoji: "🦆" },
+                { word: "FISH", meaning: "鮮魚", phonic: "/fɪʃ/", emoji: "🐟" },
+                { word: "FROG", meaning: "青蛙", phonic: "/frɒɡ/", emoji: "🐸" },
+                { word: "BOOK", meaning: "書本", phonic: "/bʊk/", emoji: "📖" },
+                { word: "MILK", meaning: "牛奶", phonic: "/mɪlk/", emoji: "🥛" },
+                { word: "STAR", meaning: "星星", phonic: "/stɑːr/", emoji: "⭐" },
+                { word: "LION", meaning: "獅子", phonic: "/ˈlaɪən/", emoji: "🦁" },
+                { word: "BEAR", meaning: "大熊", phonic: "/beər/", emoji: "🐻" },
+                { word: "CAKE", meaning: "蛋糕", phonic: "/keɪk/", emoji: "🎂" },
+                { word: "TREE", meaning: "樹木", phonic: "/triː/", emoji: "🌳" },
+                { word: "BALL", meaning: "波波", phonic: "/bɔːl/", emoji: "⚽" },
+                { word: "BIRD", meaning: "小鳥", phonic: "/bɜːd/", emoji: "🐦" },
+                { word: "BOAT", meaning: "小船", phonic: "/bəʊt/", emoji: "⛵" },
+                { word: "DOLL", meaning: "洋娃娃", phonic: "/dɒl/", emoji: "🪆" },
+                { word: "DOOR", meaning: "大門", phonic: "/dɔːr/", emoji: "🚪" },
+                { word: "FIRE", meaning: "火苗", phonic: "/faɪər/", emoji: "🔥" },
+                { word: "FOOT", meaning: "腳掌", phonic: "/fʊt/", emoji: "🦶" },
+                { word: "GIFT", meaning: "禮物", phonic: "/ɡɪft/", emoji: "🎁" },
+                { word: "HAND", meaning: "手掌", phonic: "/hænd/", emoji: "✋" },
+                { word: "HOME", meaning: "家園", phonic: "/həʊm/", emoji: "🏠" },
+                { word: "KING", meaning: "國王", phonic: "/kɪŋ/", emoji: "👑" },
+                { word: "KITE", meaning: "風箏", phonic: "/kaɪt/", emoji: "🪁" },
+                { word: "LEAF", meaning: "樹葉", phonic: "/liːf/", emoji: "🍃" },
+                { word: "MOON", meaning: "月亮", phonic: "/muːn/", emoji: "🌙" },
+                { word: "NEST", meaning: "鳥巢", phonic: "/nest/", emoji: "🪹" },
+                { word: "PARK", meaning: "公園", phonic: "/pɑːk/", emoji: "🏞️" },
+                { word: "RING", meaning: "戒指", phonic: "/rɪŋ/", emoji: "💍" },
+                { word: "ROSE", meaning: "玫瑰花", phonic: "/rəʊz/", emoji: "🌹" },
+                { word: "SHIP", meaning: "輪船", phonic: "/ʃɪp/", emoji: "🚢" },
+                { word: "SNOW", meaning: "雪花", phonic: "/snəʊ/", emoji: "❄️" },
+                { word: "SOAP", meaning: "香皂", phonic: "/səʊp/", emoji: "🧼" },
+                { word: "SOUP", meaning: "熱湯", phonic: "/suːp/", emoji: "🍲" },
+                { word: "DESK", meaning: "書檯", phonic: "/desk/", emoji: "🛋️" },
+                { word: "DRUM", meaning: "打鼓", phonic: "/drʌm/", emoji: "🥁" },
+                { word: "FOOD", meaning: "食物", phonic: "/fuːd/", emoji: "🍱" },
+                { word: "GOAT", meaning: "山羊", phonic: "/ɡəʊt/", emoji: "🐐" },
+                { word: "GOLD", meaning: "黃金", phonic: "/ɡəʊld/", emoji: "🥇" },
+                { word: "LAMP", meaning: "檯燈", phonic: "/læmp/", emoji: "💡" },
+                { word: "MEAT", meaning: "肉類", phonic: "/miːt/", emoji: "🥩" },
+                { word: "PINK", meaning: "粉紅色", phonic: "/pɪŋk/", emoji: "🩷" },
+                { word: "RAIN", meaning: "下雨", phonic: "/reɪn/", emoji: "🌧️" },
+                { word: "RICE", meaning: "白飯", phonic: "/raɪs/", emoji: "🍚" },
+                { word: "ROAD", meaning: "馬路", phonic: "/rəʊd/", emoji: "🛣️" },
+                { word: "SALT", meaning: "食鹽", phonic: "/sɔːlt/", emoji: "🧂" },
+                { word: "SHIRT", meaning: "襯衫", phonic: "/ʃɜːt/", emoji: "👔" },
+                { word: "SOCK", meaning: "短襪", phonic: "/sɒk/", emoji: "🧦" },
+                { word: "WIND", meaning: "微風", phonic: "/wɪnd/", emoji: "💨" },
+                { word: "WOLF", meaning: "大灰狼", phonic: "/wʊlf/", emoji: "🐺" },
+                { word: "WOOD", meaning: "木頭", phonic: "/wʊd/", emoji: "🪵" },
+                { word: "YARD", meaning: "庭院", phonic: "/jɑːd/", emoji: "🏡" },
+                { word: "BABY", meaning: "嬰兒", phonic: "/ˈbeɪbi/", emoji: "👶" }
+            ],
+            5: [
+                { word: "APPLE", meaning: "蘋果", phonic: "/ˈæpl/", emoji: "🍎" },
+                { word: "HOUSE", meaning: "房屋", phonic: "/haʊs/", emoji: "🏡" },
+                { word: "CLOCK", meaning: "時鐘", phonic: "/klɒk/", emoji: "⏰" },
+                { word: "TRAIN", meaning: "火車", phonic: "/treɪn/", emoji: "🚂" },
+                { word: "WATER", meaning: "清水", phonic: "/ˈwɔːtər/", emoji: "💧" },
+                { word: "TIGER", meaning: "老虎", phonic: "/ˈtaɪɡər/", emoji: "🐯" },
+                { word: "PANDA", meaning: "熊貓", phonic: "/ˈpændə/", emoji: "🐼" },
+                { word: "SMILE", meaning: "微笑", phonic: "/smaɪl/", emoji: "😊" },
+                { word: "BREAD", meaning: "麵包", phonic: "/bred/", emoji: "🍞" },
+                { word: "CHAIR", meaning: "椅子", phonic: "/tʃeər/", emoji: "🪑" },
+                { word: "CLOUD", meaning: "雲朵", phonic: "/klaʊd/", emoji: "☁️" },
+                { word: "GRAPE", meaning: "葡萄", phonic: "/ɡreɪp/", emoji: "🍇" },
+                { word: "HORSE", meaning: "駿馬", phonic: "/hɔːs/", emoji: "🐴" },
+                { word: "LEMON", meaning: "檸檬", phonic: "/ˈlemən/", emoji: "🍋" },
+                { word: "MOUSE", meaning: "老鼠", phonic: "/maʊs/", emoji: "🐭" },
+                { word: "MUSIC", meaning: "音樂", phonic: "/ˈmjuːzɪk/", emoji: "🎵" },
+                { word: "PAPER", meaning: "紙張", phonic: "/ˈpeɪpər/", emoji: "📄" },
+                { word: "PEACH", meaning: "桃子", phonic: "/piːtʃ/", emoji: "🍑" },
+                { word: "PLANT", meaning: "植物", phonic: "/plɑːnt/", emoji: "🪴" },
+                { word: "ROBOT", meaning: "機器人", phonic: "/ˈrəʊbɒt/", emoji: "🤖" },
+                { word: "SHEEP", meaning: "綿羊", phonic: "/ʃiːp/", emoji: "🐑" },
+                { word: "SNAKE", meaning: "長蛇", phonic: "/sneɪk/", emoji: "🐍" },
+                { word: "TABLE", meaning: "餐檯", phonic: "/ˈteɪbl/", emoji: "🍽️" },
+                { word: "ZEBRA", meaning: "斑馬", phonic: "/ˈzebrə/", emoji: "🦓" },
+                { word: "BEACH", meaning: "沙灘", phonic: "/biːtʃ/", emoji: "🏖️" },
+                { word: "CANDY", meaning: "糖果", phonic: "/ˈkændi/", emoji: "🍬" },
+                { word: "DRESS", meaning: "裙子", phonic: "/dres/", emoji: "👗" },
+                { word: "EARTH", meaning: "地球", phonic: "/ɜːθ/", emoji: "🌍" },
+                { word: "FRUIT", meaning: "水果", phonic: "/fruːt/", emoji: "🧺" },
+                { word: "GLASS", meaning: "玻璃杯", phonic: "/ɡlɑːs/", emoji: "🥛" },
+                { word: "GREEN", meaning: "綠色", phonic: "/ɡriːn/", emoji: "🟩" },
+                { word: "HEART", meaning: "心形", phonic: "/hɑːt/", emoji: "❤️" },
+                { word: "JUICE", meaning: "果汁", phonic: "/dʒuːs/", emoji: "🧃" },
+                { word: "LIGHT", meaning: "光線", phonic: "/laɪt/", emoji: "💡" },
+                { word: "NIGHT", meaning: "夜晚", phonic: "/naɪt/", emoji: "🌃" },
+                { word: "PIZZA", meaning: "薄餅", phonic: "/ˈpiːtsə/", emoji: "🍕" },
+                { word: "QUEEN", meaning: "皇后", phonic: "/kwiːn/", emoji: "👸" },
+                { word: "RIVER", meaning: "河流", phonic: "/ˈrɪvər/", emoji: "🏞️" },
+                { word: "SHARK", meaning: "鯊魚", phonic: "/ʃɑːk/", emoji: "🦈" },
+                { word: "SPOON", meaning: "匙羹", phonic: "/spuːn/", emoji: "🥄" },
+                { word: "SWEET", meaning: "甜食", phonic: "/swiːt/", emoji: "🍩" },
+                { word: "TOWEL", meaning: "毛巾", phonic: "/ˈtaʊəl/", emoji: "🧴" },
+                { word: "TRUCK", meaning: "貨車", phonic: "/trʌk/", emoji: "🚚" },
+                { word: "WOMAN", meaning: "女人", phonic: "/ˈwʊmən/", emoji: "👩" },
+                { word: "YOUTH", meaning: "青年", phonic: "/juːθ/", emoji: "🧒" },
+                { word: "ANGEL", meaning: "天使", phonic: "/ˈeɪndʒl/", emoji: "👼" },
+                { word: "CAMEL", meaning: "駱駝", phonic: "/ˈkæml/", emoji: "🐪" },
+                { word: "DONKEY", meaning: "驢仔", phonic: "/ˈdɒŋki/", emoji: "🫏" },
+                { word: "HONEY", meaning: "蜂蜜", phonic: "/ˈhʌni/", emoji: "🍯" },
+                { word: "ONION", meaning: "洋蔥", phonic: "/ˈʌnjən/", emoji: "🧅" }
+            ],
+            6: [
+                { word: "BANANA", meaning: "香蕉", phonic: "/bəˈnɑːnə/", emoji: "🍌" },
+                { word: "MONKEY", meaning: "猴子", phonic: "/ˈmʌŋki/", emoji: "🐒" },
+                { word: "ORANGE", meaning: "香橙", phonic: "/ˈɒrɪndʒ/", emoji: "🍊" },
+                { word: "PENCIL", meaning: "鉛筆", phonic: "/ˈpensl/", emoji: "✏️" },
+                { word: "RABBIT", meaning: "兔子", phonic: "/ˈræbɪt/", emoji: "🐰" },
+                { word: "SCHOOL", meaning: "學校", phonic: "/skuːl/", emoji: "🏫" },
+                { word: "ANIMAL", meaning: "動物", phonic: "/ˈænɪml/", emoji: "🐾" },
+                { word: "CAMERA", meaning: "相機", phonic: "/ˈkæmrə/", emoji: "📷" },
+                { word: "CHEESE", meaning: "芝士", phonic: "/tʃiːz/", emoji: "🧀" },
+                { word: "DOCTOR", meaning: "醫生", phonic: "/ˈdɒktər/", emoji: "👨‍⚕️" },
+                { word: "FAMILY", meaning: "家庭", phonic: "/ˈfæməli/", emoji: "👨‍👩‍👧" },
+                { word: "FLOWER", meaning: "花朵", phonic: "/ˈflaʊər/", emoji: "🌻" },
+                { word: "GUITAR", meaning: "結他", phonic: "/ɡɪˈtɑːr/", emoji: "🎸" },
+                { word: "INSECT", meaning: "昆蟲", phonic: "/ˈɪnsekt/", emoji: "🐞" },
+                { word: "KITTEN", meaning: "小貓", phonic: "/ˈkɪtn/", emoji: "🐱" },
+                { word: "MOTHER", meaning: "媽媽", phonic: "/ˈmʌðər/", emoji: "👩" },
+                { word: "FATHER", meaning: "爸爸", phonic: "/ˈfɑːðər/", emoji: "👨" },
+                { word: "PURPLE", meaning: "紫色", phonic: "/ˈpɜːpl/", emoji: "🟣" },
+                { word: "SUMMER", meaning: "夏天", phonic: "/ˈsʌmər/", emoji: "☀️" },
+                { word: "WINTER", meaning: "冬天", phonic: "/ˈwɪntər/", emoji: "❄️" },
+                { word: "YELLOW", meaning: "黃色", phonic: "/ˈjeləʊ/", emoji: "🟡" },
+                { word: "COOKIE", meaning: "曲奇餅", phonic: "/ˈkʊki/", emoji: "🍪" },
+                { word: "DRAGON", meaning: "飛龍", phonic: "/ˈdræɡən/", emoji: "🐉" },
+                { word: "FARMER", meaning: "農夫", phonic: "/ˈfɑːmər/", emoji: "🧑‍🌾" },
+                { word: "FOREST", meaning: "森林", phonic: "/ˈfɒrɪst/", emoji: "🌲" },
+                { word: "ISLAND", meaning: "小島", phonic: "/ˈaɪlənd/", emoji: "🏝️" },
+                { word: "JACKET", meaning: "外套", phonic: "/ˈdʒækɪt/", emoji: "🧥" },
+                { word: "PARROT", meaning: "鸚鵡", phonic: "/ˈpærət/", emoji: "🦜" },
+                { word: "ROCKET", meaning: "火箭", phonic: "/ˈrɒkɪt/", emoji: "🚀" },
+                { word: "SILVER", meaning: "銀色", phonic: "/ˈsɪlvər/", emoji: "🥈" },
+                { word: "TOMATO", meaning: "番茄", phonic: "/təˈmɑːtəʊ/", emoji: "🍅" },
+                { word: "TURTLE", meaning: "海龜", phonic: "/ˈtɜːtl/", emoji: "🐢" },
+                { word: "WINDOW", meaning: "窗戶", phonic: "/ˈwɪndəʊ/", emoji: "🪟" },
+                { word: "BOTTLE", meaning: "水樽", phonic: "/ˈbɒtl/", emoji: "🍾" },
+                { word: "BUTTER", meaning: "牛油", phonic: "/ˈbʌtər/", emoji: "🧈" },
+                { word: "CANDLE", meaning: "蠟燭", phonic: "/ˈkændl/", emoji: "🕯️" },
+                { word: "CIRCUS", meaning: "馬戲團", phonic: "/ˈsɜːkəs/", emoji: "🎪" },
+                { word: "PIGEON", meaning: "鴿子", phonic: "/ˈpɪdʒɪn/", emoji: "🕊️" },
+                { word: "PLANET", meaning: "行星", phonic: "/ˈplænɪt/", emoji: "🪐" },
+                { word: "POLICE", meaning: "警察", phonic: "/pəˈliːs/", emoji: "👮" },
+                { word: "PUMPKIN", meaning: "南瓜", phonic: "/ˈpʌmpkɪn/", emoji: "🎃" },
+                { word: "SHADOW", meaning: "影子", phonic: "/ˈʃædəʊ/", emoji: "👤" },
+                { word: "SPRING", meaning: "春天", phonic: "/sprɪŋ/", emoji: "🌸" },
+                { word: "STATION", meaning: "車站", phonic: "/ˈsteɪʃn/", emoji: "🚉" },
+                { word: "STREET", meaning: "街道", phonic: "/striːt/", emoji: "🛣️" },
+                { word: "SUNDAY", meaning: "星期日", phonic: "/ˈsʌndeɪ/", emoji: "📅" },
+                { word: "WALRUS", meaning: "海象", phonic: "/ˈwɔːlrəs/", emoji: "🦭" },
+                { word: "WALTER", meaning: "水井", phonic: "/ˈwɔːltər/", emoji: "🪣" },
+                { word: "TROPHY", meaning: "獎盃", phonic: "/ˈtrəʊfi/", emoji: "🏆" },
+                { word: "SPIDER", meaning: "蜘蛛", phonic: "/ˈspaɪdər/", emoji: "🕷️" }
+            ],
+            7: [
+                { word: "GIRAFFE", meaning: "長頸鹿", phonic: "/dʒəˈrɑːf/", emoji: "🦒" },
+                { word: "PENGUIN", meaning: "企鵝", phonic: "/ˈpeŋɡwɪn/", emoji: "🐧" },
+                { word: "CHICKEN", meaning: "小雞", phonic: "/ˈtʃɪkɪn/", emoji: "🐔" },
+                { word: "RAINBOW", meaning: "彩虹", phonic: "/ˈreɪnbəʊ/", emoji: "🌈" },
+                { word: "DOLPHIN", meaning: "海豚", phonic: "/ˈdɒlfɪn/", emoji: "🐬" },
+                { word: "BALLOON", meaning: "氣球", phonic: "/bəˈluːn/", emoji: "🎈" },
+                { word: "BEDROOM", meaning: "睡房", phonic: "/ˈbedruːm/", emoji: "🛏️" },
+                { word: "BROTHER", meaning: "兄弟", phonic: "/ˈbrʌðər/", emoji: "👦" },
+                { word: "HEAVEN", meaning: "天堂", phonic: "/ˈhevn/", emoji: "☁️" },
+                { word: "KITCHEN", meaning: "廚房", phonic: "/ˈkɪtʃɪn/", emoji: "🍳" },
+                { word: "MONSTER", meaning: "怪獸", phonic: "/ˈmɒnstər/", emoji: "👾" },
+                { word: "MORNING", meaning: "早晨", phonic: "/ˈmɔːnɪŋ/", emoji: "🌅" },
+                { word: "PAINTER", meaning: "畫家", phonic: "/ˈpeɪntər/", emoji: "🧑‍🎨" },
+                { word: "PICTURE", meaning: "圖畫", phonic: "/ˈpɪktʃər/", emoji: "🖼️" },
+                { word: "TEACHER", meaning: "老師", phonic: "/ˈtiːtʃər/", emoji: "🧑‍🏫" },
+                { word: "OCTOPUS", meaning: "八爪魚", phonic: "/ˈɒktəpəs/", emoji: "🐙" },
+                { word: "PERFUME", meaning: "香水", phonic: "/ˈpɜːfjuːm/", emoji: "🧴" },
+                { word: "POSTMAN", meaning: "郵差", phonic: "/ˈpəʊstmən/", emoji: "📬" },
+                { word: "SISTER", meaning: "姊妹", phonic: "/ˈsɪstər/", emoji: "👧" },
+                { word: "STUDENT", meaning: "學生", phonic: "/ˈstjuːdnt/", emoji: "🧑‍🎓" },
+                { word: "UNIVERSE", meaning: "宇宙", phonic: "/ˈjuːnɪvɜːs/", emoji: "🌌" },
+                { word: "VILLAGE", meaning: "村莊", phonic: "/ˈvɪlɪdʒ/", emoji: "🏡" },
+                { word: "WEATHER", meaning: "天氣", phonic: "/ˈweðər/", emoji: "🌤️" },
+                { word: "ACADEMY", meaning: "學院", phonic: "/əˈkædəmi/", emoji: "🏛️" },
+                { word: "AVOCADO", meaning: "牛油果", phonic: "/ˌævəˈkɑːdəʊ/", emoji: "🥑" },
+                { word: "CABINET", meaning: "櫃檯", phonic: "/ˈkæbɪnət/", emoji: "🗄️" },
+                { word: "CAPTAIN", meaning: "船長", phonic: "/ˈkæptɪn/", emoji: "👨‍✈️" },
+                { word: "DANCER", meaning: "舞蹈員", phonic: "/ˈdɑːnsər/", emoji: "💃" },
+                { word: "FEATHER", meaning: "羽毛", phonic: "/ˈfeðər/", emoji: "🪶" },
+                { word: "GORILLA", meaning: "大猩猩", phonic: "/ɡəˈrɪlə/", emoji: "🦍" },
+                { word: "HOLIDAY", meaning: "假期", phonic: "/ˈhɒlədeɪ/", emoji: "🏖️" },
+                { word: "JANUARY", meaning: "一月", phonic: "/ˈdʒænjuəri/", emoji: "📅" },
+                { word: "LANTERN", meaning: "燈籠", phonic: "/ˈlæntən/", emoji: "🏮" },
+                { word: "LEOPARD", meaning: "花豹", phonic: "/ˈlepəd/", emoji: "🐆" },
+                { word: "LUGGAGE", meaning: "行李", phonic: "/ˈlʌɡɪdʒ/", emoji: "🧳" },
+                { word: "MARTIAN", meaning: "火星人", phonic: "/ˈmɑːʃn/", emoji: "👽" },
+                { word: "MUSICAL", meaning: "音樂劇", phonic: "/ˈmjuːzɪkl/", emoji: "🎭" },
+                { word: "OSTRICH", meaning: "鴕鳥", phonic: "/ˈɒstrɪtʃ/", emoji: "🦩" },
+                { word: "PANTHER", meaning: "黑豹", phonic: "/ˈpænθər/", emoji: "🐆" },
+                { word: "PEANUT", meaning: "花生", phonic: "/ˈpiːnʌt/", emoji: "🥜" },
+                { word: "PUMPKIN", meaning: "小南瓜", phonic: "/ˈpʌmpkɪn/", emoji: "🎃" },
+                { word: "SAILOR", meaning: "水手", phonic: "/ˈseɪlər/", emoji: "⛵" },
+                { word: "SAUSAGE", meaning: "香腸", phonic: "/ˈsɒsɪdʒ/", emoji: "🌭" },
+                { word: "STATION", meaning: "大車站", phonic: "/ˈsteɪʃn/", emoji: "🚉" },
+                { word: "SURGEON", meaning: "外科醫生", phonic: "/ˈsɜːdʒən/", emoji: "🩺" },
+                { word: "THEATRE", meaning: "劇院", phonic: "/ˈθɪətər/", emoji: "🎭" },
+                { word: "TRAFFIC", meaning: "交通", phonic: "/ˈtræfɪk/", emoji: "🚦" },
+                { word: "VOLCANO", meaning: "火山", phonic: "/vɒlˈkeɪnəʊ/", emoji: "🌋" },
+                { word: "WHISTLE", meaning: "哨子", phonic: "/ˈwɪsl/", emoji: "哨" },
+                { word: "PINEAPPLE", meaning: "菠蘿", phonic: "/ˈpaɪnæpl/", emoji: "🍍" }
+            ],
+            8: [
+                { word: "DINOSAUR", meaning: "恐龍", phonic: "/ˈdaɪnəsɔːr/", emoji: "🦖" },
+                { word: "ELEPHANT", meaning: "大象", phonic: "/ˈelɪfənt/", emoji: "🐘" },
+                { word: "BUTTERFLY", meaning: "蝴蝶", phonic: "/ˈbʌtərflaɪ/", emoji: "🦋" },
+                { word: "KANGAROO", meaning: "袋鼠", phonic: "/ˌkæŋɡəˈruː/", emoji: "🦘" },
+                { word: "UMBRELLA", meaning: "雨傘", phonic: "/ʌmˈbrelə/", emoji: "☂️" },
+                { word: "COMPUTER", meaning: "電腦", phonic: "/kəmˈpjuːtər/", emoji: "💻" },
+                { word: "HOSPITAL", meaning: "醫院", phonic: "/ˈhɒspɪtl/", emoji: "🏥" },
+                { word: "SANDWICH", meaning: "三文治", phonic: "/ˈsænwɪtʃ/", emoji: "🥪" },
+                { word: "SUNFLOWER", meaning: "向日葵", phonic: "/ˈsʌnflaʊər/", emoji: "🌻" },
+                { word: "ALPHABET", meaning: "字母表", phonic: "/ˈælfəbet/", emoji: "🔤" },
+                { word: "ASTRONAUT", meaning: "太空人", phonic: "/ˈæstrənɔːt/", emoji: "👨‍🚀" },
+                { word: "BUILDING", meaning: "大廈", phonic: "/ˈbɪldɪŋ/", emoji: "🏢" },
+                { word: "CALENDAR", meaning: "日曆", phonic: "/ˈkælɪndər/", emoji: "📅" },
+                { word: "CAROUSEL", meaning: "旋轉木馬", phonic: "/ˌkærəˈsel/", emoji: "🎠" },
+                { word: "CHILDREN", meaning: "小朋友", phonic: "/ˈtʃɪldrən/", emoji: "👫" },
+                { word: "FOOTBALL", meaning: "足球", phonic: "/ˈfʊtbɔːl/", emoji: "⚽" },
+                { word: "FOUNTAIN", meaning: "噴泉", phonic: "/ˈfaʊntən/", emoji: "⛲" },
+                { word: "GARDENER", meaning: "園丁", phonic: "/ˈɡɑːdnər/", emoji: "🧑‍🌾" },
+                { word: "HEDGEHOG", meaning: "刺蝟", phonic: "/ˈhedʒhɒɡ/", emoji: "🦔" },
+                { word: "INTERNET", meaning: "互聯網", phonic: "/ˈɪntənet/", emoji: "🌐" },
+                { word: "LADYBUG", meaning: "甲蟲", phonic: "/ˈleɪdibʌɡ/", emoji: "🐞" },
+                { word: "MAGAZINE", meaning: "雜誌", phonic: "/ˌmæɡəˈziːn/", emoji: "📰" },
+                { word: "MOUNTAIN", meaning: "高山", phonic: "/ˈmaʊntən/", emoji: "⛰️" },
+                { word: "MUSHROOM", meaning: "蘑菇", phonic: "/ˈmʌʃrʊm/", emoji: "🍄" },
+                { word: "NOTEBOOK", meaning: "筆記本", phonic: "/ˈnəʊtbʊk/", emoji: "📓" },
+                { word: "PAINTING", meaning: "畫作", phonic: "/ˈpeɪntɪŋ/", emoji: "🎨" },
+                { word: "PEACOCKS", meaning: "孔雀", phonic: "/ˈpiːkɒks/", emoji: "🦚" },
+                { word: "PHARMACY", meaning: "藥房", phonic: "/ˈfɑːməsi/", emoji: "💊" },
+                { word: "QUESTION", meaning: "問題", phonic: "/ˈkwestʃən/", emoji: "❓" },
+                { word: "RESTAURANT", meaning: "餐廳", phonic: "/ˈrestrɒnt/", emoji: "🍽️" },
+                { word: "SQUIRREL", meaning: "鬆鼠", phonic: "/ˈskwɪrəl/", emoji: "🐿️" },
+                { word: "STARFISH", meaning: "海星", phonic: "/ˈstɑːfɪʃ/", emoji: "⭐️" },
+                { word: "SUITCASE", meaning: "行李箱", phonic: "/ˈsuːtkeɪs/", emoji: "🧳" },
+                { word: "TELESCOPE", meaning: "望遠鏡", phonic: "/ˈtelɪskəʊp/", emoji: "🔭" },
+                { word: "TREASURE", meaning: "寶藏", phonic: "/ˈtreʒər/", emoji: "🏴‍☠️" },
+                { word: "TRIANGLE", meaning: "三角形", phonic: "/ˈtraɪæŋɡl/", emoji: "📐" },
+                { word: "VACATION", meaning: "渡假", phonic: "/veɪˈkeɪʃn/", emoji: "✈️" },
+                { word: "WOODPECK", meaning: "啄木鳥", phonic: "/ˈwʊdpekər/", emoji: "🐦" },
+                { word: "BAKERY", meaning: "麵包店", phonic: "/ˈbeɪkəri/", emoji: "🧁" },
+                { word: "BICYCLE", meaning: "單車", phonic: "/ˈbaɪsɪkl/", emoji: "🚲" },
+                { word: "CHAMPION", meaning: "冠軍", phonic: "/ˈtʃæmpiən/", emoji: "🥇" },
+                { word: "CHECKOUT", meaning: "付款處", phonic: "/ˈtʃekaʊt/", emoji: "🛒" },
+                { word: "DIAMOND", meaning: "鑽石", phonic: "/ˈdaɪəmənd/", emoji: "💎" },
+                { word: "EARRING", meaning: "耳環", phonic: "/ˈɪərɪŋ/", emoji: "💍" },
+                { word: "FIREWORK", meaning: "煙花", phonic: "/ˈfaɪəwɜːk/", emoji: "🎆" },
+                { word: "LEMONADE", meaning: "檸檬水", phonic: "/ˌleməˈneɪd/", emoji: "🍹" },
+                { word: "NOTEBOOK", meaning: "練習簿", phonic: "/ˈnəʊtbʊk/", emoji: "📘" },
+                { word: "OFFICER", meaning: "警官", phonic: "/ˈɒfɪsər/", emoji: "👮" },
+                { word: "POSTCARD", meaning: "明信片", phonic: "/ˈpəʊstkɑːd/", emoji: "✉️" },
+                { word: "SNOWMAN", meaning: "雪人", phonic: "/ˈsnəʊmæn/", emoji: "☃️" }
+            ]
+        };
+
+        // Game State Variables
+        let state = {
+            playerName: "",
+            playerAvatar: "🐶",
+            selectedDifficulty: 3,
+            questions: [],
+            currentQuestionIndex: 0,
+            score: 0,
+            correctCount: 0,
+            userInput: "",
+            wrongAttempts: 0, // Counts incorrect submissions for the current question
+            soundEnabled: true,
+            slowSpeed: false
+        };
+
+        // Web Audio Synthesizer & Web Speech API setup
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let preferredVoice = null;
+
+        // Initialize Audio Context & Unlock on user gesture
+        function unlockAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.resume();
+            }
+        }
+
+        function initVoices() {
+            if ('speechSynthesis' in window) {
+                const loadVoices = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices && voices.length > 0) {
+                        preferredVoice = voices.find(v => (v.lang === 'en-US' || v.lang === 'en-GB') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel'))) ||
+                                         voices.find(v => v.lang.startsWith('en')) || voices[0];
+                    }
+                };
+                loadVoices();
+                if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                    window.speechSynthesis.onvoiceschanged = loadVoices;
+                }
+            }
+        }
+        initVoices();
+
+        function speakCurrentWord() {
+            if (!state.soundEnabled) return;
+            unlockAudio();
+
+            const currentWordObj = state.questions[state.currentQuestionIndex];
+            if (!currentWordObj) return;
+
+            const textToSpeak = currentWordObj.word.toLowerCase();
+            const speechRate = state.slowSpeed ? 0.58 : 0.8;
+
+            const replayIcon = document.getElementById('replayIcon');
+            if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl animate-spin';
+
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    utterance.lang = 'en-US';
+                    utterance.rate = speechRate;
+                    utterance.pitch = 1.0;
+                    if (preferredVoice) utterance.voice = preferredVoice;
+
+                    utterance.onend = () => {
+                        if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl';
+                    };
+                    utterance.onerror = () => {
+                        if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl';
+                        playWordAudioFallback(textToSpeak);
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                    setTimeout(() => {
+                        if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl';
+                    }, 1200);
+
+                } catch (err) {
+                    if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl';
+                    playWordAudioFallback(textToSpeak);
+                }
+            } else {
+                if (replayIcon) replayIcon.className = 'fas fa-volume-high text-xl';
+                playWordAudioFallback(textToSpeak);
+            }
+        }
+
+        function playWordAudioFallback(wordStr) {
+            if (!state.soundEnabled) return;
+            try {
+                unlockAudio();
+                const now = audioCtx.currentTime;
+                for (let i = 0; i < wordStr.length; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    const charCode = wordStr.charCodeAt(i);
+                    const freq = 280 + (charCode % 20) * 22;
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.16);
+
+                    gain.gain.setValueAtTime(0.25, now + i * 0.16);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.16 + 0.14);
+
+                    osc.start(now + i * 0.16);
+                    osc.stop(now + i * 0.16 + 0.14);
+                }
+            } catch (e) {}
+        }
+
+        function playSound(type) {
+            if (!state.soundEnabled) return;
+            try {
+                unlockAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(130, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'type') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450 + Math.random() * 150, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                }
+            } catch (e) {}
+        }
+
+        function toggleAudio() {
+            state.soundEnabled = !state.soundEnabled;
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+            if (state.soundEnabled) {
+                icon.className = 'fas fa-volume-up';
+                text.innerText = '聲音開啟';
+            } else {
+                icon.className = 'fas fa-volume-mute';
+                text.innerText = '聲音靜音';
+            }
+        }
+
+        function toggleSlowSpeed() {
+            state.slowSpeed = !state.slowSpeed;
+            const btn = document.getElementById('speedToggleBtn');
+            const text = document.getElementById('speedText');
+            if (state.slowSpeed) {
+                btn.className = 'px-2.5 py-1.5 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 transition flex items-center gap-1 shadow-sm';
+                text.innerText = '慢速 (0.6x)';
+            } else {
+                btn.className = 'px-2.5 py-1.5 rounded-xl bg-amber-100 text-amber-800 font-bold text-xs hover:bg-amber-200 transition flex items-center gap-1';
+                text.innerText = '正常語速 (0.8x)';
+            }
+            speakCurrentWord();
+        }
+
+        function selectAvatar(emoji) {
+            state.playerAvatar = emoji;
+            document.getElementById('selectedAvatarDisplay').innerText = emoji;
+            document.querySelectorAll('.avatar-btn').forEach(btn => {
+                if (btn.innerText === emoji) {
+                    btn.className = 'avatar-btn active text-2xl p-2 rounded-xl border-2 border-brand-blue bg-blue-50 shadow-sm';
+                } else {
+                    btn.className = 'avatar-btn text-2xl p-2 rounded-xl border-2 border-slate-200';
+                }
+            });
+            playSound('type');
+        }
+
+        function selectDifficulty(diff) {
+            state.selectedDifficulty = diff;
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-diff')) === diff) {
+                    btn.className = btn.className.replace('border-slate-200', 'border-brand-blue bg-blue-50 text-brand-blue shadow-sm');
+                    btn.classList.add('active');
+                } else {
+                    btn.className = 'diff-btn p-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-center transition hover:bg-slate-100';
+                }
+            });
+            playSound('type');
+        }
+
+        function handleStartGame(e) {
+            e.preventDefault();
+            unlockAudio();
+
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (!nameInput) return;
+
+            state.playerName = nameInput;
+            state.score = 0;
+            state.correctCount = 0;
+            state.currentQuestionIndex = 0;
+
+            let pool = [];
+            if (state.selectedDifficulty === 0) {
+                Object.values(WORD_DATABASE).forEach(arr => pool.push(...arr));
+            } else {
+                pool = WORD_DATABASE[state.selectedDifficulty] || WORD_DATABASE[3];
+            }
+
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            state.questions = shuffled.slice(0, 10);
+
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('quizScreen').classList.add('flex');
+
+            document.getElementById('displayName').innerText = state.playerName;
+            document.getElementById('playerAvatar').innerText = state.playerAvatar;
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentWordObj = state.questions[state.currentQuestionIndex];
+            state.userInput = "";
+            state.wrongAttempts = 0;
+
+            document.getElementById('currentQuestionNum').innerText = state.currentQuestionIndex + 1;
+            document.getElementById('currentScore').innerText = state.score;
+
+            document.getElementById('wordEmoji').innerText = currentWordObj.emoji;
+
+            // Reset Hint Box (Do NOT show answer immediately)
+            const hintBox = document.getElementById('hintBox');
+            const hintTitle = document.getElementById('hintTitle');
+            const hintMessage = document.getElementById('hintMessage');
+            const patternDisplay = document.getElementById('letterPatternDisplay');
+
+            hintBox.className = "p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-amber-900 text-xs sm:text-sm font-bold text-center transition-all animate-pop";
+            hintTitle.innerText = "提示：仔細聽讀音";
+            hintMessage.innerText = "點擊上方的「再聽一次」聆聽單字，然後打字提交！";
+            patternDisplay.classList.add('hidden');
+
+            updateDisplayInput();
+
+            setTimeout(() => {
+                speakCurrentWord();
+            }, 350);
+        }
+
+        function updateDisplayInput() {
+            document.getElementById('userInputText').innerText = state.userInput;
+        }
+
+        function typeLetter(letter) {
+            if (state.userInput.length < 12) {
+                state.userInput += letter.toUpperCase();
+                playSound('type');
+                updateDisplayInput();
+            }
+        }
+
+        function backspaceLetter() {
+            if (state.userInput.length > 0) {
+                state.userInput = state.userInput.slice(0, -1);
+                playSound('type');
+                updateDisplayInput();
+            }
+        }
+
+        // WRONG ANSWER FEEDBACK & GRADUAL HINTS LOGIC
+        function submitAnswer() {
+            const currentWordObj = state.questions[state.currentQuestionIndex];
+            const targetWord = currentWordObj.word.toUpperCase();
+            const userAttempt = state.userInput.trim().toUpperCase();
+
+            if (!userAttempt) return;
+
+            const hintBox = document.getElementById('hintBox');
+            const hintTitle = document.getElementById('hintTitle');
+            const hintMessage = document.getElementById('hintMessage');
+            const patternDisplay = document.getElementById('letterPatternDisplay');
+
+            // CASE 1: Answer is CORRECT!
+            if (userAttempt === targetWord) {
+                playSound('correct');
+                
+                // Tiered scoring based on mistakes
+                let pointsEarned = 10;
+                if (state.wrongAttempts === 1) pointsEarned = 7;
+                if (state.wrongAttempts === 2) pointsEarned = 4;
+
+                state.score += pointsEarned;
+                state.correctCount += 1;
+                document.getElementById('currentScore').innerText = state.score;
+
+                hintBox.className = "p-3 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-900 text-xs sm:text-sm font-bold text-center transition-all animate-pop";
+                hintTitle.innerText = `🎉 太棒了！答對了！(+${pointsEarned}分)`;
+                hintMessage.innerText = `${targetWord} (${currentWordObj.meaning}) — 讀音: ${currentWordObj.phonic}`;
+                patternDisplay.classList.add('hidden');
+
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+                showToast(true, `答對了！${targetWord}`);
+
+                setTimeout(() => { nextQuestion(); }, 1800);
+                return;
+            }
+
+            // CASE 2: Answer is INCORRECT -> Give Gradual Hints instead of direct answer!
+            state.wrongAttempts += 1;
+            playSound('wrong');
+
+            // Shake input display for visual wrong feedback
+            const inputCard = document.getElementById('displayInputBox');
+            inputCard.classList.add('animate-shake', 'border-rose-500');
+            setTimeout(() => {
+                inputCard.classList.remove('animate-shake', 'border-rose-500');
+            }, 450);
+
+            if (state.wrongAttempts === 1) {
+                // Tier 1 Hint: Show blanks & length & Cantonese meaning
+                hintBox.className = "p-3 rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-900 text-xs sm:text-sm font-bold text-center transition-all animate-pop";
+                hintTitle.innerHTML = `<i class="fas fa-exclamation-circle text-rose-500"></i> 答錯了！再試一次！(提示 1/2)`;
+                hintMessage.innerText = `單字長度為 ${targetWord.length} 個字母！意思是：「${currentWordObj.meaning}」`;
+                
+                // Build Blanks Pattern
+                let pattern = "";
+                for (let i = 0; i < targetWord.length; i++) {
+                    pattern += "_ ";
+                }
+                patternDisplay.innerText = pattern.trim();
+                patternDisplay.classList.remove('hidden');
+
+                showToast(false, `別猜放棄，睇睇提示再試一次！`);
+
+            } else if (state.wrongAttempts === 2) {
+                // Tier 2 Hint: Reveal First and Last Letters (e.g., A _ _ L E)
+                hintBox.className = "p-3 rounded-2xl bg-orange-50 border-2 border-orange-300 text-orange-900 text-xs sm:text-sm font-bold text-center transition-all animate-pop";
+                hintTitle.innerHTML = `<i class="fas fa-lightbulb text-amber-500"></i> 再差一點點！(提示 2/2)`;
+                hintMessage.innerText = `意思是：「${currentWordObj.meaning}」，字首字母是 '${targetWord.charAt(0)}'`;
+
+                let pattern = "";
+                for (let i = 0; i < targetWord.length; i++) {
+                    if (i === 0 || i === targetWord.length - 1) {
+                        pattern += targetWord.charAt(i) + " ";
+                    } else {
+                        pattern += "_ ";
+                    }
+                }
+                patternDisplay.innerText = pattern.trim();
+                patternDisplay.classList.remove('hidden');
+
+                showToast(false, `加油！睇下首尾字母提示！`);
+
+            } else {
+                // Tier 3: 3rd wrong attempt -> Finally show full correct word and move forward
+                hintBox.className = "p-3 rounded-2xl bg-slate-100 border-2 border-slate-300 text-slate-800 text-xs sm:text-sm font-bold text-center transition-all animate-pop";
+                hintTitle.innerText = `💡 正確答案是: ${targetWord}`;
+                hintMessage.innerText = `${targetWord} (${currentWordObj.meaning}) — 讀音: ${currentWordObj.phonic}`;
+                patternDisplay.classList.add('hidden');
+
+                showToast(false, `正確答案是 ${targetWord}`);
+
+                setTimeout(() => { nextQuestion(); }, 2400);
+            }
+
+            // Clear input for child to try typing again
+            state.userInput = "";
+            updateDisplayInput();
+        }
+
+        function showToast(isCorrect, message) {
+            const banner = document.getElementById('feedbackBanner');
+            const box = document.getElementById('feedbackBox');
+            const icon = document.getElementById('feedbackIcon');
+            const msg = document.getElementById('feedbackMessage');
+
+            box.className = isCorrect 
+                ? "px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-white font-extrabold text-lg bg-emerald-500"
+                : "px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-white font-extrabold text-lg bg-rose-500";
+            
+            icon.innerText = isCorrect ? "🌟" : "💪";
+            msg.innerText = message;
+            banner.classList.remove('hidden');
+
+            setTimeout(() => { banner.classList.add('hidden'); }, 1400);
+        }
+
+        function nextQuestion() {
+            state.currentQuestionIndex += 1;
+            if (state.currentQuestionIndex < state.questions.length) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            document.getElementById('resultPlayerName').innerText = state.playerName;
+            document.getElementById('resultAccuracy').innerText = `${state.correctCount} / 10 題`;
+            document.getElementById('finalScore').innerText = state.score;
+
+            const mascot = document.getElementById('resultMascot');
+            const title = document.getElementById('resultTitle');
+            const starsContainer = document.getElementById('starsContainer');
+
+            if (state.score >= 80) {
+                mascot.innerText = '🏆';
+                title.innerText = '太厲害了！升小一英文聽寫小達人！';
+                starsContainer.innerHTML = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                confetti({ particleCount: 120, spread: 90, origin: { y: 0.5 } });
+            } else if (state.score >= 50) {
+                mascot.innerText = '🎉';
+                title.innerText = '表現很好！繼續努力！';
+                starsContainer.innerHTML = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>';
+            } else {
+                mascot.innerText = '💪';
+                title.innerText = '加油！多聽多練會更棒！';
+                starsContainer.innerHTML = '<i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+            }
+
+            saveToLeaderboard({
+                name: state.playerName,
+                avatar: state.playerAvatar,
+                score: state.score,
+                accuracy: `${state.correctCount}/10`,
+                difficulty: state.selectedDifficulty,
+                date: new Date().toLocaleDateString('zh-HK')
+            });
+        }
+
+        function restartQuiz() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        function goHome() {
+            if (confirm("要回到主頁嗎？(Return to start?)")) {
+                document.getElementById('quizScreen').classList.add('hidden');
+                document.getElementById('resultScreen').classList.add('hidden');
+                document.getElementById('welcomeScreen').classList.remove('hidden');
+            }
+        }
+
+        // Physical Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            const quizVisible = !document.getElementById('quizScreen').classList.contains('hidden');
+            if (!quizVisible) return;
+
+            const key = e.key.toUpperCase();
+            if (key >= 'A' && key <= 'Z' && key.length === 1) {
+                typeLetter(key);
+            } else if (e.key === 'Backspace') {
+                backspaceLetter();
+            } else if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        // LocalStorage Leaderboard Functions
+        function getLeaderboard() {
+            try {
+                const data = localStorage.getItem('spelling_app_leaderboard_v2');
+                return data ? JSON.parse(data) : [];
+            } catch (e) { return []; }
+        }
+
+        function saveToLeaderboard(entry) {
+            const list = getLeaderboard();
+            list.push(entry);
+            list.sort((a, b) => b.score - a.score);
+            try {
+                localStorage.setItem('spelling_app_leaderboard_v2', JSON.stringify(list.slice(0, 30)));
+            } catch (e) {}
+        }
+
+        function showLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+            filterLeaderboard('all');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        function filterLeaderboard(diffFilter) {
+            document.querySelectorAll('#leaderboardTabs .tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-tab') === diffFilter) {
+                    btn.className = 'tab-btn active px-3 py-1.5 rounded-lg bg-brand-blue text-white whitespace-nowrap shadow-sm';
+                } else {
+                    btn.className = 'tab-btn px-3 py-1.5 rounded-lg bg-slate-100 text-gray-600 whitespace-nowrap';
+                }
+            });
+
+            const list = getLeaderboard();
+            const filtered = diffFilter === 'all' 
+                ? list 
+                : list.filter(item => item.difficulty === parseInt(diffFilter));
+
+            const listContainer = document.getElementById('leaderboardList');
+            listContainer.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-inbox text-3xl mb-2"></i>
+                        <p class="text-xs font-bold">暫無紀錄，快來成為第一個挑戰者吧！</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100';
+
+                let rankBadge = `<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">${index + 1}</span>`;
+                if (index === 0) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center font-bold text-xs shadow"><i class="fas fa-crown"></i></span>`;
+                if (index === 1) rankBadge = `<span class="w-6 h-6 rounded-full bg-slate-300 text-white flex items-center justify-center font-bold text-xs shadow">2</span>`;
+                if (index === 2) rankBadge = `<span class="w-6 h-6 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-xs shadow">3</span>`;
+
+                const diffLabel = item.difficulty === 0 ? '混合' : `${item.difficulty}字`;
+                const avatarIcon = item.avatar || '🐶';
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${rankBadge}
+                        <span class="text-xl">${avatarIcon}</span>
+                        <div>
+                            <span class="font-extrabold text-slate-800 text-sm block leading-tight">${escapeHTML(item.name)}</span>
+                            <span class="text-[10px] text-gray-400 font-bold">${diffLabel} · 答對 ${item.accuracy || ''} · ${item.date || ''}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                        <i class="fas fa-star text-amber-400 text-xs"></i>
+                        <span class="font-extrabold text-amber-600 text-sm">${item.score} PTS</span>
+                    </div>
+                `;
+
+                listContainer.appendChild(row);
+            });
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
