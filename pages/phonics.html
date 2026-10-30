@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Playground - Learn to Spell & Speak</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sniglet:wght@800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        sniglet: ['Sniglet', 'cursive'],
+                    },
+                    colors: {
+                        bubblePink: '#FF70A6',
+                        bubbleOrange: '#FF9F1C',
+                        bubbleYellow: '#FFD166',
+                        bubbleGreen: '#06D6A0',
+                        bubbleBlue: '#118AB2',
+                        bubblePurple: '#B5179E',
+                    },
+                    boxShadow: {
+                        'pop': '0 8px 0px rgba(0,0,0,0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #fff9c4 50%, #fce4ec 100%);
+            touch-action: manipulation;
+        }
+
+        .key-btn {
+            transition: all 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .key-btn:active {
+            transform: translateY(6px) scale(0.95) !important;
+            box-shadow: 0 2px 0px rgba(0,0,0,0.2) !important;
+        }
+
+        .pop-star {
+            position: absolute;
+            pointer-events: none;
+            animation: popAndFade 0.6s ease-out forwards;
+        }
+        @keyframes popAndFade {
+            0% { transform: translate(-50%, -50%) scale(0.3) rotate(0deg); opacity: 1; }
+            50% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx) * 1.5), calc(-50% + var(--dy) * 1.5)) scale(0); opacity: 0; }
+        }
+
+        .mascot-pulse {
+            animation: pulseWave 1.2s infinite ease-in-out;
+        }
+        @keyframes pulseWave {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .sound-wave {
+            animation: soundWaveAnim 0.5s infinite alternate ease-in-out;
+        }
+        @keyframes soundWaveAnim {
+            from { transform: scaleY(0.6); }
+            to { transform: scaleY(1.3); }
+        }
+
+        .phoneme-active {
+            transform: scale(1.15);
+            filter: brightness(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+        }
+
+        .bounce-emoji {
+            animation: emojiBounce 0.8s infinite alternate cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes emojiBounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-16px) scale(1.15) rotate(6deg); }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col justify-between p-3 sm:p-5 select-none relative">
+
+    <!-- Particle Layer -->
+    <div id="particleCanvas" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <!-- Header / Mascot -->
+    <header class="w-full max-w-5xl mx-auto flex items-center justify-between z-10 px-2 py-1">
+        <div class="flex items-center gap-3">
+            <div id="mascot" class="w-14 h-14 sm:w-16 sm:h-16 bg-bubbleYellow rounded-full border-4 border-amber-400 flex items-center justify-center shadow-lg relative cursor-pointer active:scale-95 transition" onclick="repeatSpeech()">
+                <div class="text-3xl sm:text-4xl"> </div>
+                <div id="speakBadge" class="hidden absolute -bottom-1 -right-1 bg-bubbleGreen text-white text-xs px-2 py-0.5 rounded-full border-2 border-white flex items-center gap-1 shadow">
+                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave"></span>
+                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.15s"></span>
+                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.3s"></span>
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <span id="statusLabel" class="text-lg sm:text-xl font-bold text-indigo-700 font-sniglet tracking-wide">
+                    Tap & Spell!
+                </span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button onclick="repeatSpeech()" class="key-btn bg-bubbleGreen hover:bg-emerald-400 active:bg-emerald-500 text-white font-black text-lg sm:text-xl px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl shadow-pop border-b-4 border-emerald-700 flex items-center gap-2">
+                <i class="fa-solid fa-volume-high text-xl"></i>
+                <span class="hidden sm:inline">Say It!</span>
+            </button>
+
+            <button onclick="clearWord()" class="key-btn bg-bubblePink hover:bg-pink-400 active:bg-pink-500 text-white font-black text-lg sm:text-xl px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl shadow-pop border-b-4 border-pink-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="hidden sm:inline">Clear</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Word Display (Multi-Word Display with Color-Coded Onset & Rime) -->
+    <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center my-2 sm:my-3 z-10 px-2 relative">
+        <!-- Floating Animated Emoji Container -->
+        <div id="emojiDisplay" class="hidden flex items-center justify-center gap-3 text-5xl sm:text-7xl mb-2 sm:mb-4 bounce-emoji drop-shadow-lg transition-all duration-300">
+        </div>
+
+        <div class="w-full h-full min-h-[150px] max-h-[260px] bg-white/90 backdrop-blur-md rounded-3xl p-3 sm:p-6 border-4 border-indigo-200 shadow-xl flex items-center justify-center relative overflow-y-auto">
+            <div id="wordDisplay" class="text-4xl sm:text-6xl md:text-7xl font-black font-sniglet tracking-wider text-center flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
+                <!-- Color-Coded Multi-Word Items -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Soft Keyboard Layout -->
+    <footer class="w-full max-w-4xl mx-auto pb-1 sm:pb-3 z-10">
+        <div class="bg-white/80 backdrop-blur-md p-2.5 sm:p-4 rounded-3xl shadow-xl border-4 border-indigo-100 flex flex-col gap-1.5 sm:gap-2.5">
+            
+            <div class="flex justify-center gap-1 sm:gap-2">
+                <button onclick="pressKey('Q', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Q</button>
+                <button onclick="pressKey('W', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">W</button>
+                <button onclick="pressKey('E', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">E</button>
+                <button onclick="pressKey('R', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">R</button>
+                <button onclick="pressKey('T', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">T</button>
+                <button onclick="pressKey('Y', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Y</button>
+                <button onclick="pressKey('U', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">U</button>
+                <button onclick="pressKey('I', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">I</button>
+                <button onclick="pressKey('O', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">O</button>
+                <button onclick="pressKey('P', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">P</button>
+            </div>
+
+            <div class="flex justify-center gap-1 sm:gap-2 px-1">
+                <button onclick="pressKey('A', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">A</button>
+                <button onclick="pressKey('S', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">S</button>
+                <button onclick="pressKey('D', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">D</button>
+                <button onclick="pressKey('F', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">F</button>
+                <button onclick="pressKey('G', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">G</button>
+                <button onclick="pressKey('H', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">H</button>
+                <button onclick="pressKey('J', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">J</button>
+                <button onclick="pressKey('K', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">K</button>
+                <button onclick="pressKey('L', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">L</button>
+            </div>
+
+            <div class="flex justify-center gap-1 sm:gap-2">
+                <button onclick="pressKey('Z', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Z</button>
+                <button onclick="pressKey('X', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">X</button>
+                <button onclick="pressKey('C', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">C</button>
+                <button onclick="pressKey('V', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">V</button>
+                <button onclick="pressKey('B', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">B</button>
+                <button onclick="pressKey('N', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">N</button>
+                <button onclick="pressKey('M', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">M</button>
+                
+                <button onclick="backspace(event)" class="key-btn flex-[1.4] max-w-[85px] h-12 sm:h-16 bg-bubbleOrange text-white font-extrabold text-xl sm:text-2xl rounded-2xl shadow-pop border-b-4 border-orange-700 flex items-center justify-center">
+                    <i class="fa-solid fa-delete-left"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-center gap-2 mt-0.5">
+                <button onclick="pressSpace(event)" class="key-btn flex-1 max-w-[380px] h-11 sm:h-14 bg-bubbleBlue text-white font-extrabold text-lg sm:text-xl rounded-2xl shadow-pop border-b-4 border-cyan-800 flex items-center justify-center tracking-widest uppercase">
+                    SPACE
+                </button>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        let currentText = "";
+        let typingTimer = null;
+        const PAUSE_THRESHOLD = 800; // Speech triggers 800ms after pause
+
+        const wordDisplay = document.getElementById('wordDisplay');
+        const emojiDisplay = document.getElementById('emojiDisplay');
+        const mascot = document.getElementById('mascot');
+        const speakBadge = document.getElementById('speakBadge');
+        const statusLabel = document.getElementById('statusLabel');
+
+        // Multi-Layered Emoji System (200+ Words)
+        const PRIMARY_EMOJI_DICT = {
+            "CAT": " ", "CATS": " ", "KITTY": " ", "DOG": " ", "DOGS": " ", "PUPPY": " ", "FISH": " ", "FISHES": " ",
+            "BIRD": " ", "BIRDS": " ", "SHEEP": " ", "DUCK": " ", "DUCKS": " ", "PIG": " ", "PIGS": " ", "COW": " ",
+            "BEAR": " ", "LION": " ", "FROG": " ", "FROGS": " ", "RABBIT": " ", "BUNNY": " ", "MOUSE": " ", "HORSE": " ",
+            "BEE": " ", "BEES": " ", "MONKEY": " ", "FOX": " ", "OWL": " ", "SNAKE": " ", "TURTLE": " ", "TIGER": " ",
+            "PANDA": " ", "KOALA": " ", "BUG": " ", "ANT": " ", "CRAB": " ", "WHALE": " ", "SHARK": " ", "BAT": " ",
+            "GOAT": " ", "DEER": " ", "CAMEL": " ", "WOLF": " ", "DONKEY": " ", "GIRAFFE": " ", "ELEPHANT": " ",
+
+            "MOTHER": " ", "MOM": " ", "FATHER": " ", "DAD": " ", "BROTHER": " ", "SISTER": " ", "BABY": " ", 
+            "KING": " ", "QUEEN": " ", "BOY": " ", "GIRL": " ", "MAN": " ", "WOMAN": " ", "FRIEND": " ",
+
+            "APPLE": " ", "APPLES": " ", "BANANA": " ", "CAKE": " ", "MILK": " ", "PIZZA": " ", "BREAD": " ", "EGG": " ",
+            "CORN": " ", "NUT": " ", "SOUP": " ", "RICE": " ", "MEAT": " ", "TACO": " ", "DONUT": " ", "COOKIE": " ",
+            "CANDY": " ", "JUICE": " ", "WATER": " ", "TEA": " ", "PEAR": " ", "PEACH": " ", "GRAPE": " ", "LEMON": " ",
+            "CHERRY": " ", "BERRY": " ", "BURGER": " ", "FRIES": " ", "ICE": " ", "JAM": " ", "MELON": " ", "HONEY": " ",
+
+            "CAR": " ", "CARS": " ", "BUS": " ", "BIKE": " ", "BOAT": " ", "PLANE": " ", "TRAIN": " ", "SHIP": " ",
+            "TAXI": " ", "TRUCK": " ", "ROCKET": " ", "VAN": " ", "AMBULANCE": " ", "COP": " ", "POLICE": " ",
+
+            "SUN": " ", "SUNNY": " ", "MOON": " ", "STAR": " ", "STARS": " ", "RAIN": " ", "RAINY": " ", "FIRE": " ",
+            "TREE": " ", "TREES": " ", "FLOWER": " ", "FLOWERS": " ", "SNOW": " ", "WIND": " ", "LEAF": " ", "CLOUD": " ",
+            "CLOUDS": " ", "WAVE": " ", "HILL": " ", "MUD": " ", "PARK": " ", "SKY": " ", "SEA": " ",
+
+            "TABLE": " ", "CANDLE": " ", "BED": " ", "BOX": " ", "DOOR": " ", "KEY": " ", "BELL": " ", "CLOCK": " ",
+            "LAMP": " ", "CHAIR": " ", "CUP": " ", "MUG": " ", "FORK": " ", "SPOON": " ", "DISH": " ", "RING": " ",
+            "COIN": " ", "SOAP": " ", "BAG": " ", "MAP": " ", "FLAG": " ", "BOTTLE": " ", "TOWEL": " ", "PHONE": " ",
+
+            "CLOSE": " ", "CLOSED": " ", "CLOSING": " ", "SHUT": " ", "LOCK": " ", "OPEN": " ", "RUN": " ", "RUNNING": " ",
+            "WALK": " ", "FLY": " ", "FLYING": " ", "SWIM": " ", "SLEEP": " ", "SLEEPING": " ", "EAT": " ", "EATING": " ",
+            "DRINK": " ", "READ": " ", "WRITE": " ", "SING": " ", "DANCE": " ", "JUMP": " ", "PLAY": " ", "STOP": " ",
+
+            "BALL": " ", "BOOK": " ", "BOOKS": " ", "PEN": " ", "PENCIL": " ", "HOUSE": " ", "HOME": " ", "HAT": " ",
+            "DRUM": " ", "TOY": " ", "GAME": " ", "KITE": " ", "PAPER": " ", "CRAYON": " ", "CROWN": " ", "GIFT": " ",
+
+            "EYE": " ", "EYES": " ", "EAR": " ", "NOSE": " ", "HAND": " ", "FOOT": " ", "FEET": " ", "ARM": " ",
+            "LEG": " ", "LIPS": " ", "TOOTH": " ", "TEETH": " ", "BONE": " ", "BRAIN": " ", "FACE": " ", "HEART": " ",
+
+            "RED": " ", "BLUE": " ", "GREEN": " ", "YELLOW": " ", "PURPLE": " ", "PINK": " ", "BLACK": " ", "WHITE": " ",
+            "ORANGE": " ", "GOLD": " ", "SQUARE": " ", "CIRCLE": " "
+        };
+
+        const SEMANTIC_CLUSTERS = [
+            { keywords: ["CLOSE", "SHUT", "DOOR", "LOCK", "GATE"], emoji: " " },
+            { keywords: ["HAPPY", "SMILE", "JOY", "GLAD", "FUN"], emoji: " " },
+            { keywords: ["SAD", "CRY", "TEARS", "UPSET"], emoji: " " },
+            { keywords: ["HOT", "WARM", "HEAT", "SUNNY"], emoji: " " },
+            { keywords: ["COLD", "FREEZE", "ICE", "SNOW"], emoji: " " },
+            { keywords: ["LOVE", "LIKE", "CARE", "HEART"], emoji: " " }
+        ];
+
+        function getEmojiMatch(word) {
+            const cleanWord = word.trim().toUpperCase();
+            if (!cleanWord) return null;
+
+            if (PRIMARY_EMOJI_DICT[cleanWord]) return PRIMARY_EMOJI_DICT[cleanWord];
+
+            let stem = cleanWord;
+            if (stem.endsWith("ES")) stem = stem.slice(0, -2);
+            else if (stem.endsWith("S") && stem.length > 3) stem = stem.slice(0, -1);
+            else if (stem.endsWith("ING") && stem.length > 4) stem = stem.slice(0, -3);
+            else if (stem.endsWith("ED") && stem.length > 3) stem = stem.slice(0, -2);
+
+            if (PRIMARY_EMOJI_DICT[stem]) return PRIMARY_EMOJI_DICT[stem];
+
+            for (const key in PRIMARY_EMOJI_DICT) {
+                if (key.length >= 3 && (cleanWord.startsWith(key) || key.startsWith(cleanWord))) {
+                    return PRIMARY_EMOJI_DICT[key];
+                }
+            }
+
+            for (const cluster of SEMANTIC_CLUSTERS) {
+                for (const kw of cluster.keywords) {
+                    if (cleanWord.includes(kw) || kw.includes(cleanWord)) return cluster.emoji;
+                }
+            }
+
+            return null;
+        }
+
+        let audioCtx = null;
+        function playPopSound() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(350 + Math.random() * 200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function createBurst(e) {
+            if (!e) return;
+            const container = document.getElementById('particleCanvas');
+            const rect = e.target.getBoundingClientRect();
+            const x = e.clientX || (rect.left + rect.width / 2);
+            const y = e.clientY || (rect.top + rect.height / 2);
+
+            const colors = ['#FF70A6', '#FF9F1C', '#FFD166', '#06D6A0', '#118AB2', '#B5179E'];
+            for (let i = 0; i < 6; i++) {
+                const star = document.createElement('div');
+                star.className = 'pop-star text-xl';
+                star.innerHTML = ['★', '✦', ' ', '●'][Math.floor(Math.random() * 4)];
+                star.style.color = colors[Math.floor(Math.random() * colors.length)];
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+
+                const angle = (Math.PI * 2 / 6) * i;
+                const dist = 40 + Math.random() * 30;
+                star.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+                star.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+
+                container.appendChild(star);
+                setTimeout(() => star.remove(), 600);
+            }
+        }
+
+        // --- RULES-BASED PHONICS PARSER ENGINE ---
+        const VOWELS = new Set(['A', 'E', 'I', 'O', 'U', 'Y']);
+
+        function parseOnsetPhonetics(onset, nextChar) {
+            const raw = onset.toLowerCase();
+            const next = (nextChar || '').toLowerCase();
+
+            if (!raw) return { onset: '', spoken: '' };
+
+            // Silent Initial Consonants
+            if (raw === 'kn') return { onset: 'kn', spoken: 'nar' };
+            if (raw === 'wr') return { onset: 'wr', spoken: 'rar' };
+            if (raw === 'gn') return { onset: 'gn', spoken: 'nar' };
+
+            // Consonant Digraphs
+            if (raw === 'sh') return { onset: 'sh', spoken: 'shar' };
+            if (raw === 'ch') return { onset: 'ch', spoken: 'char' };
+            if (raw === 'th') return { onset: 'th', spoken: 'thar' };
+            if (raw === 'wh') return { onset: 'wh', spoken: 'war' };
+            if (raw === 'ph') return { onset: 'ph', spoken: 'far' };
+
+            // Soft vs Hard C & G
+            if (raw === 'c') {
+                if (['e', 'i', 'y'].includes(next)) return { onset: 'c', spoken: 'sar' };
+                return { onset: 'c', spoken: 'kar' };
+            }
+            if (raw === 'g') {
+                if (['e', 'i', 'y'].includes(next)) return { onset: 'g', spoken: 'jar' };
+                return { onset: 'g', spoken: 'gar' };
+            }
+
+            if (raw.endsWith('ar')) return { onset: raw, spoken: raw };
+            if (raw.endsWith('e')) return { onset: raw, spoken: raw.slice(0, -1) + 'ar' };
+            return { onset: raw, spoken: raw + 'ar' };
+        }
+
+        function getIpaPhoneticAnalysis(word) {
+            const uppercaseWord = word.trim().toUpperCase();
+            if (!uppercaseWord) return [];
+
+            if (uppercaseWord === 'MOTHER') {
+                return [
+                    { text: 'm', onset: 'm', rime: 'o', onsetArSpoken: 'mar', rimeSpoken: 'muh', combinedSpoken: 'moth' },
+                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
+                ];
+            }
+            if (uppercaseWord === 'FATHER') {
+                return [
+                    { text: 'fa', onset: 'f', rime: 'a', onsetArSpoken: 'far', rimeSpoken: 'ah', combinedSpoken: 'fa' },
+                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
+                ];
+            }
+            if (uppercaseWord === 'BROTHER') {
+                return [
+                    { text: 'bro', onset: 'br', rime: 'o', onsetArSpoken: 'brar', rimeSpoken: 'bruh', combinedSpoken: 'broth' },
+                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
+                ];
+            }
+
+            // Consonant-le Rule (-ble, -cle, -dle, -fle, -gle, -ple, -tle, -zle)
+            const cleMatch = uppercaseWord.match(/^(.+?)([^AEIOUY])LE$/i);
+            if (cleMatch && cleMatch[1].length > 0) {
+                const prefixWord = cleMatch[1];
+                const cleConsonant = cleMatch[2].toLowerCase();
+
+                let firstPart = prefixWord.toLowerCase();
+                let firstOnset = '';
+                let firstRime = firstPart;
+
+                const firstVowelIdx = firstPart.search(/[aeiouy]/i);
+                if (firstVowelIdx > 0) {
+                    firstOnset = firstPart.slice(0, firstVowelIdx);
+                    firstRime = firstPart.slice(firstVowelIdx);
+                }
+
+                const onsetData = parseOnsetPhonetics(firstOnset, firstRime[0]);
+
+                const prefixSyllable = {
+                    text: firstPart,
+                    onset: firstOnset,
+                    rime: firstRime,
+                    onsetArSpoken: onsetData.spoken,
+                    rimeSpoken: firstRime,
+                    combinedSpoken: firstPart
+                };
+
+                let cleOnsetAr = cleConsonant + 'ar';
+                if (cleConsonant === 'c' || cleConsonant === 'k') cleOnsetAr = 'kar';
+                if (cleConsonant === 'g') cleOnsetAr = 'gar';
+                if (cleConsonant === 'p') cleOnsetAr = 'par';
+
+                const cleSyllable = {
+                    text: cleConsonant + 'le',
+                    onset: cleConsonant,
+                    rime: 'le',
+                    onsetArSpoken: cleOnsetAr,
+                    rimeSpoken: cleConsonant + 'ull',
+                    combinedSpoken: cleConsonant + 'le'
+                };
+
+                return [prefixSyllable, cleSyllable];
+            }
+
+            // Medial Digraph Detector ('th', 'sh', 'ch', 'ph', 'wh')
+            const medialDigraphMatch = uppercaseWord.match(/^([^AEIOUY]*[AEIOUY]+)(TH|SH|CH|PH|WH)([AEIOUY].*)$/i);
+            if (medialDigraphMatch) {
+                const part1 = medialDigraphMatch[1].toLowerCase();
+                const digraph = medialDigraphMatch[2].toLowerCase();
+                const part2 = medialDigraphMatch[3].toLowerCase();
+
+                let onset1 = '', rime1 = part1;
+                const vIdx = part1.search(/[aeiouy]/i);
+                if (vIdx > 0) {
+                    onset1 = part1.slice(0, vIdx);
+                    rime1 = part1.slice(vIdx);
+                }
+                const onsetData1 = parseOnsetPhonetics(onset1, rime1[0]);
+
+                const syl1 = {
+                    text: part1,
+                    onset: onset1,
+                    rime: rime1,
+                    onsetArSpoken: onsetData1.spoken,
+                    rimeSpoken: rime1,
+                    combinedSpoken: part1
+                };
+
+                const onsetData2 = parseOnsetPhonetics(digraph, part2[0]);
+                const syl2 = {
+                    text: digraph + part2,
+                    onset: digraph,
+                    rime: part2,
+                    onsetArSpoken: onsetData2.spoken,
+                    rimeSpoken: part2,
+                    combinedSpoken: digraph + part2
+                };
+
+                return [syl1, syl2];
+            }
+
+            // Trailing 'Y' Sound
+            if (uppercaseWord.endsWith('Y') && uppercaseWord.length > 1) {
+                const body = uppercaseWord.slice(0, -1);
+                if (!/[AEIOU]/.test(body) || body.length <= 2) {
+                    const onsetData = parseOnsetPhonetics(body, 'y');
+                    return [{
+                        text: uppercaseWord.toLowerCase(),
+                        onset: body.toLowerCase(),
+                        rime: 'y',
+                        onsetArSpoken: onsetData.spoken,
+                        rimeSpoken: 'eye',
+                        combinedSpoken: uppercaseWord.toLowerCase()
+                    }];
+                }
+            }
+
+            // Magic 'E' Pattern
+            const magicEMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY])([^AEIOUY]+)E$/i);
+            if (magicEMatch) {
+                const onset = magicEMatch[1];
+                const vowel = magicEMatch[2];
+                const coda = magicEMatch[3];
+                const rime = vowel + coda + 'e';
+
+                const onsetData = parseOnsetPhonetics(onset, vowel);
+
+                return [{
+                    text: uppercaseWord.toLowerCase(),
+                    onset: onset.toLowerCase(),
+                    rime: rime.toLowerCase(),
+                    onsetArSpoken: onsetData.spoken,
+                    rimeSpoken: rime.toLowerCase(),
+                    combinedSpoken: uppercaseWord.toLowerCase()
+                }];
+            }
+
+            // Dynamic Syllable Splitter
+            const syls = uppercaseWord.match(/[^AEIOUY]*[AEIOUY]+(?:[^AEIOUY]*$|[^AEIOUY](?=[^AEIOUY][AEIOUY])|(?=[^AEIOUY][AEIOUY]))?/gi) || [uppercaseWord];
+
+            return syls.map(syl => {
+                let firstVowelIdx = -1;
+                for (let i = 0; i < syl.length; i++) {
+                    if (VOWELS.has(syl[i])) {
+                        if (syl[i] === 'Y' && i === 0 && syl.length > 1) continue;
+                        firstVowelIdx = i;
+                        break;
+                    }
+                }
+
+                let onset = '', rime = '';
+                if (firstVowelIdx === -1) {
+                    onset = syl;
+                    rime = '';
+                } else {
+                    onset = syl.slice(0, firstVowelIdx);
+                    rime = syl.slice(firstVowelIdx);
+                }
+
+                const onsetData = parseOnsetPhonetics(onset, rime ? rime[0] : '');
+
+                return {
+                    text: syl.toLowerCase(),
+                    onset: onset.toLowerCase(),
+                    rime: rime.toLowerCase(),
+                    onsetArSpoken: onsetData.spoken,
+                    rimeSpoken: rime.toLowerCase(),
+                    combinedSpoken: syl.toLowerCase()
+                };
+            });
+        }
+
+        function updateDisplay() {
+            if (!currentText.trim()) {
+                wordDisplay.innerHTML = `<span class="text-indigo-200/80 font-bold text-3xl sm:text-5xl animate-pulse">Type to Spell!</span>`;
+                statusLabel.textContent = "Tap & Spell!";
+                emojiDisplay.classList.add('hidden');
+                emojiDisplay.innerHTML = '';
+                return;
+            }
+
+            const rawWords = currentText.split(' ');
+            let html = '';
+            let matchedEmojis = [];
+
+            rawWords.forEach((wordStr, wIdx) => {
+                if (!wordStr) {
+                    html += `<div class="w-4 sm:w-8"></div>`;
+                    return;
+                }
+
+                const syllables = getIpaPhoneticAnalysis(wordStr);
+                const emoji = getEmojiMatch(wordStr);
+                if (emoji) matchedEmojis.push(emoji);
+
+                html += `<div id="word-block-${wIdx}" class="word-block inline-flex items-center p-1 rounded-2xl transition-all duration-200">`;
+
+                syllables.forEach((syl, sIdx) => {
+                    html += `<div class="inline-flex items-center">`;
+
+                    if (syl.onset) {
+                        html += `
+                            <span id="part-${wIdx}-${sIdx}-onset" class="part-card text-bubblePink font-black px-0.5 sm:px-1 py-0.5 rounded-xl transition-all duration-200">
+                                ${syl.onset}
+                            </span>
+                        `;
+                    }
+
+                    if (syl.rime) {
+                        html += `
+                            <span id="part-${wIdx}-${sIdx}-rime" class="part-card text-bubbleBlue font-black px-0.5 sm:px-1 py-0.5 rounded-xl transition-all duration-200">
+                                ${syl.rime}
+                            </span>
+                        `;
+                    }
+
+                    html += `</div>`;
+                });
+
+                html += `</div>`;
+            });
+
+            wordDisplay.innerHTML = html;
+
+            if (matchedEmojis.length > 0) {
+                emojiDisplay.innerHTML = matchedEmojis.map(e => `<span>${e}</span>`).join('');
+                emojiDisplay.classList.remove('hidden');
+            } else {
+                emojiDisplay.classList.add('hidden');
+                emojiDisplay.innerHTML = '';
+            }
+        }
+
+        function pressKey(char, e) {
+            playPopSound();
+            createBurst(e);
+            stopSpeech();
+
+            if (currentText.length < 32) {
+                currentText += char;
+                updateDisplay();
+                resetTypingTimer();
+            }
+        }
+
+        function pressSpace(e) {
+            playPopSound();
+            createBurst(e);
+            stopSpeech();
+
+            if (currentText.length > 0 && !currentText.endsWith(' ') && currentText.length < 32) {
+                currentText += ' ';
+                updateDisplay();
+                resetTypingTimer();
+            }
+        }
+
+        function backspace(e) {
+            playPopSound();
+            createBurst(e);
+            stopSpeech();
+
+            currentText = currentText.slice(0, -1);
+            updateDisplay();
+            if (currentText.length > 0) {
+                resetTypingTimer();
+            } else {
+                statusLabel.textContent = "Tap & Spell!";
+                emojiDisplay.classList.add('hidden');
+                emojiDisplay.innerHTML = '';
+            }
+        }
+
+        function clearWord() {
+            stopSpeech();
+            currentText = "";
+            updateDisplay();
+            statusLabel.textContent = "Tap & Spell!";
+            emojiDisplay.classList.add('hidden');
+            emojiDisplay.innerHTML = '';
+        }
+
+        function resetTypingTimer() {
+            statusLabel.textContent = "Keep typing...";
+            if (typingTimer) clearTimeout(typingTimer);
+
+            typingTimer = setTimeout(() => {
+                if (currentText.trim().length > 0) {
+                    executePhonicsSpeech();
+                }
+            }, PAUSE_THRESHOLD);
+        }
+
+        function executePhonicsSpeech() {
+            if (!('speechSynthesis' in window) || !currentText.trim()) return;
+
+            stopSpeech();
+            const rawWords = currentText.split(' ').filter(w => w.trim().length > 0);
+
+            mascot.classList.add('mascot-pulse');
+            speakBadge.classList.remove('hidden');
+
+            rawWords.forEach((wordStr, wIdx) => {
+                const syllables = getIpaPhoneticAnalysis(wordStr);
+
+                syllables.forEach((syl, sIdx) => {
+                    const hasOnset = syl.onset && syl.onset.trim() !== '';
+
+                    // Step 1: Onset + "ar" (ONLY executed if an initial onset consonant exists)
+                    if (hasOnset && syl.onsetArSpoken) {
+                        const initUtt = new SpeechSynthesisUtterance(syl.onsetArSpoken);
+                        initUtt.rate = 0.85;
+                        initUtt.pitch = 1.25;
+
+                        initUtt.onstart = () => {
+                            highlightElement(`part-${wIdx}-${sIdx}-onset`);
+                            statusLabel.textContent = `${syl.onset.toUpperCase()} ("${syl.onsetArSpoken}")`;
+                        };
+
+                        window.speechSynthesis.speak(initUtt);
+                    }
+
+                    // Step 2: Vowel / Rime sound (Only spoken individually if there was an onset to prevent repeating for vowel-starting words)
+                    if (hasOnset && syl.rime && syl.rimeSpoken) {
+                        const rimeUtt = new SpeechSynthesisUtterance(syl.rimeSpoken);
+                        rimeUtt.rate = 0.85;
+                        rimeUtt.pitch = 1.25;
+
+                        rimeUtt.onstart = () => {
+                            highlightElement(`part-${wIdx}-${sIdx}-rime`);
+                            statusLabel.textContent = `${syl.rime.toUpperCase()} ("${syl.rimeSpoken}")`;
+                        };
+
+                        window.speechSynthesis.speak(rimeUtt);
+                    }
+
+                    // Step 3: Combined Syllable / Word Sound (Directly executed for vowel-starting words without sound repetition)
+                    const groupUtt = new SpeechSynthesisUtterance(syl.combinedSpoken);
+                    groupUtt.rate = 0.8;
+                    groupUtt.pitch = 1.2;
+
+                    groupUtt.onstart = () => {
+                        highlightSyllableGroup(wIdx, sIdx);
+                        statusLabel.textContent = `${syl.text.toUpperCase()}`;
+                    };
+
+                    window.speechSynthesis.speak(groupUtt);
+                });
+
+                // Syllable/Word Complete Pronunciation
+                const wordUtt = new SpeechSynthesisUtterance(wordStr.toLowerCase());
+                wordUtt.rate = 0.75;
+                wordUtt.pitch = 1.2;
+
+                wordUtt.onstart = () => {
+                    highlightWordBlock(wIdx);
+                    statusLabel.textContent = `${wordStr.toUpperCase()}!  `;
+                };
+
+                if (wIdx === rawWords.length - 1) {
+                    wordUtt.onend = () => {
+                        resetHighlights();
+                        mascot.classList.remove('mascot-pulse');
+                        speakBadge.classList.add('hidden');
+                        statusLabel.textContent = "Great job!";
+                    };
+                }
+
+                window.speechSynthesis.speak(wordUtt);
+            });
+        }
+
+        function highlightSyllableGroup(wIdx, sIdx) {
+            resetHighlights();
+            const initEl = document.getElementById(`part-${wIdx}-${sIdx}-onset`);
+            const rimeEl = document.getElementById(`part-${wIdx}-${sIdx}-rime`);
+            if (initEl) initEl.classList.add('phoneme-active', 'bg-yellow-200');
+            if (rimeEl) rimeEl.classList.add('phoneme-active', 'bg-yellow-200');
+        }
+
+        function highlightWordBlock(wIdx) {
+            resetHighlights();
+            const block = document.getElementById(`word-block-${wIdx}`);
+            if (block) {
+                block.querySelectorAll('.part-card').forEach(el => {
+                    el.classList.add('phoneme-active', 'bg-yellow-200');
+                });
+            }
+        }
+
+        function repeatSpeech() {
+            if (currentText.trim()) {
+                executePhonicsSpeech();
+            }
+        }
+
+        function highlightElement(id) {
+            resetHighlights();
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('phoneme-active', 'bg-yellow-200');
+            }
+        }
+
+        function resetHighlights() {
+            document.querySelectorAll('.part-card').forEach(el => {
+                el.classList.remove('phoneme-active', 'bg-yellow-200');
+            });
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if (typingTimer) clearTimeout(typingTimer);
+            mascot.classList.remove('mascot-pulse');
+            speakBadge.classList.add('hidden');
+            resetHighlights();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            if (e.key === 'Backspace') {
+                backspace(null);
+            } else if (e.key === 'Escape') {
+                clearWord();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                pressSpace(null);
+            } else if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+                pressKey(e.key.toUpperCase(), null);
+            }
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
+
