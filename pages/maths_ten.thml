@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>湊十小勇士 - 幼稚園數學練習</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library for Clear-Board Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts for playful text -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Mochiy+Pop+One&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', 'Fredoka One', cursive, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+
+        .bubble-btn {
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15), inset 0 -4px 0 rgba(0,0,0,0.2);
+        }
+
+        .bubble-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .bubble-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15), inset 0 -2px 0 rgba(0,0,0,0.2);
+        }
+
+        .number-card {
+            transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.18s ease, background-color 0.2s ease;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+        }
+
+        .number-card:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.04);
+        }
+
+        .number-card:active:not(:disabled) {
+            transform: translateY(2px) scale(0.96);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+        }
+
+        .selected-card {
+            border: 4px solid #f59e0b !important;
+            background-color: #fef3c7 !important;
+            transform: scale(1.08) !important;
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.7) !important;
+            animation: pulse-ring 1s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        /* Shake animation for wrong selection */
+        .shake-anim {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            background-color: #fecdd3 !important;
+            border-color: #f43f5e !important;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0) scale(1.02); }
+            20%, 80% { transform: translate3d(4px, 0, 0) scale(1.02); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0) scale(1.02); }
+            40%, 60% { transform: translate3d(6px, 0, 0) scale(1.02); }
+        }
+
+        /* Match disappearance animation */
+        .vanish-out {
+            animation: vanishOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+
+        @keyframes vanishOut {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35) rotate(12deg); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        /* Full Board Drop In animation */
+        .board-drop-in {
+            animation: boardDrop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes boardDrop {
+            0% { transform: scale(0.6) translateY(-30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Clear Banner Pop Overlay */
+        .clear-banner-anim {
+            animation: clearPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes clearPop {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            50% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+            80% { transform: scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(0.8) translateY(-20px); opacity: 0; }
+        }
+
+        /* Modal Visibility Transitions & Click-through Prevention */
+        .modal-overlay {
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Floating background elements */
+        .floating-bg {
+            position: absolute;
+            z-index: 0;
+            pointer-events: none;
+            animation: floatSlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatSlow {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-3 md:p-6 overflow-x-hidden relative">
+
+    <!-- Decorative Animated Background Shapes -->
+    <div class="floating-bg text-yellow-300 opacity-40 top-6 left-6 text-6xl md:text-8xl"><i class="fa-solid fa-cloud"></i></div>
+    <div class="floating-bg text-pink-300 opacity-40 top-20 right-8 text-5xl md:text-7xl" style="animation-delay: -3s;"><i class="fa-solid fa-star"></i></div>
+    <div class="floating-bg text-blue-300 opacity-30 bottom-12 left-10 text-6xl md:text-8xl" style="animation-delay: -5s;"><i class="fa-solid fa-heart"></i></div>
+
+    <!-- Header Section -->
+    <header class="w-full max-w-xl z-10 text-center mb-2">
+        <div class="bg-white/80 backdrop-blur-md px-4 py-2 md:py-3 rounded-3xl shadow-lg border-4 border-amber-300 flex items-center justify-between">
+            <!-- Game Title & Mascot -->
+            <div class="flex items-center space-x-2">
+                <div id="mascotIcon" class="bg-amber-400 text-white w-12 h-12 md:w-14 md:h-14 rounded-2xl shadow-inner text-3xl md:text-4xl flex items-center justify-center transition-transform hover:scale-110">
+                    🦁
+                </div>
+                <div class="text-left">
+                    <h1 class="text-xl md:text-2xl font-black text-amber-600 tracking-wide leading-tight">湊十小勇士</h1>
+                    <p class="text-xs md:text-sm text-gray-500 font-bold">相加等於 10 就消除！全清即刷新</p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-2">
+                <!-- Home Button -->
+                <button id="homeBtn" onclick="returnToHome()" title="返回主頁" class="bubble-btn bg-emerald-500 hover:bg-emerald-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-lg md:text-xl font-bold cursor-pointer">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" onclick="toggleSound()" title="音效開關" class="bubble-btn bg-indigo-500 hover:bg-indigo-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-lg md:text-xl font-bold cursor-pointer">
+                    <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                </button>
+                <!-- Leaderboard Toggle -->
+                <button id="leaderboardBtn" onclick="openLeaderboard()" title="龍虎榜" class="bubble-btn bg-yellow-400 hover:bg-yellow-500 text-amber-900 w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-lg md:text-xl font-bold cursor-pointer">
+                    <i class="fa-solid fa-trophy"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="w-full max-w-xl z-10 flex-1 flex flex-col justify-center">
+        <!-- Dashboard Score / Timer / Clear-Count Bar -->
+        <div class="grid grid-cols-3 gap-2 md:gap-3 mb-3">
+            <!-- Timer Card -->
+            <div class="bg-white/90 rounded-2xl p-2 md:p-3 border-3 border-sky-300 shadow-md flex flex-col items-center justify-center">
+                <div class="flex items-center gap-1 text-sky-500 text-xs md:text-sm font-bold">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>倒數時間</span>
+                </div>
+                <span id="timerDisplay" class="text-2xl md:text-3xl font-black text-sky-600">30s</span>
+            </div>
+
+            <!-- Score Card -->
+            <div class="bg-white/90 rounded-2xl p-2 md:p-3 border-3 border-emerald-300 shadow-md flex flex-col items-center justify-center">
+                <div class="flex items-center gap-1 text-emerald-500 text-xs md:text-sm font-bold">
+                    <i class="fa-solid fa-star"></i>
+                    <span>成功消除</span>
+                </div>
+                <span id="scoreDisplay" class="text-2xl md:text-3xl font-black text-emerald-600">0 組</span>
+            </div>
+
+            <!-- Clear Board Count Card -->
+            <div class="bg-white/90 rounded-2xl p-2 md:p-3 border-3 border-amber-300 shadow-md flex flex-col items-center justify-center">
+                <div class="flex items-center gap-1 text-amber-500 text-xs md:text-sm font-bold">
+                    <i class="fa-solid fa-broom"></i>
+                    <span>清版次數</span>
+                </div>
+                <span id="clearDisplay" class="text-2xl md:text-3xl font-black text-amber-600">0 次</span>
+            </div>
+        </div>
+
+        <!-- Numbers Grid Card Container -->
+        <div class="bg-white/90 backdrop-blur-md p-3 md:p-5 rounded-3xl shadow-2xl border-4 border-indigo-200 relative min-h-[380px] md:min-h-[440px] flex flex-col justify-center overflow-hidden">
+            
+            <!-- Floating Clear Board Banner Animation -->
+            <div id="clearBanner" class="hidden absolute z-30 inset-0 pointer-events-none flex items-center justify-center">
+                <div class="bg-amber-400 text-amber-950 px-8 py-4 rounded-3xl shadow-2xl border-4 border-yellow-200 flex flex-col items-center clear-banner-anim">
+                    <span class="text-5xl mb-1">🎉</span>
+                    <span class="text-3xl md:text-4xl font-black tracking-wider">完美清版！</span>
+                    <span class="text-sm font-bold opacity-90">+1 次清版獎勵</span>
+                </div>
+            </div>
+
+            <!-- Pause Overlay -->
+            <div id="pauseOverlay" class="modal-overlay absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-30 rounded-3xl flex flex-col items-center justify-center p-6 text-white text-center">
+                <i class="fa-solid fa-pause text-6xl text-yellow-300 mb-3 animate-bounce"></i>
+                <h2 class="text-3xl font-black mb-4">遊戲已暫停</h2>
+                <div class="flex gap-3">
+                    <button onclick="resumeGame()" class="bubble-btn bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg px-6 py-3 rounded-2xl cursor-pointer">
+                        <i class="fa-solid fa-play mr-2"></i>繼續遊戲
+                    </button>
+                    <button onclick="returnToHome()" class="bubble-btn bg-sky-500 hover:bg-sky-600 text-white font-black text-lg px-6 py-3 rounded-2xl cursor-pointer">
+                        <i class="fa-solid fa-house mr-2"></i>回主頁
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start Game Cover Overlay -->
+            <div id="startOverlay" class="modal-overlay active absolute inset-0 bg-white/95 z-20 rounded-3xl flex flex-col items-center justify-center p-6 text-center shadow-inner">
+                <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-4xl mb-3 shadow-sm border-2 border-amber-300">
+                    🧩
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-indigo-900 mb-2">湊十清版挑戰賽！</h2>
+                <div class="text-gray-600 font-medium mb-6 text-sm md:text-base max-w-xs space-y-1">
+                    <p>點選 2 個數字相加等於 <span class="text-amber-500 font-black text-lg">10</span> 即可消除！</p>
+                    <p class="text-xs bg-amber-50 text-amber-700 p-2 rounded-xl border border-amber-200 font-bold">
+                        ⭐ 【規則】：消除全部 12 個數字清版後，才會刷新下一版！
+                    </p>
+                </div>
+                <button id="startBtn" onclick="startGame()" class="bubble-btn bg-emerald-500 hover:bg-emerald-600 text-white font-black text-2xl px-10 py-4 rounded-3xl shadow-lg border-b-4 border-emerald-700 animate-pulse cursor-pointer">
+                    <i class="fa-solid fa-play mr-2"></i>開始挑戰！
+                </button>
+            </div>
+
+            <!-- Interactive Number Grid (4x3 = 12 Cards) -->
+            <div id="gridContainer" class="grid grid-cols-4 gap-2 md:gap-3 my-auto">
+                <!-- Grid Cards populated dynamically by JS -->
+            </div>
+
+            <!-- Control Bar under Grid -->
+            <div id="inGameControls" class="flex justify-between items-center mt-4 pt-3 border-t border-indigo-100">
+                <button id="pauseBtn" onclick="pauseGame()" disabled class="bubble-btn bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold px-4 py-2 rounded-xl text-sm md:text-base flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-pause"></i> 暫停
+                </button>
+                <button id="restartBtn" onclick="startGame()" disabled class="bubble-btn bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-sm md:text-base flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-rotate-right"></i> 重新開始
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Prompt -->
+    <footer class="w-full max-w-xl text-center text-indigo-800/70 font-bold text-xs md:text-sm mt-3 z-10">
+        💡 湊十好幫手：1+9=10 | 2+8=10 | 3+7=10 | 4+6=10 | 5+5=10
+    </footer>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal-overlay fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-amber-300 text-center relative pointer-events-auto">
+            
+            <div class="text-5xl mb-2" id="modalEmoji">🎉</div>
+            <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-1" id="modalTitle">時間到！太棒了！</h2>
+            <p class="text-gray-500 font-bold text-sm mb-4" id="modalSubtitle">看看你獲得了幾顆榮譽小星星？</p>
+
+            <!-- Star Rating Display -->
+            <div class="flex justify-center items-center gap-2 text-4xl text-amber-400 mb-4" id="starContainer">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <!-- Score Summary Box -->
+            <div class="bg-indigo-50 rounded-2xl p-4 mb-5 border-2 border-indigo-100 flex items-center justify-around">
+                <div>
+                    <div class="text-xs text-gray-500 font-bold">消去組合</div>
+                    <div id="finalScore" class="text-2xl font-black text-indigo-600">0 組</div>
+                </div>
+                <div class="h-10 w-0.5 bg-indigo-200"></div>
+                <div>
+                    <div class="text-xs text-gray-500 font-bold">清版次數</div>
+                    <div id="finalClears" class="text-2xl font-black text-amber-600">0 次</div>
+                </div>
+                <div class="h-10 w-0.5 bg-indigo-200"></div>
+                <div>
+                    <div class="text-xs text-gray-500 font-bold">稱號</div>
+                    <div id="finalRank" class="text-base font-black text-emerald-600">湊十小勇士</div>
+                </div>
+            </div>
+
+            <!-- High Score Name Input -->
+            <div id="nameInputBox" class="mb-5 text-left">
+                <label class="block text-xs font-bold text-gray-600 mb-1">輸入名字登錄龍虎榜：</label>
+                <div class="flex gap-2">
+                    <input type="text" id="playerNameInput" maxlength="8" placeholder="小勇士名字" class="w-full px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none font-bold text-gray-700">
+                    <button onclick="saveScore()" class="bubble-btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap cursor-pointer">
+                        儲存紀錄
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <button onclick="closeGameOverModal(); startGame();" class="flex-1 bubble-btn bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 rounded-2xl text-base md:text-lg cursor-pointer">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 再玩一次
+                </button>
+                <button onclick="closeGameOverModal(); returnToHome();" class="bubble-btn bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 py-3 rounded-2xl text-base md:text-lg cursor-pointer">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <button onclick="closeGameOverModal(); openLeaderboard();" class="bubble-btn bg-yellow-400 hover:bg-yellow-500 text-amber-950 font-bold px-4 py-3 rounded-2xl text-base md:text-lg cursor-pointer">
+                    <i class="fa-solid fa-trophy"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" onclick="handleLeaderboardBackdropClick(event)" class="modal-overlay fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div id="leaderboardCard" class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-yellow-300 text-center relative pointer-events-auto">
+            <button id="closeLeaderboardBtn" onclick="closeLeaderboard()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold cursor-pointer p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <i class="fa-solid fa-trophy text-yellow-400 text-3xl"></i>
+                <h2 class="text-2xl font-black text-slate-800">湊十龍虎榜</h2>
+            </div>
+
+            <!-- High Score List Container -->
+            <div class="max-h-64 overflow-y-auto mb-5 rounded-2xl border border-gray-100 p-2 space-y-2" id="leaderboardList">
+                <!-- Dynamically loaded scores -->
+            </div>
+
+            <button onclick="closeLeaderboard()" class="w-full bubble-btn bg-indigo-500 hover:bg-indigo-600 text-white font-black py-3 rounded-2xl text-lg cursor-pointer">
+                返回
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Logic JavaScript -->
+    <script>
+        // --- Web Audio API Sound Generator ---
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playTone(freq, type = 'sine', duration = 0.15, startVol = 0.3) {
+                if (this.muted) return;
+                this.init();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(startVol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            // Click selection feedback
+            playClickSound() {
+                if (this.muted) return;
+                this.playTone(480, 'sine', 0.06, 0.2);
+            }
+
+            // Cheerful match sparkle sound
+            playMatchSound() {
+                if (this.muted) return;
+                this.playTone(523.25, 'triangle', 0.1, 0.3); // C5
+                setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.3), 70); // E5
+                setTimeout(() => this.playTone(783.99, 'triangle', 0.25, 0.4), 140); // G5
+            }
+
+            // Error sound
+            playErrorSound() {
+                if (this.muted) return;
+                this.playTone(220, 'sawtooth', 0.15, 0.25);
+                setTimeout(() => this.playTone(180, 'sawtooth', 0.2, 0.25), 90);
+            }
+
+            // Full Board Cleared Celebration Fanfare
+            playClearBoardSound() {
+                if (this.muted) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.2, 0.35), idx * 100);
+                });
+            }
+
+            // Timer Warning Ticking Sound
+            playTickSound() {
+                if (this.muted) return;
+                this.playTone(880, 'sine', 0.05, 0.15);
+            }
+
+            // Game end fanfare
+            playGameOverSound() {
+                if (this.muted) return;
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.22, 0.3), idx * 120);
+                });
+            }
+        }
+
+        const sounds = new SoundFX();
+
+        // --- Game State Variables ---
+        const GRID_SIZE = 12; // 12 cards total (6 pairs of 10)
+        let numbers = []; // Stores number or null for cleared slots
+        let selectedIndices = [];
+        let score = 0; // Number of matched 10-pairs
+        let clearBoardCount = 0; // Number of full board refreshes
+        let timeLeft = 30;
+        let timerInterval = null;
+        let isPlaying = false;
+        let isPaused = false;
+        let isGameOver = false;
+
+        // Color palettes for playful kindergarten cards
+        const cardColors = [
+            { bg: 'bg-red-100', text: 'text-red-600', border: 'border-red-300' },
+            { bg: 'bg-orange-100', text: 'text-orange-600', border: 'border-orange-300' },
+            { bg: 'bg-amber-100', text: 'text-amber-600', border: 'border-amber-300' },
+            { bg: 'bg-emerald-100', text: 'text-emerald-600', border: 'border-emerald-300' },
+            { bg: 'bg-teal-100', text: 'text-teal-600', border: 'border-teal-300' },
+            { bg: 'bg-sky-100', text: 'text-sky-600', border: 'border-sky-300' },
+            { bg: 'bg-indigo-100', text: 'text-indigo-600', border: 'border-indigo-300' },
+            { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-300' },
+            { bg: 'bg-pink-100', text: 'text-pink-600', border: 'border-pink-300' }
+        ];
+
+        // --- Generate Solvable 10-Pair Board ---
+        function generateSolvableBoard() {
+            let board = [];
+            // Pick 6 random pairs that equal 10
+            for (let i = 0; i < GRID_SIZE / 2; i++) {
+                const first = Math.floor(Math.random() * 9) + 1; // 1 to 9
+                const second = 10 - first;
+                board.push(first, second);
+            }
+            
+            // Fisher-Yates Shuffle
+            for (let i = board.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [board[i], board[j]] = [board[j], board[i]];
+            }
+
+            return board;
+        }
+
+        // Mascot expressions helper
+        function updateMascot(emotion) {
+            const mascot = document.getElementById('mascotIcon');
+            switch(emotion) {
+                case 'happy': mascot.innerText = '🦁'; break;
+                case 'excited': mascot.innerText = '🤩'; break;
+                case 'cheer': mascot.innerText = '🎉'; break;
+                case 'oops': mascot.innerText = '😮'; break;
+                default: mascot.innerText = '🦁'; break;
+            }
+        }
+
+        // --- Sound Toggle ---
+        function toggleSound() {
+            sounds.muted = !sounds.muted;
+            const icon = document.getElementById('soundIcon');
+            if (sounds.muted) {
+                icon.className = 'fa-solid fa-volume-xmark';
+            } else {
+                icon.className = 'fa-solid fa-volume-high';
+                sounds.playClickSound();
+            }
+        }
+
+        // --- Render Board Grid ---
+        function renderBoard(animateAll = false) {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+
+            numbers.forEach((num, index) => {
+                if (num === null) {
+                    // Empty slot placeholder (maintains layout grid structure)
+                    const emptySlot = document.createElement('div');
+                    emptySlot.className = 'w-full h-20 md:h-24 rounded-2xl border-2 border-dashed border-indigo-100/60 bg-white/20';
+                    container.appendChild(emptySlot);
+                } else {
+                    const colorStyle = cardColors[(num - 1) % cardColors.length];
+                    const card = document.createElement('button');
+                    card.id = `card-${index}`;
+                    card.onclick = () => handleCardClick(index);
+                    
+                    const dropClass = animateAll ? 'board-drop-in' : '';
+                    card.className = `number-card ${dropClass} w-full h-20 md:h-24 rounded-2xl border-4 ${colorStyle.border} ${colorStyle.bg} ${colorStyle.text} font-black text-3xl md:text-4xl flex items-center justify-center relative cursor-pointer select-none`;
+                    
+                    card.innerHTML = `<span>${num}</span>`;
+
+                    if (selectedIndices.includes(index)) {
+                        card.classList.add('selected-card');
+                    }
+
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        // --- Handle Card Selection & Pair Logic ---
+        function handleCardClick(index) {
+            if (!isPlaying || isPaused || numbers[index] === null) return;
+
+            // If clicking already selected card, deselect it
+            if (selectedIndices.includes(index)) {
+                selectedIndices = selectedIndices.filter(i => i !== index);
+                sounds.playClickSound();
+                renderBoard();
+                return;
+            }
+
+            sounds.playClickSound();
+            selectedIndices.push(index);
+            renderBoard();
+
+            // When two cards are selected, evaluate sum
+            if (selectedIndices.length === 2) {
+                const [idx1, idx2] = selectedIndices;
+                const val1 = numbers[idx1];
+                const val2 = numbers[idx2];
+
+                if (val1 + val2 === 10) {
+                    // Match Success!
+                    sounds.playMatchSound();
+                    updateMascot('excited');
+                    score++;
+                    document.getElementById('scoreDisplay').innerText = `${score} 組`;
+
+                    const card1 = document.getElementById(`card-${idx1}`);
+                    const card2 = document.getElementById(`card-${idx2}`);
+
+                    if (card1) card1.classList.add('vanish-out');
+                    if (card2) card2.classList.add('vanish-out');
+
+                    // After disappearance animation, mark slots as null
+                    setTimeout(() => {
+                        numbers[idx1] = null;
+                        numbers[idx2] = null;
+                        selectedIndices = [];
+
+                        // CHECK IF ENTIRE BOARD IS CLEARED!
+                        const isFullyCleared = numbers.every(val => val === null);
+
+                        if (isFullyCleared) {
+                            handleBoardCleared();
+                        } else {
+                            renderBoard();
+                        }
+                    }, 300);
+
+                } else {
+                    // Match Failed!
+                    sounds.playErrorSound();
+                    updateMascot('oops');
+
+                    const card1 = document.getElementById(`card-${idx1}`);
+                    const card2 = document.getElementById(`card-${idx2}`);
+
+                    if (card1) card1.classList.add('shake-anim');
+                    if (card2) card2.classList.add('shake-anim');
+
+                    setTimeout(() => {
+                        selectedIndices = [];
+                        renderBoard();
+                        updateMascot('happy');
+                    }, 400);
+                }
+            }
+        }
+
+        // --- Handle Board Cleared Victory & Refresh ---
+        function handleBoardCleared() {
+            clearBoardCount++;
+            document.getElementById('clearDisplay').innerText = `${clearBoardCount} 次`;
+            sounds.playClearBoardSound();
+            updateMascot('cheer');
+
+            // Trigger Confetti Celebration
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // Show Animated Banner
+            const banner = document.getElementById('clearBanner');
+            banner.classList.remove('hidden');
+
+            setTimeout(() => {
+                banner.classList.add('hidden');
+                // Generate a fresh new board
+                numbers = generateSolvableBoard();
+                renderBoard(true); // Animate new drop-in
+                updateMascot('happy');
+            }, 800);
+        }
+
+        // --- Timer Loop ---
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused && isPlaying) {
+                    timeLeft--;
+                    document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+
+                    if (timeLeft <= 5 && timeLeft > 0) {
+                        sounds.playTickSound();
+                        document.getElementById('timerDisplay').classList.add('text-rose-600', 'animate-pulse');
+                    } else {
+                        document.getElementById('timerDisplay').classList.remove('text-rose-600', 'animate-pulse');
+                    }
+
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+
+        // --- Return To Home Screen State ---
+        function returnToHome() {
+            sounds.playClickSound();
+            clearInterval(timerInterval);
+
+            isPlaying = false;
+            isPaused = false;
+            isGameOver = false;
+
+            score = 0;
+            clearBoardCount = 0;
+            timeLeft = 30;
+            selectedIndices = [];
+
+            document.getElementById('scoreDisplay').innerText = `0 組`;
+            document.getElementById('clearDisplay').innerText = `0 次`;
+            document.getElementById('timerDisplay').innerText = `30s`;
+            document.getElementById('timerDisplay').classList.remove('text-rose-600', 'animate-pulse');
+
+            // Disable controls
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+
+            // Reset overlays cleanly
+            document.getElementById('gameOverModal').classList.remove('active');
+            document.getElementById('pauseOverlay').classList.remove('active');
+            document.getElementById('leaderboardModal').classList.remove('active');
+            
+            // Show Start Game Screen Overlay
+            document.getElementById('startOverlay').classList.add('active');
+
+            updateMascot('happy');
+            numbers = generateSolvableBoard();
+            renderBoard();
+        }
+
+        // --- Game Flow Actions ---
+        function startGame() {
+            sounds.init();
+            sounds.playClickSound();
+
+            clearInterval(timerInterval);
+
+            score = 0;
+            clearBoardCount = 0;
+            timeLeft = 30;
+            isPlaying = true;
+            isPaused = false;
+            isGameOver = false;
+            selectedIndices = [];
+
+            // Generate initial solvable board
+            numbers = generateSolvableBoard();
+
+            document.getElementById('scoreDisplay').innerText = `0 組`;
+            document.getElementById('clearDisplay').innerText = `0 次`;
+            document.getElementById('timerDisplay').innerText = `${timeLeft}s`;
+            document.getElementById('timerDisplay').classList.remove('text-rose-600', 'animate-pulse');
+
+            // Hide overlays
+            document.getElementById('startOverlay').classList.remove('active');
+            document.getElementById('pauseOverlay').classList.remove('active');
+            document.getElementById('gameOverModal').classList.remove('active');
+            document.getElementById('leaderboardModal').classList.remove('active');
+            
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('restartBtn').disabled = false;
+
+            updateMascot('happy');
+            renderBoard(true);
+            startTimer();
+        }
+
+        function pauseGame() {
+            if (!isPlaying || isGameOver) return;
+            sounds.playClickSound();
+            isPaused = true;
+            document.getElementById('pauseOverlay').classList.add('active');
+        }
+
+        function resumeGame() {
+            sounds.playClickSound();
+            isPaused = false;
+            document.getElementById('pauseOverlay').classList.remove('active');
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            isPlaying = false;
+            isGameOver = true;
+            sounds.playGameOverSound();
+            updateMascot('cheer');
+
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+
+            // Show Game Over Modal Details
+            document.getElementById('finalScore').innerText = `${score} 組`;
+            document.getElementById('finalClears').innerText = `${clearBoardCount} 次`;
+
+            // Calculate Star Rating & Friendly Rank
+            let starsHtml = '';
+            let rankText = '';
+            let emoji = '👏';
+
+            if (score >= 12 || clearBoardCount >= 2) {
+                starsHtml = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>';
+                rankText = '超級湊十王 👑';
+                emoji = '🏆';
+            } else if (score >= 6 || clearBoardCount >= 1) {
+                starsHtml = '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>';
+                rankText = '湊十小勇士 🌟';
+                emoji = '🎉';
+            } else {
+                starsHtml = '<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>';
+                rankText = '湊十小精靈 ✨';
+                emoji = '💪';
+            }
+
+            document.getElementById('starContainer').innerHTML = starsHtml;
+            document.getElementById('finalRank').innerText = rankText;
+            document.getElementById('modalEmoji').innerText = emoji;
+
+            // Reset Input Name
+            document.getElementById('playerNameInput').value = '';
+
+            document.getElementById('gameOverModal').classList.add('active');
+        }
+
+        function closeGameOverModal() {
+            document.getElementById('gameOverModal').classList.remove('active');
+        }
+
+        // --- Leaderboard LocalStorage Management ---
+        function getLeaderboard() {
+            const data = localStorage.getItem('make10_leaderboard');
+            return data ? JSON.parse(data) : [
+                { name: '小明', score: 18, clears: 3, date: '2026-10-15' },
+                { name: '美美', score: 12, clears: 2, date: '2026-10-18' },
+                { name: '巧虎', score: 6, clears: 1, date: '2026-10-20' }
+            ];
+        }
+
+        function saveScore() {
+            const nameInput = document.getElementById('playerNameInput').value.trim() || '湊十勇士';
+            const board = getLeaderboard();
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            board.push({ name: nameInput, score: score, clears: clearBoardCount, date: dateStr });
+
+            // Sort high score first, then clears
+            board.sort((a, b) => (b.score - a.score) || (b.clears - a.clears));
+            const topBoard = board.slice(0, 7);
+
+            localStorage.setItem('make10_leaderboard', JSON.stringify(topBoard));
+
+            closeGameOverModal();
+            openLeaderboard();
+        }
+
+        function openLeaderboard() {
+            sounds.playClickSound();
+            const listContainer = document.getElementById('leaderboardList');
+            const board = getLeaderboard();
+
+            listContainer.innerHTML = '';
+
+            if (board.length === 0) {
+                listContainer.innerHTML = '<p class="text-gray-400 py-4 font-bold">目前還沒有紀錄喔！</p>';
+            } else {
+                board.forEach((item, index) => {
+                    let badgeColor = 'bg-slate-100 text-slate-600';
+                    if (index === 0) badgeColor = 'bg-amber-100 text-amber-800 font-black border border-amber-300';
+                    if (index === 1) badgeColor = 'bg-slate-200 text-slate-700 font-bold';
+                    if (index === 2) badgeColor = 'bg-orange-100 text-orange-800 font-bold';
+
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between p-3 rounded-xl ${badgeColor}`;
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center text-xs font-black shadow-sm">
+                                ${index + 1}
+                            </span>
+                            <span class="font-bold text-sm md:text-base">${escapeHtml(item.name)}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">${item.clears || 0} 清版</span>
+                            <span class="text-base font-black text-indigo-600">${item.score} 組</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+                });
+            }
+
+            document.getElementById('leaderboardModal').classList.add('active');
+        }
+
+        function closeLeaderboard() {
+            sounds.playClickSound();
+            document.getElementById('leaderboardModal').classList.remove('active');
+        }
+
+        function handleLeaderboardBackdropClick(event) {
+            if (event.target === document.getElementById('leaderboardModal')) {
+                closeLeaderboard();
+            }
+        }
+
+        // Sanitize string for safety
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        // Initialize preview grid on load
+        window.onload = () => {
+            numbers = generateSolvableBoard();
+            renderBoard();
+        };
+    </script>
+</body>
+</html>
