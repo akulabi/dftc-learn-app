@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sing & Read - Kids Lyric Reader</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
@@ -27,8 +24,6 @@
               pink: '#FF6B6B',
               teal: '#4ECDC4',
               blue: '#118AB2',
-              purple: '#845EC2',
-              darkBg: '#0F172A',
             }
           }
         }
@@ -37,30 +32,26 @@
   </script>
 
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
     }
     ::-webkit-scrollbar-track {
       background: #0f172a;
-      border-radius: 12px;
+      border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb {
       background: #334155;
-      border-radius: 12px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+      border-radius: 10px;
     }
 
-    /* Word token styling: Large light grey font for kids */
+    /* Unread words: large, soft light-grey */
     .lyric-word {
       display: inline-block;
-      color: #9E9E9E; /* Light grey text */
-      transition: all 0.15s ease-in-out;
+      color: #94A3B8; /* Light slate grey */
+      transition: color 0.08s ease, background-color 0.08s ease, transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
       padding: 4px 8px;
-      margin: 2px 3px;
+      margin: 2px;
       border-radius: 12px;
       cursor: pointer;
       user-select: none;
@@ -71,178 +62,136 @@
       color: #ffffff;
     }
 
-    /* Punctuation token styling (Visible, non-spoken) */
+    /* Punctuation styling */
     .lyric-punct {
       display: inline-block;
       color: #64748B;
-      padding: 0 2px;
+      padding: 0 1px;
       margin: 0;
       user-select: none;
     }
 
-    /* Active Spoken Word Highlight Styling: Glowing Bright Gold Text */
+    /* Active Spoken Word: Glowing Bright Gold/Yellow & Scaled */
     .lyric-word.active-word {
-      color: #0f172a !important; /* Dark text for high contrast */
-      background-color: #FFD700 !important; /* Gold / Bright Yellow */
-      box-shadow: 0 0 22px rgba(255, 215, 0, 0.95);
-      transform: scale(1.22);
+      color: #0f172a !important;
+      background-color: #FFD166 !important;
+      box-shadow: 0 0 24px rgba(255, 209, 102, 0.95);
+      transform: scale(1.25);
       font-weight: 700;
       z-index: 20;
-      border: 2px solid #FF9800;
     }
 
     .lyric-viewport {
       scroll-behavior: smooth;
-    }
-
-    @keyframes pulse-ring {
-      0% { transform: scale(0.96); opacity: 0.85; }
-      50% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(0.96); opacity: 0.85; }
-    }
-    .playing-pulse {
-      animation: pulse-ring 2s infinite ease-in-out;
     }
   </style>
 </head>
 
 <body class="bg-slate-900 font-quicksand min-h-screen text-slate-100 flex flex-col justify-between select-none">
 
-  <!-- Header Banner -->
-  <header class="bg-gradient-to-r from-brand-pink via-brand-purple to-brand-teal p-4 shadow-xl rounded-b-3xl">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('library')">
-        <div class="bg-white p-2.5 rounded-2xl shadow-md text-brand-pink text-2xl">
+  <!-- Header -->
+  <header class="bg-slate-950 p-4 shadow-md border-b border-slate-800">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('library')">
+        <div class="bg-brand-pink text-white w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow">
           <i class="fa-solid fa-music"></i>
         </div>
-        <div>
-          <h1 class="font-fredoka text-2xl sm:text-3xl font-bold tracking-wide text-white drop-shadow-md">
-            Sing & Read! <span class="text-xs bg-white/20 px-2.5 py-0.5 rounded-full text-white">Kids Reader</span>
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-100 font-medium">LRC Timed Sync • Cantonese (zh-HK) • Speech Sync & Auto-Center</p>
-        </div>
+        <h1 class="font-fredoka text-2xl font-bold tracking-wide text-white">
+          Sing & Read
+        </h1>
       </div>
 
-      <!-- Navigation Controls -->
       <div class="flex items-center gap-2">
-        <button onclick="switchView('search')" id="nav-search-btn" class="flex items-center gap-2 bg-white text-slate-800 hover:bg-slate-100 font-fredoka font-semibold px-4 py-2 rounded-2xl shadow-md transition transform active:scale-95 text-sm">
-          <i class="fa-solid fa-magnifying-glass text-brand-blue"></i> Find Songs
+        <button onclick="switchView('search')" id="nav-search-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-fredoka font-semibold px-4 py-2 rounded-2xl transition flex items-center gap-2 text-sm border border-slate-700">
+          <i class="fa-solid fa-magnifying-glass text-brand-teal"></i>
+          <span>Search</span>
         </button>
-        <button onclick="switchView('library')" id="nav-library-btn" class="flex items-center gap-2 bg-brand-yellow text-slate-900 hover:bg-yellow-300 font-fredoka font-semibold px-4 py-2 rounded-2xl shadow-md transition transform active:scale-95 text-sm">
-          <i class="fa-solid fa-book-open"></i> Saved Songs (<span id="saved-count">0</span>)
+        <button onclick="switchView('library')" id="nav-library-btn" class="bg-brand-yellow text-slate-900 hover:bg-yellow-300 font-fredoka font-semibold px-4 py-2 rounded-2xl transition flex items-center gap-2 text-sm shadow">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Saved (<span id="saved-count">0</span>)</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-5xl w-full mx-auto p-4 flex-1 flex flex-col gap-6">
+  <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col justify-center">
 
     <!-- VIEW 1: SEARCH VIEW -->
-    <section id="view-search" class="hidden flex-col gap-4 bg-slate-800/90 p-6 rounded-3xl shadow-xl border-2 border-slate-700">
-      <h2 class="font-fredoka text-2xl font-bold text-amber-300 flex items-center gap-2">
-        <i class="fa-solid fa-magnifying-glass text-brand-teal"></i> Search Song Lyrics (LRCLIB)
-      </h2>
-      
-      <form onsubmit="handleSearch(event)" class="flex flex-col sm:flex-row gap-3">
+    <section id="view-search" class="hidden flex-col gap-4 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
+      <form onsubmit="handleSearch(event)" class="flex gap-3">
         <div class="relative flex-1">
           <input 
             type="text" 
             id="search-input" 
-            placeholder="Type song title or artist (e.g. 童話 / Let It Go)..." 
-            class="w-full pl-12 pr-4 py-3.5 text-lg rounded-2xl bg-slate-900 text-white border-2 border-slate-600 focus:border-brand-teal focus:outline-none shadow-inner"
+            placeholder="Search song title or artist..." 
+            class="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-900 text-white border border-slate-700 focus:border-brand-teal focus:outline-none font-medium"
           />
-          <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+          <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
         </div>
         <button 
           type="button" 
-          id="search-btn"
           onclick="handleSearch(event)"
-          class="bg-brand-teal hover:bg-teal-400 text-slate-900 font-fredoka font-bold text-lg px-8 py-3.5 rounded-2xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <span>Find Song</span>
+          class="bg-brand-teal hover:bg-teal-400 text-slate-900 font-fredoka font-bold px-6 py-3 rounded-2xl transition flex items-center gap-2">
+          <span>Find</span>
         </button>
       </form>
 
-      <!-- Search Loading Indicator -->
-      <div id="search-loading" class="hidden text-center py-12">
-        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-teal"></i>
-        <p class="mt-3 text-slate-400 font-semibold text-lg">Searching for lyrics...</p>
+      <div id="search-loading" class="hidden text-center py-8">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-teal"></i>
       </div>
 
-      <!-- Search Results Container -->
-      <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 max-h-[420px] overflow-y-auto p-1">
-      </div>
+      <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1"></div>
     </section>
 
-    <!-- VIEW 2: SAVED SONGS LIBRARY (SORTED A-Z) -->
-    <section id="view-library" class="flex flex-col gap-4 bg-slate-800/90 p-6 rounded-3xl shadow-xl border-2 border-slate-700">
-      <div class="flex justify-between items-center flex-wrap gap-2">
-        <h2 class="font-fredoka text-2xl font-bold text-amber-300 flex items-center gap-2">
-          <i class="fa-solid fa-compact-disc text-brand-pink"></i> My Saved Songs (A-Z)
-        </h2>
-        <button onclick="switchView('search')" class="text-xs bg-slate-700 hover:bg-slate-600 text-amber-300 font-bold px-3.5 py-2 rounded-xl transition border border-slate-600">
-          + Search New Song
+    <!-- VIEW 2: SAVED LIBRARY VIEW (A-Z) -->
+    <section id="view-library" class="flex flex-col gap-4 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
+      <div id="library-empty" class="text-center py-12">
+        <div class="text-5xl mb-3">🎵</div>
+        <h3 class="font-fredoka text-lg text-slate-300">No saved songs</h3>
+        <button onclick="switchView('search')" class="mt-4 bg-brand-pink text-white font-fredoka px-6 py-2.5 rounded-2xl shadow hover:bg-pink-600 transition text-sm">
+          Search Songs
         </button>
       </div>
 
-      <!-- Empty State -->
-      <div id="library-empty" class="text-center py-12 bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-700">
-        <div class="text-6xl mb-3">🎵</div>
-        <h3 class="font-fredoka text-xl text-slate-300 font-semibold">No saved songs yet!</h3>
-        <p class="text-slate-400 text-sm mt-1 mb-4">Search for your favorite tracks to save and read along.</p>
-        <button onclick="switchView('search')" class="bg-brand-pink text-white font-fredoka px-6 py-2.5 rounded-2xl shadow-md hover:bg-pink-600 transition">
-          Find Songs Now
-        </button>
-      </div>
-
-      <!-- Saved Songs Grid -->
-      <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      </div>
+      <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </section>
 
     <!-- VIEW 3: LYRIC PLAYER VIEW -->
-    <section id="view-player" class="hidden flex-col gap-4 bg-slate-800 p-5 sm:p-6 rounded-3xl shadow-2xl border-2 border-slate-700">
+    <section id="view-player" class="hidden flex-col gap-3 bg-slate-800 p-4 sm:p-6 rounded-3xl border border-slate-700 shadow-2xl">
       
-      <!-- Top Song Header -->
-      <div class="flex items-center justify-between border-b border-slate-700 pb-4 flex-wrap gap-2">
-        <div>
-          <h2 id="player-title" class="font-fredoka text-2xl sm:text-3xl font-bold text-amber-300">Song Title</h2>
-          <p id="player-artist" class="text-slate-400 font-semibold text-sm sm:text-base">Artist Name</p>
+      <!-- Song Info -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-700">
+        <div class="truncate pr-2">
+          <h2 id="player-title" class="font-fredoka text-2xl font-bold text-brand-yellow truncate">Song Title</h2>
+          <p id="player-artist" class="text-xs font-semibold text-slate-400 truncate">Artist</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span id="synced-badge" class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full font-bold hidden">
-            <i class="fa-solid fa-clock mr-1"></i> LRC Timed Sync
-          </span>
-          <button title="Back to Library" onclick="switchView('library')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded-xl transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> Library
-          </button>
-        </div>
+        <button onclick="switchView('library')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-xl transition flex-shrink-0">
+          <i class="fa-solid fa-arrow-left mr-1"></i> Back
+        </button>
       </div>
 
-      <!-- Control Panel -->
-      <div class="bg-slate-900/95 p-4 rounded-2xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- Player Controls -->
+      <div class="bg-slate-900/90 p-3 rounded-2xl border border-slate-700 flex flex-wrap items-center justify-between gap-3">
         
-        <!-- Play / Pause / Restart Buttons -->
-        <div class="flex items-center gap-3 w-full md:w-auto justify-center">
-          <button id="btn-play" onclick="togglePlay()" class="w-14 h-14 bg-brand-pink hover:bg-pink-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl transition transform active:scale-95">
-            <i class="fa-solid fa-play ml-1" id="play-icon"></i>
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button id="btn-play" onclick="togglePlay()" class="w-11 h-11 bg-brand-pink hover:bg-pink-600 text-white rounded-2xl shadow flex items-center justify-center text-xl transition transform active:scale-95">
+            <i class="fa-solid fa-play ml-0.5" id="play-icon"></i>
           </button>
-          <button onclick="stopSpeech()" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-full flex items-center justify-center text-lg transition transform active:scale-95" title="Stop">
-            <i class="fa-solid fa-square"></i>
+          <button onclick="stopSpeech()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl flex items-center justify-center transition active:scale-95">
+            <i class="fa-solid fa-square text-xs"></i>
           </button>
-          <button onclick="restartSpeech()" class="w-12 h-12 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-full flex items-center justify-center text-lg transition transform active:scale-95" title="Restart from beginning">
-            <i class="fa-solid fa-rotate-left"></i>
+          <button onclick="restartSpeech()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl flex items-center justify-center transition active:scale-95">
+            <i class="fa-solid fa-rotate-left text-xs"></i>
           </button>
         </div>
 
-        <!-- Controls: Speed Slider (0.7x Default) & Filtered Voices -->
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          
+        <!-- Speed & Voice controls -->
+        <div class="flex items-center gap-3">
           <!-- Speed Controller (Default 0.7x) -->
-          <div class="flex items-center gap-2 bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 w-full sm:w-auto justify-between">
-            <i class="fa-solid fa-gauge-high text-brand-teal"></i>
-            <span class="text-xs font-bold text-slate-400 w-12">Speed:</span>
+          <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+            <span class="text-xs font-bold text-slate-400">Speed:</span>
             <input 
               type="range" 
               id="speed-rate" 
@@ -251,100 +200,100 @@
               step="0.05" 
               value="0.7" 
               oninput="onSpeedChange()"
-              class="w-28 accent-brand-pink cursor-pointer"
+              class="w-20 accent-brand-pink cursor-pointer"
             >
-            <span id="speed-val" class="font-fredoka text-sm text-amber-300 font-bold w-12 text-right">0.7x</span>
+            <span id="speed-val" class="font-fredoka text-xs text-brand-yellow font-bold w-9 text-right">0.7x</span>
           </div>
 
-          <!-- Language Filtered Voices (Cantonese / EN / JA / KO) -->
-          <div class="flex items-center gap-2 bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 w-full sm:w-auto">
-            <i class="fa-solid fa-language text-brand-yellow"></i>
-            <select id="voice-select" onchange="onVoiceChange()" class="bg-transparent text-xs font-bold text-slate-200 focus:outline-none max-w-[210px] truncate cursor-pointer">
-              <option value="">Auto Cantonese / Standard Voice</option>
-            </select>
-          </div>
-
+          <!-- Voice Selection -->
+          <select id="voice-select" onchange="onVoiceChange()" class="bg-slate-800 text-xs font-bold text-slate-300 border border-slate-700 px-3 py-2 rounded-xl focus:outline-none max-w-[160px] truncate cursor-pointer">
+            <option value="">Voice: Auto</option>
+          </select>
         </div>
       </div>
 
-      <!-- Lyric Viewing Viewport -->
-      <div class="relative">
-        <!-- Center Target Indicator Line -->
-        <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-b-2 border-dashed border-amber-400/40 pointer-events-none z-10 flex justify-between px-3">
-          <span class="text-[10px] text-amber-400 font-bold bg-slate-900/90 px-2 py-0.5 rounded-full shadow">Reading Center Target</span>
-        </div>
+      <!-- Lyrics Canvas Viewport -->
+      <div class="relative mt-1">
+        <!-- Target Center Line -->
+        <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-b border-dashed border-brand-yellow/30 pointer-events-none z-10"></div>
 
-        <!-- Scrollable Lyric Viewport -->
         <div 
           id="lyrics-viewport" 
-          class="lyric-viewport h-[380px] sm:h-[440px] overflow-y-auto bg-slate-950 rounded-2xl p-6 border-2 border-slate-700 relative scroll-smooth text-center"
+          class="lyric-viewport h-[360px] sm:h-[420px] overflow-y-auto bg-slate-950 rounded-2xl p-6 border border-slate-800 relative text-center"
         >
-          <div id="lyrics-content" class="py-[180px] leading-relaxed font-fredoka text-3xl sm:text-4xl tracking-wide select-none">
-            <!-- Token Spans Inserted Here -->
+          <div id="lyrics-content" class="py-[160px] leading-relaxed font-fredoka text-3xl sm:text-4xl tracking-wide select-none">
+            <!-- Words rendered here -->
           </div>
         </div>
       </div>
-
-      <!-- Usage Hint -->
-      <p class="text-center text-xs text-slate-400 font-medium">
-        ✨ <span class="font-bold text-amber-300">LRC Timing & Speed Scaled:</span> Inter-line delay is scaled by <span class="text-brand-teal font-bold">(1 / rate)</span>. Scroll to seek instantly!
-      </p>
 
     </section>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800 bg-slate-950">
-    <p>Sing & Read Kids • Cantonese (zh-HK / yue-HK) Speech Synthesis • EN / JA / KO Support</p>
-  </footer>
-
-  <!-- Toast Notification Container -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 border border-slate-700 text-white text-sm font-semibold px-4 py-3 rounded-2xl shadow-2xl transition transform translate-y-20 opacity-0 z-50 flex items-center gap-2">
-    <i id="toast-icon" class="fa-solid fa-circle-info text-amber-300"></i>
-    <span id="toast-msg">Notification</span>
+  <!-- Network Error Dialog Modal -->
+  <div id="error-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-fade-in">
+      <div class="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+        <i class="fa-solid fa-wifi"></i>
+      </div>
+      <h3 class="font-fredoka text-xl font-bold text-white mb-2">Connection Problem</h3>
+      <p id="error-modal-msg" class="text-sm text-slate-300 font-medium mb-6">Unable to connect to the lyrics service. Please check your internet connection.</p>
+      
+      <div class="flex gap-3">
+        <button id="modal-retry-btn" class="flex-1 bg-brand-teal hover:bg-teal-400 text-slate-900 font-fredoka font-bold py-2.5 rounded-2xl transition">
+          Retry
+        </button>
+        <button onclick="closeErrorModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-fredoka font-bold py-2.5 rounded-2xl transition">
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
-    /* ====================================================================
-       APPLICATION STATE & LOCAL STORAGE
-       ==================================================================== */
     const STORAGE_KEY = 'lrclib_kids_saved_songs';
 
     let savedSongs = [];
     let currentSong = null;
-    let wordTokens = []; // { displayText, speakText, spanEl, index, hasFollowPunct, lrcTimeSec }
+    let wordTokens = [];
+    let linePhrases = [];
     let currentTokenIdx = -1;
     let isPlaying = false;
     let hasSyncedLrc = false;
 
-    // Scroll Lock & Timer Flags
+    // Retry state handler
+    let pendingRetryAction = null;
+
+    // Scroll & Timer controls
     let isProgrammaticScrolling = false;
     let isManualScrolling = false;
     let userScrollTimer = null;
-    let wordSpeechTimer = null;
+    let lineSpeechTimer = null;
+    let wordProgressTimers = [];
 
-    // Speech Synthesis
+    // Speech Engine State
     const synth = window.speechSynthesis;
     let selectedVoice = null;
     let isChineseText = false;
+    let currentUtterance = null;
 
-    /* ====================================================================
-       INITIALIZATION & VOICE BINDING
-       ==================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedSongs();
       initVoices();
 
       if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = () => {
-          initVoices();
-        };
+        speechSynthesis.onvoiceschanged = () => initVoices();
       }
 
-      // Bind manual scroll detection
       const viewport = document.getElementById('lyrics-viewport');
       viewport.addEventListener('scroll', onViewportScroll, { passive: true });
+
+      ['wheel', 'touchstart', 'touchmove', 'mousedown'].forEach(eventType => {
+        viewport.addEventListener(eventType, () => {
+          isManualScrolling = true;
+        }, { passive: true });
+      });
 
       switchView('library');
     });
@@ -356,9 +305,6 @@
       }
     }
 
-    /* ====================================================================
-       VIEW MANAGEMENT & TOASTS
-       ==================================================================== */
     function switchView(viewName) {
       stopSpeech();
 
@@ -377,23 +323,26 @@
       }
     }
 
-    function showToast(msg, iconClass = 'fa-circle-info') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      const toastIcon = document.getElementById('toast-icon');
+    /* Error Handling Modal */
+    function showErrorModal(message, retryCallback) {
+      document.getElementById('error-modal-msg').innerText = message || 'Unable to connect to the lyrics service.';
+      pendingRetryAction = retryCallback;
+      
+      const retryBtn = document.getElementById('modal-retry-btn');
+      retryBtn.onclick = () => {
+        closeErrorModal();
+        if (pendingRetryAction) pendingRetryAction();
+      };
 
-      toastMsg.innerText = msg;
-      toastIcon.className = `fa-solid ${iconClass} text-amber-300`;
-
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
+      document.getElementById('error-modal').classList.remove('hidden');
     }
 
-    /* ====================================================================
-       LOCALSTORAGE (ALPHABETICAL A-Z SORT)
-       ==================================================================== */
+    function closeErrorModal() {
+      document.getElementById('error-modal').classList.add('hidden');
+      pendingRetryAction = null;
+    }
+
+    /* Local Storage Management */
     function sortSavedSongs() {
       savedSongs.sort((a, b) => (a.trackName || '').localeCompare(b.trackName || '', undefined, { sensitivity: 'base' }));
     }
@@ -404,7 +353,6 @@
         savedSongs = data ? JSON.parse(data) : [];
         sortSavedSongs();
       } catch (e) {
-        console.error('Failed loading saved songs:', e);
         savedSongs = [];
       }
       updateSavedCount();
@@ -415,9 +363,7 @@
         sortSavedSongs();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSongs));
         updateSavedCount();
-      } catch (e) {
-        console.error('Failed saving to storage:', e);
-      }
+      } catch (e) {}
     }
 
     function updateSavedCount() {
@@ -426,30 +372,17 @@
 
     function deleteSong(id, event) {
       if (event) event.stopPropagation();
-      const songToDelete = savedSongs.find(s => s.id === id);
-      const title = songToDelete ? songToDelete.trackName : 'this song';
-      
-      if (confirm(`Remove "${title}" from your saved library?`)) {
-        savedSongs = savedSongs.filter(s => s.id !== id);
-        saveSongsToStorage();
-        renderLibrary();
-        showToast('Song removed from library', 'fa-trash');
-      }
+      savedSongs = savedSongs.filter(s => s.id !== id);
+      saveSongsToStorage();
+      renderLibrary();
     }
 
-    /* ====================================================================
-       LRCLIB SEARCH & DATA PARSING
-       ==================================================================== */
+    /* LRCLIB Search with Network Error Handling */
     async function handleSearch(event) {
       if (event) event.preventDefault();
-
       const inputEl = document.getElementById('search-input');
       const query = inputEl.value.trim();
-
-      if (!query) {
-        showToast('Type a song title to search', 'fa-circle-exclamation');
-        return;
-      }
+      if (!query) return;
 
       const resultsContainer = document.getElementById('search-results');
       const loadingEl = document.getElementById('search-loading');
@@ -458,92 +391,72 @@
       loadingEl.classList.remove('hidden');
 
       try {
-        const response = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
-        if (!response.ok) throw new Error('Search failed');
-        const data = await response.json();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
+        const response = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error('Network response failed');
+
+        const data = await response.json();
         loadingEl.classList.add('hidden');
 
         if (!data || !Array.isArray(data) || data.length === 0) {
-          resultsContainer.innerHTML = `
-            <div class="col-span-full text-center py-8 text-slate-400">
-              <i class="fa-solid fa-face-frown text-4xl mb-2 text-amber-400"></i>
-              <p class="font-bold">No songs found!</p>
-              <p class="text-xs">Try searching for another song title or artist.</p>
-            </div>
-          `;
+          resultsContainer.innerHTML = '<div class="col-span-full text-center py-6 text-slate-400">No lyrics found</div>';
           return;
         }
 
         renderSearchResults(data);
       } catch (err) {
-        console.error('Search error:', err);
         loadingEl.classList.add('hidden');
-        resultsContainer.innerHTML = `
-          <div class="col-span-full text-center py-8 text-rose-400">
-            <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
-            <p class="font-bold">Error fetching lyrics.</p>
-            <p class="text-xs text-slate-400">Please check your network connection and try again.</p>
-          </div>
-        `;
+        showErrorModal('Unable to fetch songs from LRCLIB. Please check your internet connection.', () => handleSearch(event));
       }
     }
 
     function renderSearchResults(results) {
-      const resultsContainer = document.getElementById('search-results');
-      resultsContainer.innerHTML = '';
+      const container = document.getElementById('search-results');
+      container.innerHTML = '';
 
       results.forEach(item => {
-        const rawLyrics = item.syncedLyrics || item.plainLyrics;
-        if (!rawLyrics) return;
-
+        if (!item.syncedLyrics && !item.plainLyrics) return;
         const isSaved = savedSongs.some(s => s.id === item.id);
-        const hasSynced = !!item.syncedLyrics;
 
         const card = document.createElement('div');
-        card.className = "bg-slate-900/90 border border-slate-700 hover:border-brand-teal p-4 rounded-2xl flex justify-between items-center transition shadow-sm";
-        
+        card.className = "bg-slate-900 border border-slate-700 p-3.5 rounded-2xl flex justify-between items-center";
         card.innerHTML = `
-          <div class="pr-3 overflow-hidden">
-            <div class="flex items-center gap-2">
-              <h4 class="font-fredoka font-bold text-amber-300 text-lg truncate">${escapeHtml(item.trackName)}</h4>
-              ${hasSynced ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">LRC</span>' : ''}
-            </div>
-            <p class="text-xs text-slate-300 font-semibold truncate"><i class="fa-solid fa-user text-brand-teal mr-1"></i>${escapeHtml(item.artistName)}</p>
-            <p class="text-[11px] text-slate-500 truncate">${escapeHtml(item.albumName || 'Single')}</p>
+          <div class="pr-2 truncate">
+            <h4 class="font-fredoka font-bold text-brand-yellow text-base truncate">${escapeHtml(item.trackName)}</h4>
+            <p class="text-xs text-slate-400 truncate">${escapeHtml(item.artistName)}</p>
           </div>
           <button 
             type="button"
             onclick="selectAndSaveSong(${item.id}, '${escapeJsString(item.trackName)}', '${escapeJsString(item.artistName)}')" 
-            class="${isSaved ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-brand-pink hover:bg-pink-600'} text-white font-fredoka text-sm px-4 py-2 rounded-xl shadow transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
-            <i class="fa-solid ${isSaved ? 'fa-check' : 'fa-bookmark'}"></i>
-            <span>${isSaved ? 'Saved' : 'Save'}</span>
+            class="${isSaved ? 'bg-emerald-600' : 'bg-brand-pink hover:bg-pink-600'} text-white font-fredoka text-xs px-3.5 py-1.5 rounded-xl transition flex-shrink-0">
+            ${isSaved ? 'Saved' : 'Save'}
           </button>
         `;
-        resultsContainer.appendChild(card);
+        container.appendChild(card);
       });
-
-      if (resultsContainer.children.length === 0) {
-        resultsContainer.innerHTML = `
-          <div class="col-span-full text-center py-8 text-slate-400">
-            <p class="font-bold">No lyrics available for these tracks.</p>
-          </div>
-        `;
-      }
     }
 
     async function selectAndSaveSong(id, trackName, artistName) {
       try {
-        const response = await fetch(`https://lrclib.net/api/get/${id}`);
-        if (!response.ok) throw new Error('Failed to load track details');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(`https://lrclib.net/api/get/${id}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error('Fetch details failed');
+
         const data = await response.json();
-
         const rawLyrics = data.syncedLyrics || data.plainLyrics || '';
-
-        if (!rawLyrics.trim()) {
-          showToast('Lyrics empty or unavailable', 'fa-triangle-exclamation');
-          return;
-        }
+        if (!rawLyrics.trim()) return;
 
         const songObj = {
           id: data.id,
@@ -554,25 +467,16 @@
         };
 
         const existingIdx = savedSongs.findIndex(s => s.id === songObj.id);
-        if (existingIdx >= 0) {
-          savedSongs[existingIdx] = songObj;
-        } else {
-          savedSongs.push(songObj);
-        }
+        if (existingIdx >= 0) savedSongs[existingIdx] = songObj;
+        else savedSongs.push(songObj);
+
         saveSongsToStorage();
-
-        showToast('Song saved to library!', 'fa-circle-check');
         openSongPlayer(songObj);
-
       } catch (err) {
-        console.error('Error fetching lyric detail:', err);
-        showToast('Could not fetch song lyrics', 'fa-triangle-exclamation');
+        showErrorModal('Could not load song lyrics. Please try again.', () => selectAndSaveSong(id, trackName, artistName));
       }
     }
 
-    /* ====================================================================
-       RENDER LIBRARY VIEW (SORTED A-Z)
-       ==================================================================== */
     function renderLibrary() {
       const grid = document.getElementById('library-grid');
       const emptyState = document.getElementById('library-empty');
@@ -591,61 +495,32 @@
 
       savedSongs.forEach(song => {
         const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-700 hover:border-brand-teal p-5 rounded-3xl shadow-md hover:shadow-lg transition cursor-pointer flex flex-col justify-between group relative";
+        card.className = "bg-slate-900 border border-slate-700 hover:border-brand-teal p-4 rounded-2xl transition cursor-pointer flex justify-between items-center group";
         card.onclick = () => openSongPlayer(song);
 
         card.innerHTML = `
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="w-10 h-10 rounded-2xl bg-slate-800 text-brand-teal flex items-center justify-center font-bold border border-slate-700">
-                <i class="fa-solid fa-music"></i>
-              </span>
-              <button 
-                type="button"
-                onclick="deleteSong(${song.id}, event)" 
-                class="text-slate-500 hover:text-rose-400 p-2 rounded-xl transition"
-                title="Remove Song">
-                <i class="fa-solid fa-trash-can text-lg"></i>
-              </button>
-            </div>
-            <h3 class="font-fredoka font-bold text-amber-300 text-xl group-hover:text-amber-200 transition truncate">
-              ${escapeHtml(song.trackName)}
-            </h3>
-            <p class="text-xs font-semibold text-slate-400 truncate mt-0.5">
-              ${escapeHtml(song.artistName)}
-            </p>
+          <div class="truncate pr-2">
+            <h3 class="font-fredoka font-bold text-brand-yellow text-base group-hover:text-yellow-200 truncate">${escapeHtml(song.trackName)}</h3>
+            <p class="text-xs text-slate-400 truncate">${escapeHtml(song.artistName)}</p>
           </div>
-          <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-brand-teal font-fredoka font-bold">
-            <span>Read & Sing</span>
-            <i class="fa-solid fa-circle-play text-lg"></i>
-          </div>
+          <button type="button" onclick="deleteSong(${song.id}, event)" class="text-slate-500 hover:text-rose-400 p-1.5">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
         `;
-
         grid.appendChild(card);
       });
     }
 
-    /* ====================================================================
-       LYRIC TOKENIZATION, LRC TIMECODE PARSING & CONTRACTIONS JOINING
-       ==================================================================== */
+    /* Parsing Lyrics & Word Tokenization */
     function openSongPlayer(song) {
       currentSong = song;
       document.getElementById('player-title').innerText = song.trackName;
       document.getElementById('player-artist').innerText = song.artistName;
 
-      // Detect Chinese / CJK characters in lyrics
       isChineseText = /[\u4e00-\u9fa5\u3400-\u4dbf]/.test(song.lyrics);
 
       parseAndTokenizeLyrics(song.lyrics);
-      
-      const badge = document.getElementById('synced-badge');
-      if (hasSyncedLrc) {
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      populateFilteredVoices(); // Refresh auto-selected voice
+      populateFilteredVoices();
       switchView('player');
     }
 
@@ -653,12 +528,13 @@
       const contentEl = document.getElementById('lyrics-content');
       contentEl.innerHTML = '';
       wordTokens = [];
+      linePhrases = [];
       currentTokenIdx = -1;
       hasSyncedLrc = false;
 
       const lines = rawLyrics.split('\n');
       const timecodeRegex = /^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
-      const punctRegex = /[.,?!;:—–\-()\[\]{}"'“”‘’/\\。，！？、：；«»‹›]/;
+      const punctRegex = /[.,?!;:—–\-()\[\]{}"'“”‘’/\\。，！？、：；]/;
 
       lines.forEach((line) => {
         let lrcTimeSec = null;
@@ -676,53 +552,50 @@
 
         if (!lineText) return;
 
+        const lineIdx = linePhrases.length;
         const lineDiv = document.createElement('div');
-        lineDiv.className = "my-4 flex flex-wrap justify-center items-center gap-1.5";
+        lineDiv.className = "my-3 flex flex-wrap justify-center items-center gap-1";
 
         let regex;
         if (isChineseText) {
-          // Tokenize Chinese character-by-character while matching English words with contractions
           regex = /([\u4e00-\u9fa5\u3400-\u4dbf]|[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*|[^\s\u4e00-\u9fa5\u3400-\u4dbfa-zA-Z0-9]+|\s+)/gu;
         } else {
-          // Join apostrophes/contractions inside words (e.g., don't, I'm, rock 'n' roll)
           regex = /([\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*|[^\p{L}\p{N}\s]+|\s+)/gu;
         }
 
         let match;
+        let lineSpeakText = "";
+        const lineTokens = [];
 
         while ((match = regex.exec(lineText)) !== null) {
           const str = match[0];
-          
+
           if (/^\s+$/.test(str)) {
             const spaceSpan = document.createElement('span');
             spaceSpan.innerHTML = '&nbsp;';
             lineDiv.appendChild(spaceSpan);
+            if (lineSpeakText.length > 0 && !lineSpeakText.endsWith(" ")) {
+              lineSpeakText += " ";
+            }
           } else if (punctRegex.test(str) && !/[\p{L}\p{N}\u4e00-\u9fa5]/u.test(str)) {
-            // Displayed visually, NOT spoken in audio
             const pSpan = document.createElement('span');
             pSpan.className = 'lyric-punct';
             pSpan.innerText = str;
             lineDiv.appendChild(pSpan);
-
-            // Flag previous token for micro-delay pause
-            if (wordTokens.length > 0) {
-              wordTokens[wordTokens.length - 1].hasFollowPunct = true;
-            }
           } else {
-            // Cleaned audio word keeping apostrophes intact
-            const cleanAudioWord = str.replace(/[.,?!;:—–\-()\[\]{}"“”/\\。，！？、：；]/g, '').trim();
+            const cleanWord = str.replace(/[.,?!;:—–\-()\[\]{}"“”/\\。，！？、：；]/g, '').trim();
 
-            if (cleanAudioWord.length > 0) {
+            if (cleanWord.length > 0) {
               const span = document.createElement('span');
               span.className = 'lyric-word';
               span.innerText = str;
 
               const tokenObj = {
                 displayText: str,
-                speakText: cleanAudioWord,
+                speakText: cleanWord,
                 spanEl: span,
                 index: wordTokens.length,
-                hasFollowPunct: punctRegex.test(str),
+                lineIdx: lineIdx,
                 lrcTimeSec: lrcTimeSec
               };
 
@@ -732,89 +605,73 @@
               };
 
               wordTokens.push(tokenObj);
+              lineTokens.push(tokenObj);
               lineDiv.appendChild(span);
+
+              lineSpeakText += cleanWord + (isChineseText ? "" : " ");
             }
           }
         }
 
-        contentEl.appendChild(lineDiv);
+        if (lineTokens.length > 0) {
+          linePhrases.push({
+            lineIdx: lineIdx,
+            fullSpeakText: lineSpeakText.trim(),
+            tokens: lineTokens,
+            lrcTimeSec: lrcTimeSec
+          });
+          contentEl.appendChild(lineDiv);
+        }
       });
 
-      const viewport = document.getElementById('lyrics-viewport');
-      viewport.scrollTop = 0;
+      document.getElementById('lyrics-viewport').scrollTop = 0;
     }
 
-    /* ====================================================================
-       CANTONESE (zh-HK / yue-HK) & LANGUAGE VOICE SYNTHESIS SELECTION
-       ==================================================================== */
+    /* Cantonese (zh-HK) & Voice Filtering */
     function findBestCantoneseVoice(voices) {
       if (!voices || voices.length === 0) return null;
-
-      // Priority list targeting Cantonese specifically
       return voices.find(v => {
         const lang = (v.lang || '').toLowerCase();
         const name = (v.name || '').toLowerCase();
-        return lang === 'zh-hk' || lang === 'yue-hk' || lang.startsWith('yue') || lang.includes('zh-cantonese') || name.includes('cantonese') || name.includes('hong kong');
-      }) || voices.find(v => {
-        const lang = (v.lang || '').toLowerCase();
-        return lang.startsWith('zh') || lang.startsWith('yue');
-      }) || null;
+        return lang === 'zh-hk' || lang === 'yue-hk' || lang.startsWith('yue') || name.includes('cantonese') || name.includes('hong kong');
+      }) || voices.find(v => (v.lang || '').toLowerCase().startsWith('zh')) || null;
     }
 
     function populateFilteredVoices() {
       const voiceSelect = document.getElementById('voice-select');
       const voices = synth.getVoices() || [];
-
-      voiceSelect.innerHTML = '<option value="">Auto Cantonese / Standard Voice</option>';
+      voiceSelect.innerHTML = '<option value="">Voice: Auto</option>';
 
       const supportedPrefixes = ['en', 'zh', 'yue', 'ja', 'ko'];
-
       const filteredVoices = voices.filter(voice => {
         const lang = (voice.lang || '').toLowerCase();
         return supportedPrefixes.some(prefix => lang.startsWith(prefix));
       });
 
-      let autoSelectedVoice = null;
-
-      if (isChineseText) {
-        autoSelectedVoice = findBestCantoneseVoice(voices);
-      } else if (filteredVoices.length > 0) {
-        autoSelectedVoice = filteredVoices[0];
-      }
+      let autoSelected = isChineseText ? findBestCantoneseVoice(voices) : filteredVoices[0];
 
       filteredVoices.forEach((voice) => {
         const globalIdx = voices.indexOf(voice);
         const option = document.createElement('option');
         option.value = globalIdx;
-        
-        const isCantonese = (voice.lang || '').toLowerCase().includes('hk') || (voice.name || '').toLowerCase().includes('cantonese');
-        option.textContent = `${voice.name} (${voice.lang})${isCantonese ? ' 🇭🇰 [Cantonese]' : ''}`;
+        option.textContent = `${voice.name} (${voice.lang})`;
 
-        if (autoSelectedVoice && voice === autoSelectedVoice) {
+        if (autoSelected && voice === autoSelected) {
           option.selected = true;
         }
-
         voiceSelect.appendChild(option);
       });
 
-      if (autoSelectedVoice) {
-        selectedVoice = autoSelectedVoice;
-      }
+      selectedVoice = autoSelected;
     }
 
     function onVoiceChange() {
       const voiceSelect = document.getElementById('voice-select');
       const voices = synth.getVoices() || [];
-      
-      if (voiceSelect.value !== "") {
-        selectedVoice = voices[parseInt(voiceSelect.value)];
-      } else {
-        selectedVoice = isChineseText ? findBestCantoneseVoice(voices) : null;
-      }
+      selectedVoice = voiceSelect.value !== "" ? voices[parseInt(voiceSelect.value)] : (isChineseText ? findBestCantoneseVoice(voices) : null);
 
       if (isPlaying) {
-        const currentIdx = currentTokenIdx >= 0 ? currentTokenIdx : 0;
-        jumpToWordIndex(currentIdx, true);
+        jumpToWordIndex(currentTokenIdx >= 0 ? currentTokenIdx : 0, true);
       }
     }
 
@@ -823,32 +680,34 @@
       document.getElementById('speed-val').innerText = `${parseFloat(rateVal)}x`;
 
       if (isPlaying) {
-        const currentIdx = currentTokenIdx >= 0 ? currentTokenIdx : 0;
-        jumpToWordIndex(currentIdx, true);
+        jumpToWordIndex(currentTokenIdx >= 0 ? currentTokenIdx : 0, true);
       }
     }
 
-    /* ====================================================================
-       PLAYBACK & READ-ALOUD ENGINE (LRC TIME SYNC + SPEED SCALING)
-       ==================================================================== */
+    /* Speech Engine Controls */
     function togglePlay() {
       if (isPlaying) {
         pauseSpeech();
       } else {
-        const startIdx = currentTokenIdx >= 0 ? currentTokenIdx : 0;
-        jumpToWordIndex(startIdx, true);
+        jumpToWordIndex(currentTokenIdx >= 0 ? currentTokenIdx : 0, true);
       }
     }
 
+    function clearTimers() {
+      clearTimeout(lineSpeechTimer);
+      wordProgressTimers.forEach(t => clearTimeout(t));
+      wordProgressTimers = [];
+    }
+
     function pauseSpeech() {
-      clearTimeout(wordSpeechTimer);
+      clearTimers();
       synth.cancel();
       isPlaying = false;
       updatePlayButtonUI(false);
     }
 
     function stopSpeech() {
-      clearTimeout(wordSpeechTimer);
+      clearTimers();
       synth.cancel();
       isPlaying = false;
       clearHighlights();
@@ -866,116 +725,156 @@
 
       if (playing) {
         icon.className = 'fa-solid fa-pause';
-        btn.classList.add('playing-pulse', 'bg-brand-teal');
-        btn.classList.remove('bg-brand-pink');
+        btn.classList.replace('bg-brand-pink', 'bg-brand-teal');
       } else {
-        icon.className = 'fa-solid fa-play ml-1';
-        btn.classList.remove('playing-pulse', 'bg-brand-teal');
-        btn.classList.add('bg-brand-pink');
+        icon.className = 'fa-solid fa-play ml-0.5';
+        btn.classList.replace('bg-brand-teal', 'bg-brand-pink');
       }
     }
 
     function jumpToWordIndex(startIndex, startSpeechImmediately = true) {
-      clearTimeout(wordSpeechTimer);
+      clearTimers();
       synth.cancel();
 
       if (wordTokens.length === 0) return;
       if (startIndex < 0) startIndex = 0;
       if (startIndex >= wordTokens.length) startIndex = wordTokens.length - 1;
 
+      const token = wordTokens[startIndex];
       currentTokenIdx = startIndex;
+
       highlightWordAndAutoCenter(startIndex);
 
       if (startSpeechImmediately) {
-        speakWordStep(startIndex);
+        speakLineFromToken(startIndex);
       }
     }
 
-    function speakWordStep(index) {
-      if (!isPlaying && index === currentTokenIdx) {
-        isPlaying = true;
-        updatePlayButtonUI(true);
-      }
-
-      if (!isPlaying || index >= wordTokens.length) {
+    function speakLineFromToken(startTokenIdx) {
+      if (startTokenIdx >= wordTokens.length) {
         stopSpeech();
-        if (index >= wordTokens.length) {
-          showToast('Finished reading lyrics!', 'fa-circle-check');
-        }
         return;
       }
 
-      currentTokenIdx = index;
-      const token = wordTokens[index];
-      const nextToken = wordTokens[index + 1];
+      isPlaying = true;
+      updatePlayButtonUI(true);
 
-      // Auto-center active word in viewport
-      highlightWordAndAutoCenter(index);
+      const startToken = wordTokens[startTokenIdx];
+      const linePhrase = linePhrases[startToken.lineIdx];
 
-      // Default speech speed rate (0.7x)
+      const tokensToSpeak = linePhrase.tokens.filter(t => t.index >= startTokenIdx);
+      const speakPhraseText = tokensToSpeak.map(t => t.speakText).join(isChineseText ? "" : " ");
+
       const speedRate = parseFloat(document.getElementById('speed-rate').value) || 0.7;
 
-      const utterance = new SpeechSynthesisUtterance(token.speakText);
-      utterance.rate = speedRate;
+      currentUtterance = new SpeechSynthesisUtterance(speakPhraseText);
+      currentUtterance.rate = speedRate;
 
-      // Force explicit language for Cantonese / Chinese speech synthesis
       if (isChineseText) {
-        utterance.lang = 'zh-HK'; // Standard Cantonese BC-47 code
+        currentUtterance.lang = 'zh-HK';
       }
 
       const voices = synth.getVoices() || [];
       let targetVoice = selectedVoice || (isChineseText ? findBestCantoneseVoice(voices) : null);
-      
       if (targetVoice) {
-        utterance.voice = targetVoice;
+        currentUtterance.voice = targetVoice;
       }
 
-      utterance.onend = () => {
+      // PRE-CALIBRATED TIMING ALGORITHM (Fixes highlight lag behind speech)
+      const ANTICIPATORY_BIAS_MS = 80;
+      let charOffset = 0;
+      let accumTimeMs = 0;
+      const baseMsPerChar = (isChineseText ? 280 : 100) / speedRate;
+
+      tokensToSpeak.forEach((tok, idx) => {
+        tok.charStart = charOffset;
+        tok.charEnd = charOffset + tok.speakText.length;
+        charOffset += tok.speakText.length + (isChineseText ? 0 : 1);
+
+        const wordDuration = Math.max(180 / speedRate, tok.speakText.length * baseMsPerChar);
+
+        if (idx > 0) {
+          const triggerDelay = Math.max(0, accumTimeMs - ANTICIPATORY_BIAS_MS);
+          const t = setTimeout(() => {
+            if (isPlaying && currentTokenIdx < tok.index) {
+              currentTokenIdx = tok.index;
+              highlightWordAndAutoCenter(tok.index);
+            }
+          }, triggerDelay);
+          wordProgressTimers.push(t);
+        }
+        accumTimeMs += wordDuration;
+      });
+
+      currentTokenIdx = startTokenIdx;
+      highlightWordAndAutoCenter(startTokenIdx);
+
+      currentUtterance.onstart = () => {
+        if (!isPlaying) return;
+        currentTokenIdx = startTokenIdx;
+        highlightWordAndAutoCenter(startTokenIdx);
+      };
+
+      currentUtterance.onboundary = (e) => {
         if (!isPlaying) return;
 
-        // Base inter-word delay
-        let delayMs = Math.max(70, 110 / speedRate);
+        if (e.name === 'word' || e.charIndex !== undefined) {
+          const charIndex = e.charIndex;
+          const matchedToken = tokensToSpeak.find(t => (charIndex + 1) >= t.charStart && charIndex < t.charEnd);
 
-        if (token.hasFollowPunct) {
-          delayMs += 350 / speedRate; // Punctuation micro-pause scaled by rate
+          if (matchedToken) {
+            currentTokenIdx = matchedToken.index;
+            highlightWordAndAutoCenter(matchedToken.index);
+          }
+        }
+      };
+
+      currentUtterance.onend = () => {
+        if (!isPlaying) return;
+
+        const nextLineIdx = startToken.lineIdx + 1;
+        const nextLine = linePhrases[nextLineIdx];
+
+        if (!nextLine || nextLine.tokens.length === 0) {
+          stopSpeech();
+          return;
         }
 
-        // Calculate LRC timestamp offset delay scaled by (1 / speedRate)
-        if (hasSyncedLrc && nextToken && nextToken.lrcTimeSec !== null && token.lrcTimeSec !== null) {
-          const rawDeltaSec = nextToken.lrcTimeSec - token.lrcTimeSec;
+        let delayMs = Math.max(120, Math.min(1200, 250 / speedRate));
+
+        if (hasSyncedLrc && nextLine.lrcTimeSec !== null && linePhrase.lrcTimeSec !== null) {
+          const rawDeltaSec = nextLine.lrcTimeSec - linePhrase.lrcTimeSec;
           if (rawDeltaSec > 0) {
-            // Inter-line timing delay is scaled by (1 / rate)
-            const scaledDeltaMs = (rawDeltaSec * 1000) / speedRate;
-            delayMs = Math.max(delayMs, scaledDeltaMs);
+            delayMs = Math.min(1200, Math.max(delayMs, (rawDeltaSec * 1000) / speedRate));
           }
         }
 
-        wordSpeechTimer = setTimeout(() => {
-          speakWordStep(index + 1);
+        lineSpeechTimer = setTimeout(() => {
+          speakLineFromToken(nextLine.tokens[0].index);
         }, delayMs);
       };
 
-      utterance.onerror = () => {
+      currentUtterance.onerror = () => {
         if (!isPlaying) return;
-        wordSpeechTimer = setTimeout(() => {
-          speakWordStep(index + 1);
-        }, 100);
+        lineSpeechTimer = setTimeout(() => {
+          if (startTokenIdx + 1 < wordTokens.length) {
+            speakLineFromToken(startTokenIdx + 1);
+          } else {
+            stopSpeech();
+          }
+        }, 120);
       };
 
-      synth.speak(utterance);
+      synth.speak(currentUtterance);
     }
 
     function clearHighlights() {
       wordTokens.forEach(t => {
-        if (t.spanEl) {
-          t.spanEl.classList.remove('active-word');
-        }
+        if (t.spanEl) t.spanEl.classList.remove('active-word');
       });
     }
 
-    /* ====================================================================
-       ACCURATE AUTO-SCROLL CENTERING
-       ==================================================================== */
+    /* Precise Vertical Center Auto-scrolling */
     function highlightWordAndAutoCenter(index) {
       clearHighlights();
 
@@ -988,11 +887,9 @@
         isProgrammaticScrolling = true;
 
         const viewport = document.getElementById('lyrics-viewport');
-        const tokenRect = token.spanEl.getBoundingClientRect();
-        const viewportRect = viewport.getBoundingClientRect();
+        const span = token.spanEl;
 
-        // Position token directly in center line of viewport
-        const targetScrollTop = viewport.scrollTop + (tokenRect.top - viewportRect.top) - (viewportRect.height / 2) + (tokenRect.height / 2);
+        const targetScrollTop = span.offsetTop - (viewport.offsetHeight / 2) + (span.offsetHeight / 2);
 
         viewport.scrollTo({
           top: Math.max(0, targetScrollTop),
@@ -1001,33 +898,25 @@
 
         setTimeout(() => {
           isProgrammaticScrolling = false;
-        }, 300);
+        }, 350);
       }
     }
 
-    /* ====================================================================
-       MANUAL SCROLL INTERACTION & RESUME FROM CENTER WORD
-       ==================================================================== */
+    /* Manual Scroll Listener & Speech Resumption */
     function onViewportScroll() {
       if (isProgrammaticScrolling) return;
+      if (!isManualScrolling) return;
 
-      isManualScrolling = true;
-
-      // Pause speech immediately when scrolling manually
-      if (isPlaying) {
-        pauseSpeech();
-      }
+      if (isPlaying) pauseSpeech();
 
       clearTimeout(userScrollTimer);
-
-      // Resume speech from center token when scrolling stops
       userScrollTimer = setTimeout(() => {
         isManualScrolling = false;
-        resumePlaybackFromCenterWord();
-      }, 400);
+        resumeFromCenterWord();
+      }, 500);
     }
 
-    function resumePlaybackFromCenterWord() {
+    function resumeFromCenterWord() {
       if (wordTokens.length === 0) return;
 
       const viewport = document.getElementById('lyrics-viewport');
@@ -1054,20 +943,9 @@
       }
     }
 
-    /* ====================================================================
-       HELPER UTILITIES
-       ==================================================================== */
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/[&<>"']/g, function(m) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        }[m];
-      });
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
     function escapeJsString(str) {
