@@ -60,16 +60,34 @@
 
     <!-- Application JavaScript Logic -->
     <script>
-        // List of pages inside the /pages/ directory
+        // Curated bright, child-friendly colors
+        const colors = [
+            'bg-amber-400 text-white',
+            'bg-pink-400 text-white',
+            'bg-sky-400 text-white',
+            'bg-purple-400 text-white',
+            'bg-emerald-400 text-white',
+            'bg-rose-400 text-white',
+            'bg-indigo-400 text-white',
+            'bg-orange-400 text-white',
+            'bg-teal-400 text-white'
+        ];
+
+        // Helper function to pick a random color
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // List of pages with contextual icons
         const pagesList = [
-            { id: '1', title: 'Chinese Speaking', file: 'chinese_speaking.html', icon: 'fa-house-chimney', color: 'bg-amber-400 text-white' },
-            { id: '2', title: 'Chinese Writing', file: 'chinese_writing.html', icon: 'fa-house-chimney', color: 'bg-amber-400 text-white' },
-            { id: '3', title: 'English Spelling', file: 'english_spelling.html', icon: 'fa-gamepad', color: 'bg-pink-400 text-white' },
-            { id: '4', title: 'Phonics Keyboard', file: 'phonics.html', icon: 'fa-face-smile', color: 'bg-sky-400 text-white' },
-            { id: '5', title: 'Sentence Builder', file: 'sentence_builder.html', icon: 'fa-palette', color: 'bg-purple-400 text-white' },
-            { id: '6', title: 'Word Recognition', file: 'word_recognition.html', icon: 'fa-book-open', color: 'bg-purple-400 text-white' },
-            { id: '7', title: 'Maths 10 Game', file: 'maths_ten.html', icon: 'fa-gamepad', color: 'bg-emerald-400 text-white' },
-            { id: '8', title: 'Song Lyrics Speaker', file: 'song_lyrics.html', icon: 'fa-gamepad', color: 'bg-emerald-400 text-white' },
+            { id: '1', title: 'Chinese Speaking', file: 'chinese_speaking.html', icon: 'fa-comments' },
+            { id: '2', title: 'Chinese Writing', file: 'chinese_writing.html', icon: 'fa-pen-to-square' },
+            { id: '3', title: 'English Spelling', file: 'english_spelling.html', icon: 'fa-spell-check' },
+            { id: '4', title: 'Phonics Keyboard', file: 'phonics.html', icon: 'fa-keyboard' },
+            { id: '5', title: 'Sentence Builder', file: 'sentence_builder.html', icon: 'fa-cubes' },
+            { id: '6', title: 'Word Recognition', file: 'word_recognition.html', icon: 'fa-book-open-reader' },
+            { id: '7', title: 'Maths 10 Game', file: 'maths_ten.html', icon: 'fa-calculator' },
+            { id: '8', title: 'Song Lyrics Speaker', file: 'song_lyrics.html', icon: 'fa-music' },
         ];
 
         // DOM Elements
@@ -99,34 +117,9 @@
                 const fullPath = `pages/${page.file}`;
                 const link = document.createElement('a');
                 
+                // Get a random color for each card
+                const randomColorClass = getRandomColor();
+
                 link.href = fullPath;
                 link.target = '_blank';
-                link.className = 'group flex items-center justify-between p-3 rounded-2xl border-2 border-sky-100 bg-white hover:border-sky-300 hover:bg-sky-50 transition-all shadow-sm hover:shadow-md hover:scale-[1.02]';
-
-                link.innerHTML = `
-                    <div class="flex items-center space-x-3 overflow-hidden">
-                        <div class="w-10 h-10 rounded-xl ${page.color} flex items-center justify-center shrink-0 text-base font-bold shadow-sm transition-transform group-hover:rotate-6">
-                            <i class="fa-solid ${page.icon}"></i>
-                        </div>
-                        <div class="truncate">
-                            <div class="font-bold text-sm text-slate-800">${page.title}</div>
-                        </div>
-                    </div>
-                    <div class="p-2 text-sky-400 group-hover:text-sky-600 transition-colors">
-                        <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
-                    </div>
-                `;
-
-                pagesListContainer.appendChild(link);
-            });
-        }
-
-        // Search Input Event Listener
-        searchInput.addEventListener('input', (e) => {
-            renderPages(e.target.value.trim());
-        });
-
-        window.addEventListener('DOMContentLoaded', () => renderPages());
-    </script>
-</body>
-</html>
+                link.className = 'group flex items-center justify-between p-3 rounded-2xl border-2 border-sky-100
