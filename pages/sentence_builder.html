@@ -1,811 +1,1301 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonics Playground - Learn to Spell & Speak</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>升小一重組句子大挑戰 Sentence Unscramble App</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Sniglet:wght@800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        fredoka: ['Fredoka', 'sans-serif'],
-                        sniglet: ['Sniglet', 'cursive'],
-                    },
                     colors: {
-                        bubblePink: '#FF70A6',
-                        bubbleOrange: '#FF9F1C',
-                        bubbleYellow: '#FFD166',
-                        bubbleGreen: '#06D6A0',
-                        bubbleBlue: '#118AB2',
-                        bubblePurple: '#B5179E',
+                        noun: '#3B82F6',       // Blue - Nouns
+                        verb: '#EF4444',       // Red - Verbs
+                        adj: '#F59E0B',        // Amber/Yellow - Adjectives / Adverbs
+                        punc: '#10B981',       // Green - Punctuation
+                        prep: '#8B5CF6',       // Purple - Prepositions / Pronouns / Articles / Conjunctions
                     },
-                    boxShadow: {
-                        'pop': '0 8px 0px rgba(0,0,0,0.15)',
+                    fontFamily: {
+                        sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
+
     <style>
         body {
-            font-family: 'Fredoka', sans-serif;
-            background: linear-gradient(135deg, #e0f7fa 0%, #fff9c4 50%, #fce4ec 100%);
+            background-color: #f4f9ff;
+            background-image: radial-gradient(#e0edff 2px, transparent 2px);
+            background-size: 24px 24px;
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
             touch-action: manipulation;
         }
 
-        .key-btn {
-            transition: all 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
+        /* Card Styles & Animations */
+        .word-card {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background-color 0.2s;
+            touch-action: none;
+            cursor: grab;
         }
-        .key-btn:active {
-            transform: translateY(6px) scale(0.95) !important;
-            box-shadow: 0 2px 0px rgba(0,0,0,0.2) !important;
+        .word-card:active {
+            cursor: grabbing;
+            transform: scale(1.08) rotate(2deg);
+            z-index: 50;
         }
-
-        .pop-star {
-            position: absolute;
-            pointer-events: none;
-            animation: popAndFade 0.6s ease-out forwards;
-        }
-        @keyframes popAndFade {
-            0% { transform: translate(-50%, -50%) scale(0.3) rotate(0deg); opacity: 1; }
-            50% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(180deg); opacity: 1; }
-            100% { transform: translate(calc(-50% + var(--dx) * 1.5), calc(-50% + var(--dy) * 1.5)) scale(0); opacity: 0; }
+        .word-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
         }
 
-        .mascot-pulse {
-            animation: pulseWave 1.2s infinite ease-in-out;
+        /* Drop Zone Styles */
+        .drop-zone {
+            min-height: 95px;
+            transition: all 0.3s ease;
         }
-        @keyframes pulseWave {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1) rotate(5deg); }
-        }
-
-        .sound-wave {
-            animation: soundWaveAnim 0.5s infinite alternate ease-in-out;
-        }
-        @keyframes soundWaveAnim {
-            from { transform: scaleY(0.6); }
-            to { transform: scaleY(1.3); }
+        .drop-zone.drag-over {
+            background-color: rgba(59, 130, 246, 0.15);
+            border-color: #3B82F6;
+            transform: scale(1.01);
         }
 
-        .phoneme-active {
-            transform: scale(1.15);
-            filter: brightness(1.1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+        /* Button bounce physics */
+        .btn-bounce {
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+        }
+        .btn-bounce:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+        }
+        .btn-bounce:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
         }
 
-        .bounce-emoji {
-            animation: emojiBounce 0.8s infinite alternate cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* Shake animation on wrong check */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
         }
-        @keyframes emojiBounce {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-16px) scale(1.15) rotate(6deg); }
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* Correct pulse animation */
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+        }
+        .animate-correct {
+            animation: pulse-green 0.8s ease-out;
+        }
+
+        /* Fade in */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col justify-between p-3 sm:p-5 select-none relative">
+<body class="min-h-screen flex flex-col justify-between items-center p-3 md:p-6 text-slate-800">
 
-    <!-- Particle Layer -->
-    <div id="particleCanvas" class="fixed inset-0 pointer-events-none z-50"></div>
-
-    <!-- Header / Mascot -->
-    <header class="w-full max-w-5xl mx-auto flex items-center justify-between z-10 px-2 py-1">
-        <div class="flex items-center gap-3">
-            <div id="mascot" class="w-14 h-14 sm:w-16 sm:h-16 bg-bubbleYellow rounded-full border-4 border-amber-400 flex items-center justify-center shadow-lg relative cursor-pointer active:scale-95 transition" onclick="repeatSpeech()">
-                <div class="text-3xl sm:text-4xl"> </div>
-                <div id="speakBadge" class="hidden absolute -bottom-1 -right-1 bg-bubbleGreen text-white text-xs px-2 py-0.5 rounded-full border-2 border-white flex items-center gap-1 shadow">
-                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave"></span>
-                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.15s"></span>
-                    <span class="w-1.5 h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.3s"></span>
-                </div>
+    <!-- Header bar -->
+    <header class="w-full max-w-4xl flex justify-between items-center mb-4 bg-white/90 backdrop-blur px-5 py-3 rounded-2xl shadow-sm border-2 border-blue-100">
+        <div class="flex items-center space-x-3">
+            <div class="bg-yellow-400 text-white p-2.5 rounded-xl shadow-inner text-xl flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-shapes"></i>
             </div>
-            <div class="flex flex-col">
-                <span id="statusLabel" class="text-lg sm:text-xl font-bold text-indigo-700 font-sniglet tracking-wide">
-                    Tap & Spell!
-                </span>
+            <div>
+                <h1 id="app-title" class="text-xl md:text-2xl font-black text-slate-800 tracking-wide">升小一重組句子大挑戰</h1>
+                <p id="app-subtitle" class="text-xs text-slate-500 font-bold hidden sm:block">Primary Sentence Unscramble App</p>
             </div>
         </div>
-
-        <div class="flex items-center gap-2 sm:gap-3">
-            <button onclick="repeatSpeech()" class="key-btn bg-bubbleGreen hover:bg-emerald-400 active:bg-emerald-500 text-white font-black text-lg sm:text-xl px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl shadow-pop border-b-4 border-emerald-700 flex items-center gap-2">
-                <i class="fa-solid fa-volume-high text-xl"></i>
-                <span class="hidden sm:inline">Say It!</span>
-            </button>
-
-            <button onclick="clearWord()" class="key-btn bg-bubblePink hover:bg-pink-400 active:bg-pink-500 text-white font-black text-lg sm:text-xl px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl shadow-pop border-b-4 border-pink-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-trash-can"></i>
-                <span class="hidden sm:inline">Clear</span>
+        <div id="header-user-info" class="hidden flex items-center space-x-3">
+            <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-bold border border-blue-200">
+                <i class="fa-solid fa-user-astronaut mr-1"></i> <span id="display-player-name">---</span>
+            </span>
+            <button onclick="confirmExit()" class="bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 transition text-sm font-bold px-3 py-1.5 rounded-xl border border-slate-200 flex items-center space-x-1" title="Home">
+                <i class="fa-solid fa-house"></i>
+                <span class="hidden sm:inline" id="lbl-nav-home">主頁</span>
             </button>
         </div>
     </header>
 
-    <!-- Main Word Display (Multi-Word Display with Color-Coded Onset & Rime) -->
-    <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center my-2 sm:my-3 z-10 px-2 relative">
-        <!-- Floating Animated Emoji Container -->
-        <div id="emojiDisplay" class="hidden flex items-center justify-center gap-3 text-5xl sm:text-7xl mb-2 sm:mb-4 bounce-emoji drop-shadow-lg transition-all duration-300">
-        </div>
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl flex-1 flex flex-col justify-center items-center">
 
-        <div class="w-full h-full min-h-[150px] max-h-[260px] bg-white/90 backdrop-blur-md rounded-3xl p-3 sm:p-6 border-4 border-indigo-200 shadow-xl flex items-center justify-center relative overflow-y-auto">
-            <div id="wordDisplay" class="text-4xl sm:text-6xl md:text-7xl font-black font-sniglet tracking-wider text-center flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
-                <!-- Color-Coded Multi-Word Items -->
+        <!-- 1. Start Screen -->
+        <section id="screen-start" class="w-full bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-yellow-300 relative overflow-hidden transition-all duration-300">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-yellow-100 rounded-full blur-2xl -z-10"></div>
+            <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-100 rounded-full blur-2xl -z-10"></div>
+
+            <div class="text-center mb-8">
+                <span id="start-badge" class="inline-block bg-yellow-100 text-yellow-800 text-xs font-black px-3 py-1 rounded-full mb-2 uppercase tracking-wider">升小一語文學習小幫手</span>
+                <h2 id="start-heading" class="text-3xl md:text-4xl font-black text-slate-800">準備好挑戰組句能力了嗎？</h2>
+                <p id="start-desc" class="text-slate-500 mt-2 text-sm md:text-base">拖放或點擊詞語卡片，組合出正確通順的句子！點擊任何詞語皆會自動發音！</p>
             </div>
-        </div>
+
+            <form id="start-form" onsubmit="startGame(event)" class="max-w-md mx-auto space-y-6">
+                <!-- Name Input -->
+                <div>
+                    <label id="lbl-name-input" class="block text-slate-700 font-bold mb-2 text-sm sm:text-base" for="player-name">
+                        <i class="fa-solid fa-pen-nib text-blue-500 mr-1"></i> 請輸入小朋友的姓名或暱稱：
+                    </label>
+                    <input type="text" id="player-name" required maxlength="12" placeholder="例如：小明 / Alex" 
+                           class="w-full px-5 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none text-lg font-bold text-center transition">
+                </div>
+
+                <!-- Language Selection (中文 / English) -->
+                <div>
+                    <label id="lbl-lang-select" class="block text-slate-700 font-bold mb-3 text-sm sm:text-base">
+                        <i class="fa-solid fa-language text-purple-500 mr-1"></i> 選擇語言 Language:
+                    </label>
+                    <div class="grid grid-cols-2 gap-3" id="language-options">
+                        <button type="button" onclick="selectLanguage('zh')" data-lang="zh" class="lang-btn border-2 border-blue-500 bg-blue-50/80 ring-2 ring-blue-300 p-3.5 rounded-2xl text-center font-bold text-slate-700 transition flex items-center justify-center space-x-2">
+                            <span class="text-xl">🇭🇰</span>
+                            <span class="text-base font-black">中文 (Chinese)</span>
+                        </button>
+                        <button type="button" onclick="selectLanguage('en')" data-lang="en" class="lang-btn border-2 border-slate-200 bg-slate-50 p-3.5 rounded-2xl text-center font-bold text-slate-700 transition flex items-center justify-center space-x-2">
+                            <span class="text-xl">🇬🇧</span>
+                            <span class="text-base font-black">English</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Difficulty Selection (簡單 / 普通 / 困難) -->
+                <div>
+                    <label id="lbl-diff-select" class="block text-slate-700 font-bold mb-3 text-sm sm:text-base">
+                        <i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> 選擇難度等級：
+                    </label>
+                    <div class="grid grid-cols-3 gap-2.5" id="difficulty-options">
+                        <button type="button" onclick="selectDifficulty('easy')" data-diff="easy" class="diff-btn border-2 border-blue-500 bg-blue-50/80 ring-2 ring-blue-300 p-3 rounded-2xl text-center font-bold text-slate-700 transition flex flex-col items-center">
+                            <span class="text-base text-blue-600 font-black" id="diff-easy-title">簡單 Easy</span>
+                            <span class="text-[11px] text-slate-500 mt-0.5" id="diff-easy-sub">4-5 個詞語</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty('medium')" data-diff="medium" class="diff-btn border-2 border-slate-200 bg-slate-50 p-3 rounded-2xl text-center font-bold text-slate-700 transition flex flex-col items-center">
+                            <span class="text-base text-amber-600 font-black" id="diff-medium-title">普通 Medium</span>
+                            <span class="text-[11px] text-slate-500 mt-0.5" id="diff-medium-sub">6-7 個詞語</span>
+                        </button>
+                        <button type="button" onclick="selectDifficulty('hard')" data-diff="hard" class="diff-btn border-2 border-slate-200 bg-slate-50 p-3 rounded-2xl text-center font-bold text-slate-700 transition flex flex-col items-center">
+                            <span class="text-base text-purple-600 font-black" id="diff-hard-title">困難 Hard</span>
+                            <span class="text-[11px] text-slate-500 mt-0.5" id="diff-hard-sub">8+ 個詞語</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Color legend -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div class="text-xs font-bold text-slate-500 mb-2" id="lbl-color-legend">💡 詞性顏色提示：</div>
+                    <div class="flex flex-wrap gap-2 text-xs font-bold" id="color-tags-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black text-xl py-4 rounded-2xl btn-bounce transition flex items-center justify-center space-x-2 border-b-4 border-yellow-500">
+                    <span id="btn-start-game">開始挑戰 (10 題)</span>
+                    <i class="fa-solid fa-circle-play"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <button onclick="showLeaderboardScreen()" class="text-blue-600 hover:text-blue-800 font-bold text-sm inline-flex items-center space-x-1">
+                    <i class="fa-solid fa-trophy text-yellow-500"></i>
+                    <span id="btn-view-leaderboard">查看英雄高分榜</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 2. Gameplay Area -->
+        <section id="screen-game" class="w-full hidden flex-col space-y-4">
+
+            <!-- Status bar -->
+            <div class="bg-white p-3.5 md:p-4 rounded-2xl shadow-sm border-2 border-slate-100 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <button onclick="confirmExit()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs sm:text-sm transition flex items-center space-x-1" title="Return Home">
+                        <i class="fa-solid fa-house text-blue-500"></i>
+                        <span id="game-btn-home">主頁</span>
+                    </button>
+                    <div class="h-4 w-px bg-slate-200"></div>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs font-bold text-slate-400 uppercase hidden sm:inline" id="lbl-progress">進度</span>
+                        <span id="question-number" class="text-base sm:text-lg font-black text-blue-600">1 / 10</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4 sm:space-x-6">
+                    <div class="flex items-center space-x-1 text-slate-700">
+                        <i class="fa-regular fa-clock text-blue-500 font-bold"></i>
+                        <span id="timer-display" class="font-mono font-bold text-base sm:text-lg">00:00</span>
+                    </div>
+                    <div class="flex items-center space-x-1 text-slate-700">
+                        <i class="fa-solid fa-star text-yellow-400"></i>
+                        <span id="score-display" class="font-bold text-base sm:text-lg">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card Board -->
+            <div class="bg-white rounded-3xl p-5 md:p-8 shadow-xl border-4 border-blue-200 flex flex-col space-y-5">
+
+                <!-- Hint bar -->
+                <div class="flex justify-between items-center text-xs md:text-sm text-slate-500 font-bold px-1">
+                    <span id="game-hint-drag"><i class="fa-solid fa-hand-pointer mr-1 text-blue-400"></i> 拖拽或點擊詞語放到答案區 (點擊會點讀詞語)：</span>
+                    <button onclick="speakSentencePrompt()" class="text-blue-600 hover:text-blue-800 flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span id="btn-listen-prompt">聽題目朗讀</span>
+                    </button>
+                </div>
+
+                <!-- Complete Sentence Answer Display Box (Hidden by default) -->
+                <div id="correct-sentence-box" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 animate-fade-in">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="result-status-badge" class="text-xs font-black px-2.5 py-1 rounded-md bg-emerald-500 text-white">
+                            ✨ 完整正確句子：
+                        </span>
+                        <button onclick="speakCorrectSentence()" class="text-emerald-700 hover:text-emerald-900 font-bold text-xs bg-emerald-100 px-2.5 py-1 rounded-lg flex items-center space-x-1">
+                            <i class="fa-solid fa-volume-high"></i>
+                            <span id="btn-replay-audio">再聽一次</span>
+                        </button>
+                    </div>
+                    <div id="correct-sentence-display" class="flex flex-wrap gap-1.5 md:gap-2 items-center text-lg md:text-xl font-black text-slate-800">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- 1. Answer Zone -->
+                <div>
+                    <div class="text-xs font-bold text-slate-400 mb-1.5 ml-1" id="lbl-answer-zone">【 重組後的句子 】</div>
+                    <div id="answer-zone" class="drop-zone bg-slate-50 border-3 border-dashed border-slate-300 rounded-2xl p-3 md:p-4 flex flex-wrap gap-2.5 items-center justify-start transition-all">
+                        <!-- Word cards dropped here -->
+                    </div>
+                </div>
+
+                <!-- 2. Source Zone -->
+                <div>
+                    <div class="text-xs font-bold text-slate-400 mb-1.5 ml-1" id="lbl-source-zone">【 可選詞語 】</div>
+                    <div id="source-zone" class="drop-zone bg-blue-50/50 border-2 border-slate-200 rounded-2xl p-3 md:p-4 flex flex-wrap gap-2.5 items-center justify-center min-h-[95px]">
+                        <!-- Selectable word cards -->
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-wrap gap-3 justify-between items-center pt-2">
+                    <button id="btn-reset" onclick="resetCurrentQuestion()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition flex items-center space-x-1">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span id="lbl-btn-reset">重設</span>
+                    </button>
+
+                    <div class="flex space-x-2">
+                        <button id="btn-check" onclick="checkAnswer()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-xl btn-bounce transition flex items-center space-x-2 border-b-4 border-emerald-700">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span id="lbl-btn-check">檢查答案</span>
+                        </button>
+                        <button id="btn-next" onclick="nextQuestion()" class="hidden px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black text-base rounded-xl btn-bounce transition flex items-center space-x-2 border-b-4 border-blue-700">
+                            <span id="lbl-btn-next">下一題</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- 3. Result Screen -->
+        <section id="screen-result" class="w-full hidden bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-emerald-300 text-center relative overflow-hidden">
+            <div class="text-5xl md:text-6xl mb-3" id="result-emoji">🎉</div>
+            <h2 id="result-heading" class="text-3xl md:text-4xl font-black text-slate-800 mb-1">挑戰完成！</h2>
+            <p id="result-feedback" class="text-lg font-bold text-emerald-600 mb-6">「太棒了！簡直是小學學霸！」</p>
+
+            <!-- Scorecard -->
+            <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 max-w-md mx-auto mb-6">
+                <div class="p-2">
+                    <div class="text-xs text-slate-400 font-bold" id="lbl-result-correct">答對題數</div>
+                    <div id="result-correct-count" class="text-xl md:text-2xl font-black text-blue-600">10 / 10</div>
+                </div>
+                <div class="p-2 border-x border-slate-200">
+                    <div class="text-xs text-slate-400 font-bold" id="lbl-result-time">總用時</div>
+                    <div id="result-time-taken" class="text-xl md:text-2xl font-black text-purple-600">01:25</div>
+                </div>
+                <div class="p-2">
+                    <div class="text-xs text-slate-400 font-bold" id="lbl-result-score">獲得總分</div>
+                    <div id="result-final-score" class="text-xl md:text-2xl font-black text-yellow-500">100</div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto">
+                <button onclick="playAgain()" class="flex-1 bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black py-3.5 px-6 rounded-2xl btn-bounce transition border-b-4 border-yellow-500 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span id="btn-play-again">再玩一次</span>
+                </button>
+                <button onclick="showLeaderboardScreen()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-black py-3.5 px-6 rounded-2xl btn-bounce transition border-b-4 border-blue-700 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span id="btn-result-leaderboard">龍虎榜</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- 4. Leaderboard Screen -->
+        <section id="screen-leaderboard" class="w-full hidden bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-purple-200">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 text-purple-600 p-2.5 rounded-2xl text-xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h2 id="lbl-leaderboard-title" class="text-2xl md:text-3xl font-black text-slate-800">高分龍虎榜</h2>
+                </div>
+                <button onclick="showStartScreen()" class="text-slate-400 hover:text-slate-600 text-xl p-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-2xl border border-slate-200 mb-6">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                            <th class="p-3" id="th-rank">名次</th>
+                            <th class="p-3" id="th-name">姓名</th>
+                            <th class="p-3" id="th-lang">語言</th>
+                            <th class="p-3" id="th-diff">難度</th>
+                            <th class="p-3" id="th-score">得分</th>
+                            <th class="p-3" id="th-time">用時</th>
+                            <th class="p-3" id="th-date">日期</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-table-body" class="divide-y divide-slate-100 font-bold text-slate-700">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button onclick="clearLeaderboard()" class="text-xs text-red-400 hover:text-red-600 font-bold px-3 py-2 rounded-lg hover:bg-red-50 transition" id="btn-clear-lb">
+                    <i class="fa-solid fa-trash-can mr-1"></i> 清除所有榜單
+                </button>
+                <button onclick="showStartScreen()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl transition" id="btn-lb-back">
+                    返回主頁
+                </button>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Soft Keyboard Layout -->
-    <footer class="w-full max-w-4xl mx-auto pb-1 sm:pb-3 z-10">
-        <div class="bg-white/80 backdrop-blur-md p-2.5 sm:p-4 rounded-3xl shadow-xl border-4 border-indigo-100 flex flex-col gap-1.5 sm:gap-2.5">
-            
-            <div class="flex justify-center gap-1 sm:gap-2">
-                <button onclick="pressKey('Q', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Q</button>
-                <button onclick="pressKey('W', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">W</button>
-                <button onclick="pressKey('E', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">E</button>
-                <button onclick="pressKey('R', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">R</button>
-                <button onclick="pressKey('T', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">T</button>
-                <button onclick="pressKey('Y', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Y</button>
-                <button onclick="pressKey('U', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">U</button>
-                <button onclick="pressKey('I', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">I</button>
-                <button onclick="pressKey('O', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">O</button>
-                <button onclick="pressKey('P', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">P</button>
-            </div>
-
-            <div class="flex justify-center gap-1 sm:gap-2 px-1">
-                <button onclick="pressKey('A', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubblePink text-white font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-pink-600">A</button>
-                <button onclick="pressKey('S', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">S</button>
-                <button onclick="pressKey('D', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">D</button>
-                <button onclick="pressKey('F', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">F</button>
-                <button onclick="pressKey('G', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">G</button>
-                <button onclick="pressKey('H', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">H</button>
-                <button onclick="pressKey('J', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">J</button>
-                <button onclick="pressKey('K', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">K</button>
-                <button onclick="pressKey('L', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">L</button>
-            </div>
-
-            <div class="flex justify-center gap-1 sm:gap-2">
-                <button onclick="pressKey('Z', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">Z</button>
-                <button onclick="pressKey('X', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">X</button>
-                <button onclick="pressKey('C', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">C</button>
-                <button onclick="pressKey('V', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">V</button>
-                <button onclick="pressKey('B', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">B</button>
-                <button onclick="pressKey('N', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">N</button>
-                <button onclick="pressKey('M', event)" class="key-btn flex-1 max-w-[62px] h-12 sm:h-16 bg-bubbleYellow text-amber-900 font-extrabold text-xl sm:text-3xl rounded-2xl shadow-pop border-b-4 border-amber-400">M</button>
-                
-                <button onclick="backspace(event)" class="key-btn flex-[1.4] max-w-[85px] h-12 sm:h-16 bg-bubbleOrange text-white font-extrabold text-xl sm:text-2xl rounded-2xl shadow-pop border-b-4 border-orange-700 flex items-center justify-center">
-                    <i class="fa-solid fa-delete-left"></i>
-                </button>
-            </div>
-
-            <div class="flex justify-center gap-2 mt-0.5">
-                <button onclick="pressSpace(event)" class="key-btn flex-1 max-w-[380px] h-11 sm:h-14 bg-bubbleBlue text-white font-extrabold text-lg sm:text-xl rounded-2xl shadow-pop border-b-4 border-cyan-800 flex items-center justify-center tracking-widest uppercase">
-                    SPACE
-                </button>
-            </div>
-
-        </div>
+    <!-- Footer -->
+    <footer class="mt-6 text-center text-xs font-bold text-slate-400">
+        升小一語文重組句子訓練 App &copy; Primary Sentence Unscramble
     </footer>
 
+    <!-- Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4 border-4 border-yellow-300 transform scale-95 transition-all" id="modal-content">
+            <div id="modal-icon" class="text-4xl text-yellow-500">⚠️</div>
+            <h3 id="modal-title" class="text-xl font-black text-slate-800">提示</h3>
+            <p id="modal-message" class="text-slate-600 text-sm font-bold">提示訊息</p>
+            <div class="pt-2 flex justify-center space-x-3" id="modal-buttons">
+                <button id="modal-confirm-btn" onclick="closeModal()" class="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-black py-2.5 rounded-xl transition">確定</button>
+                <button id="modal-cancel-btn" onclick="closeModal()" class="hidden w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-black py-2.5 rounded-xl transition">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio & Speech Engine -->
     <script>
-        let currentText = "";
-        let typingTimer = null;
-        const PAUSE_THRESHOLD = 800; // Speech triggers 800ms after pause
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
 
-        const wordDisplay = document.getElementById('wordDisplay');
-        const emojiDisplay = document.getElementById('emojiDisplay');
-        const mascot = document.getElementById('mascot');
-        const speakBadge = document.getElementById('speakBadge');
-        const statusLabel = document.getElementById('statusLabel');
-
-        // Multi-Layered Emoji System (200+ Words)
-        const PRIMARY_EMOJI_DICT = {
-            "CAT": " ", "CATS": " ", "KITTY": " ", "DOG": " ", "DOGS": " ", "PUPPY": " ", "FISH": " ", "FISHES": " ",
-            "BIRD": " ", "BIRDS": " ", "SHEEP": " ", "DUCK": " ", "DUCKS": " ", "PIG": " ", "PIGS": " ", "COW": " ",
-            "BEAR": " ", "LION": " ", "FROG": " ", "FROGS": " ", "RABBIT": " ", "BUNNY": " ", "MOUSE": " ", "HORSE": " ",
-            "BEE": " ", "BEES": " ", "MONKEY": " ", "FOX": " ", "OWL": " ", "SNAKE": " ", "TURTLE": " ", "TIGER": " ",
-            "PANDA": " ", "KOALA": " ", "BUG": " ", "ANT": " ", "CRAB": " ", "WHALE": " ", "SHARK": " ", "BAT": " ",
-            "GOAT": " ", "DEER": " ", "CAMEL": " ", "WOLF": " ", "DONKEY": " ", "GIRAFFE": " ", "ELEPHANT": " ",
-
-            "MOTHER": " ", "MOM": " ", "FATHER": " ", "DAD": " ", "BROTHER": " ", "SISTER": " ", "BABY": " ", 
-            "KING": " ", "QUEEN": " ", "BOY": " ", "GIRL": " ", "MAN": " ", "WOMAN": " ", "FRIEND": " ",
-
-            "APPLE": " ", "APPLES": " ", "BANANA": " ", "CAKE": " ", "MILK": " ", "PIZZA": " ", "BREAD": " ", "EGG": " ",
-            "CORN": " ", "NUT": " ", "SOUP": " ", "RICE": " ", "MEAT": " ", "TACO": " ", "DONUT": " ", "COOKIE": " ",
-            "CANDY": " ", "JUICE": " ", "WATER": " ", "TEA": " ", "PEAR": " ", "PEACH": " ", "GRAPE": " ", "LEMON": " ",
-            "CHERRY": " ", "BERRY": " ", "BURGER": " ", "FRIES": " ", "ICE": " ", "JAM": " ", "MELON": " ", "HONEY": " ",
-
-            "CAR": " ", "CARS": " ", "BUS": " ", "BIKE": " ", "BOAT": " ", "PLANE": " ", "TRAIN": " ", "SHIP": " ",
-            "TAXI": " ", "TRUCK": " ", "ROCKET": " ", "VAN": " ", "AMBULANCE": " ", "COP": " ", "POLICE": " ",
-
-            "SUN": " ", "SUNNY": " ", "MOON": " ", "STAR": " ", "STARS": " ", "RAIN": " ", "RAINY": " ", "FIRE": " ",
-            "TREE": " ", "TREES": " ", "FLOWER": " ", "FLOWERS": " ", "SNOW": " ", "WIND": " ", "LEAF": " ", "CLOUD": " ",
-            "CLOUDS": " ", "WAVE": " ", "HILL": " ", "MUD": " ", "PARK": " ", "SKY": " ", "SEA": " ",
-
-            "TABLE": " ", "CANDLE": " ", "BED": " ", "BOX": " ", "DOOR": " ", "KEY": " ", "BELL": " ", "CLOCK": " ",
-            "LAMP": " ", "CHAIR": " ", "CUP": " ", "MUG": " ", "FORK": " ", "SPOON": " ", "DISH": " ", "RING": " ",
-            "COIN": " ", "SOAP": " ", "BAG": " ", "MAP": " ", "FLAG": " ", "BOTTLE": " ", "TOWEL": " ", "PHONE": " ",
-
-            "CLOSE": " ", "CLOSED": " ", "CLOSING": " ", "SHUT": " ", "LOCK": " ", "OPEN": " ", "RUN": " ", "RUNNING": " ",
-            "WALK": " ", "FLY": " ", "FLYING": " ", "SWIM": " ", "SLEEP": " ", "SLEEPING": " ", "EAT": " ", "EATING": " ",
-            "DRINK": " ", "READ": " ", "WRITE": " ", "SING": " ", "DANCE": " ", "JUMP": " ", "PLAY": " ", "STOP": " ",
-
-            "BALL": " ", "BOOK": " ", "BOOKS": " ", "PEN": " ", "PENCIL": " ", "HOUSE": " ", "HOME": " ", "HAT": " ",
-            "DRUM": " ", "TOY": " ", "GAME": " ", "KITE": " ", "PAPER": " ", "CRAYON": " ", "CROWN": " ", "GIFT": " ",
-
-            "EYE": " ", "EYES": " ", "EAR": " ", "NOSE": " ", "HAND": " ", "FOOT": " ", "FEET": " ", "ARM": " ",
-            "LEG": " ", "LIPS": " ", "TOOTH": " ", "TEETH": " ", "BONE": " ", "BRAIN": " ", "FACE": " ", "HEART": " ",
-
-            "RED": " ", "BLUE": " ", "GREEN": " ", "YELLOW": " ", "PURPLE": " ", "PINK": " ", "BLACK": " ", "WHITE": " ",
-            "ORANGE": " ", "GOLD": " ", "SQUARE": " ", "CIRCLE": " "
-        };
-
-        const SEMANTIC_CLUSTERS = [
-            { keywords: ["CLOSE", "SHUT", "DOOR", "LOCK", "GATE"], emoji: " " },
-            { keywords: ["HAPPY", "SMILE", "JOY", "GLAD", "FUN"], emoji: " " },
-            { keywords: ["SAD", "CRY", "TEARS", "UPSET"], emoji: " " },
-            { keywords: ["HOT", "WARM", "HEAT", "SUNNY"], emoji: " " },
-            { keywords: ["COLD", "FREEZE", "ICE", "SNOW"], emoji: " " },
-            { keywords: ["LOVE", "LIKE", "CARE", "HEART"], emoji: " " }
-        ];
-
-        function getEmojiMatch(word) {
-            const cleanWord = word.trim().toUpperCase();
-            if (!cleanWord) return null;
-
-            if (PRIMARY_EMOJI_DICT[cleanWord]) return PRIMARY_EMOJI_DICT[cleanWord];
-
-            let stem = cleanWord;
-            if (stem.endsWith("ES")) stem = stem.slice(0, -2);
-            else if (stem.endsWith("S") && stem.length > 3) stem = stem.slice(0, -1);
-            else if (stem.endsWith("ING") && stem.length > 4) stem = stem.slice(0, -3);
-            else if (stem.endsWith("ED") && stem.length > 3) stem = stem.slice(0, -2);
-
-            if (PRIMARY_EMOJI_DICT[stem]) return PRIMARY_EMOJI_DICT[stem];
-
-            for (const key in PRIMARY_EMOJI_DICT) {
-                if (key.length >= 3 && (cleanWord.startsWith(key) || key.startsWith(cleanWord))) {
-                    return PRIMARY_EMOJI_DICT[key];
-                }
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
             }
-
-            for (const cluster of SEMANTIC_CLUSTERS) {
-                for (const kw of cluster.keywords) {
-                    if (cleanWord.includes(kw) || kw.includes(cleanWord)) return cluster.emoji;
-                }
-            }
-
-            return null;
         }
 
-        let audioCtx = null;
-        function playPopSound() {
+        function playSound(type) {
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+                initAudio();
+                if (!audioCtx) return;
+
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(350 + Math.random() * 200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.08);
-            } catch (e) {}
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'win') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, index) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + index * 0.1);
+                        g.gain.setValueAtTime(0.15, now + index * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.3);
+                        o.start(now + index * 0.1);
+                        o.stop(now + index * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
         }
 
-        function createBurst(e) {
-            if (!e) return;
-            const container = document.getElementById('particleCanvas');
-            const rect = e.target.getBoundingClientRect();
-            const x = e.clientX || (rect.left + rect.width / 2);
-            const y = e.clientY || (rect.top + rect.height / 2);
+        // Real-time Text-To-Speech Pronunciation Engine
+        function speakWord(text, lang) {
+            // Clean punctuation marks so TTS reads clear words
+            const cleanText = text.replace(/[。，！？,.!?]/g, '');
+            if (!cleanText) return;
 
-            const colors = ['#FF70A6', '#FF9F1C', '#FFD166', '#06D6A0', '#118AB2', '#B5179E'];
-            for (let i = 0; i < 6; i++) {
-                const star = document.createElement('div');
-                star.className = 'pop-star text-xl';
-                star.innerHTML = ['★', '✦', ' ', '●'][Math.floor(Math.random() * 4)];
-                star.style.color = colors[Math.floor(Math.random() * colors.length)];
-                star.style.left = `${x}px`;
-                star.style.top = `${y}px`;
-
-                const angle = (Math.PI * 2 / 6) * i;
-                const dist = 40 + Math.random() * 30;
-                star.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
-                star.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
-
-                container.appendChild(star);
-                setTimeout(() => star.remove(), 600);
-            }
-        }
-
-        // --- RULES-BASED PHONICS PARSER ENGINE ---
-        const VOWELS = new Set(['A', 'E', 'I', 'O', 'U', 'Y']);
-
-        function parseOnsetPhonetics(onset, nextChar) {
-            const raw = onset.toLowerCase();
-            const next = (nextChar || '').toLowerCase();
-
-            if (!raw) return { onset: '', spoken: '' };
-
-            // Silent Initial Consonants
-            if (raw === 'kn') return { onset: 'kn', spoken: 'nar' };
-            if (raw === 'wr') return { onset: 'wr', spoken: 'rar' };
-            if (raw === 'gn') return { onset: 'gn', spoken: 'nar' };
-
-            // Consonant Digraphs
-            if (raw === 'sh') return { onset: 'sh', spoken: 'shar' };
-            if (raw === 'ch') return { onset: 'ch', spoken: 'char' };
-            if (raw === 'th') return { onset: 'th', spoken: 'thar' };
-            if (raw === 'wh') return { onset: 'wh', spoken: 'war' };
-            if (raw === 'ph') return { onset: 'ph', spoken: 'far' };
-
-            // Soft vs Hard C & G
-            if (raw === 'c') {
-                if (['e', 'i', 'y'].includes(next)) return { onset: 'c', spoken: 'sar' };
-                return { onset: 'c', spoken: 'kar' };
-            }
-            if (raw === 'g') {
-                if (['e', 'i', 'y'].includes(next)) return { onset: 'g', spoken: 'jar' };
-                return { onset: 'g', spoken: 'gar' };
-            }
-
-            if (raw.endsWith('ar')) return { onset: raw, spoken: raw };
-            if (raw.endsWith('e')) return { onset: raw, spoken: raw.slice(0, -1) + 'ar' };
-            return { onset: raw, spoken: raw + 'ar' };
-        }
-
-        function getIpaPhoneticAnalysis(word) {
-            const uppercaseWord = word.trim().toUpperCase();
-            if (!uppercaseWord) return [];
-
-            if (uppercaseWord === 'MOTHER') {
-                return [
-                    { text: 'm', onset: 'm', rime: 'o', onsetArSpoken: 'mar', rimeSpoken: 'muh', combinedSpoken: 'moth' },
-                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
-                ];
-            }
-            if (uppercaseWord === 'FATHER') {
-                return [
-                    { text: 'fa', onset: 'f', rime: 'a', onsetArSpoken: 'far', rimeSpoken: 'ah', combinedSpoken: 'fa' },
-                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
-                ];
-            }
-            if (uppercaseWord === 'BROTHER') {
-                return [
-                    { text: 'bro', onset: 'br', rime: 'o', onsetArSpoken: 'brar', rimeSpoken: 'bruh', combinedSpoken: 'broth' },
-                    { text: 'ther', onset: 'th', rime: 'er', onsetArSpoken: 'thar', rimeSpoken: 'er', combinedSpoken: 'ther' }
-                ];
-            }
-
-            // Consonant-le Rule (-ble, -cle, -dle, -fle, -gle, -ple, -tle, -zle)
-            const cleMatch = uppercaseWord.match(/^(.+?)([^AEIOUY])LE$/i);
-            if (cleMatch && cleMatch[1].length > 0) {
-                const prefixWord = cleMatch[1];
-                const cleConsonant = cleMatch[2].toLowerCase();
-
-                let firstPart = prefixWord.toLowerCase();
-                let firstOnset = '';
-                let firstRime = firstPart;
-
-                const firstVowelIdx = firstPart.search(/[aeiouy]/i);
-                if (firstVowelIdx > 0) {
-                    firstOnset = firstPart.slice(0, firstVowelIdx);
-                    firstRime = firstPart.slice(firstVowelIdx);
-                }
-
-                const onsetData = parseOnsetPhonetics(firstOnset, firstRime[0]);
-
-                const prefixSyllable = {
-                    text: firstPart,
-                    onset: firstOnset,
-                    rime: firstRime,
-                    onsetArSpoken: onsetData.spoken,
-                    rimeSpoken: firstRime,
-                    combinedSpoken: firstPart
-                };
-
-                let cleOnsetAr = cleConsonant + 'ar';
-                if (cleConsonant === 'c' || cleConsonant === 'k') cleOnsetAr = 'kar';
-                if (cleConsonant === 'g') cleOnsetAr = 'gar';
-                if (cleConsonant === 'p') cleOnsetAr = 'par';
-
-                const cleSyllable = {
-                    text: cleConsonant + 'le',
-                    onset: cleConsonant,
-                    rime: 'le',
-                    onsetArSpoken: cleOnsetAr,
-                    rimeSpoken: cleConsonant + 'ull',
-                    combinedSpoken: cleConsonant + 'le'
-                };
-
-                return [prefixSyllable, cleSyllable];
-            }
-
-            // Medial Digraph Detector ('th', 'sh', 'ch', 'ph', 'wh')
-            const medialDigraphMatch = uppercaseWord.match(/^([^AEIOUY]*[AEIOUY]+)(TH|SH|CH|PH|WH)([AEIOUY].*)$/i);
-            if (medialDigraphMatch) {
-                const part1 = medialDigraphMatch[1].toLowerCase();
-                const digraph = medialDigraphMatch[2].toLowerCase();
-                const part2 = medialDigraphMatch[3].toLowerCase();
-
-                let onset1 = '', rime1 = part1;
-                const vIdx = part1.search(/[aeiouy]/i);
-                if (vIdx > 0) {
-                    onset1 = part1.slice(0, vIdx);
-                    rime1 = part1.slice(vIdx);
-                }
-                const onsetData1 = parseOnsetPhonetics(onset1, rime1[0]);
-
-                const syl1 = {
-                    text: part1,
-                    onset: onset1,
-                    rime: rime1,
-                    onsetArSpoken: onsetData1.spoken,
-                    rimeSpoken: rime1,
-                    combinedSpoken: part1
-                };
-
-                const onsetData2 = parseOnsetPhonetics(digraph, part2[0]);
-                const syl2 = {
-                    text: digraph + part2,
-                    onset: digraph,
-                    rime: part2,
-                    onsetArSpoken: onsetData2.spoken,
-                    rimeSpoken: part2,
-                    combinedSpoken: digraph + part2
-                };
-
-                return [syl1, syl2];
-            }
-
-            // Trailing 'Y' Sound
-            if (uppercaseWord.endsWith('Y') && uppercaseWord.length > 1) {
-                const body = uppercaseWord.slice(0, -1);
-                if (!/[AEIOU]/.test(body) || body.length <= 2) {
-                    const onsetData = parseOnsetPhonetics(body, 'y');
-                    return [{
-                        text: uppercaseWord.toLowerCase(),
-                        onset: body.toLowerCase(),
-                        rime: 'y',
-                        onsetArSpoken: onsetData.spoken,
-                        rimeSpoken: 'eye',
-                        combinedSpoken: uppercaseWord.toLowerCase()
-                    }];
-                }
-            }
-
-            // Magic 'E' Pattern
-            const magicEMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY])([^AEIOUY]+)E$/i);
-            if (magicEMatch) {
-                const onset = magicEMatch[1];
-                const vowel = magicEMatch[2];
-                const coda = magicEMatch[3];
-                const rime = vowel + coda + 'e';
-
-                const onsetData = parseOnsetPhonetics(onset, vowel);
-
-                return [{
-                    text: uppercaseWord.toLowerCase(),
-                    onset: onset.toLowerCase(),
-                    rime: rime.toLowerCase(),
-                    onsetArSpoken: onsetData.spoken,
-                    rimeSpoken: rime.toLowerCase(),
-                    combinedSpoken: uppercaseWord.toLowerCase()
-                }];
-            }
-
-            // Dynamic Syllable Splitter
-            const syls = uppercaseWord.match(/[^AEIOUY]*[AEIOUY]+(?:[^AEIOUY]*$|[^AEIOUY](?=[^AEIOUY][AEIOUY])|(?=[^AEIOUY][AEIOUY]))?/gi) || [uppercaseWord];
-
-            return syls.map(syl => {
-                let firstVowelIdx = -1;
-                for (let i = 0; i < syl.length; i++) {
-                    if (VOWELS.has(syl[i])) {
-                        if (syl[i] === 'Y' && i === 0 && syl.length > 1) continue;
-                        firstVowelIdx = i;
-                        break;
-                    }
-                }
-
-                let onset = '', rime = '';
-                if (firstVowelIdx === -1) {
-                    onset = syl;
-                    rime = '';
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // cancel previous word if rapidly tapped
+                const msg = new SpeechSynthesisUtterance(cleanText);
+                if (lang === 'en') {
+                    msg.lang = 'en-US';
+                    msg.rate = 0.9;
                 } else {
-                    onset = syl.slice(0, firstVowelIdx);
-                    rime = syl.slice(firstVowelIdx);
+                    msg.lang = 'zh-HK';
+                    msg.rate = 0.85;
                 }
+                window.speechSynthesis.speak(msg);
+            }
+        }
 
-                const onsetData = parseOnsetPhonetics(onset, rime ? rime[0] : '');
+        function speakText(text, lang) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                if (lang === 'en') {
+                    msg.lang = 'en-US';
+                    msg.rate = 0.85;
+                } else {
+                    msg.lang = 'zh-HK';
+                    msg.rate = 0.85;
+                }
+                window.speechSynthesis.speak(msg);
+            }
+        }
+    </script>
 
-                return {
-                    text: syl.toLowerCase(),
-                    onset: onset.toLowerCase(),
-                    rime: rime.toLowerCase(),
-                    onsetArSpoken: onsetData.spoken,
-                    rimeSpoken: rime.toLowerCase(),
-                    combinedSpoken: syl.toLowerCase()
-                };
+    <!-- Expanded Question Bank -->
+    <script>
+        const QUESTION_BANK = {
+            zh: {
+                easy: [ // 4-5 words
+                    { words: [{t:'小明',c:'n'}, {t:'在',c:'prep'}, {t:'學校',c:'n'}, {t:'讀書',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'妹妹',c:'n'}, {t:'喜歡',c:'v'}, {t:'吃蘋果',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'太陽',c:'n'}, {t:'升起來',c:'v'}, {t:'了',c:'prep'}, {t:'！',c:'punc'}] },
+                    { words: [{t:'小狗',c:'n'}, {t:'快樂地',c:'adj'}, {t:'跑步',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'爸爸',c:'n'}, {t:'開心地',c:'adj'}, {t:'看書',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'小鳥',c:'n'}, {t:'在',c:'prep'}, {t:'樹上唱歌',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'我們',c:'prep'}, {t:'愛',c:'v'}, {t:'上學',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'草地上',c:'n'}, {t:'有',c:'v'}, {t:'小花',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'哥哥',c:'n'}, {t:'認真地',c:'adj'}, {t:'寫字',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'媽媽',c:'n'}, {t:'煮了',c:'v'}, {t:'美味晚餐',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'貓咪',c:'n'}, {t:'在',c:'prep'}, {t:'椅上睡覺',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'弟弟',c:'n'}, {t:'大聲地',c:'adj'}, {t:'笑',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'老師',c:'n'}, {t:'走進',c:'v'}, {t:'課室',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'魚兒',c:'n'}, {t:'在',c:'prep'}, {t:'水裏游',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'我有',c:'v'}, {t:'一個',c:'adj'}, {t:'新書包',c:'n'}, {t:'。',c:'punc'}] }
+                ],
+                medium: [ // 6-7 words
+                    { words: [{t:'妹妹',c:'n'}, {t:'在',c:'prep'}, {t:'公園裏',c:'n'}, {t:'快樂地',c:'adj'}, {t:'玩滑梯',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'小花貓',c:'n'}, {t:'趴在',c:'v'}, {t:'沙發上',c:'n'}, {t:'舒服地',c:'adj'}, {t:'睡覺',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'親切的',c:'adj'}, {t:'老師',c:'n'}, {t:'對',c:'prep'}, {t:'我們',c:'prep'}, {t:'說故事',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'我和',c:'prep'}, {t:'同學',c:'n'}, {t:'在',c:'prep'}, {t:'操場',c:'n'}, {t:'打籃球',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'可愛的',c:'adj'}, {t:'小鳥',c:'n'}, {t:'在',c:'prep'}, {t:'空中',c:'n'}, {t:'自由飛翔',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'弟弟',c:'n'}, {t:'小心地',c:'adj'}, {t:'端著',c:'v'}, {t:'一杯',c:'adj'}, {t:'熱牛奶',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'媽媽',c:'n'}, {t:'在',c:'prep'}, {t:'廚房裏',c:'n'}, {t:'準備',c:'v'}, {t:'香甜蛋糕',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'美麗的',c:'adj'}, {t:'蝴蝶',c:'n'}, {t:'在',c:'prep'}, {t:'花叢中',c:'n'}, {t:'翩翩起舞',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'爺爺',c:'n'}, {t:'每天',c:'adj'}, {t:'早起',c:'v'}, {t:'到',c:'prep'}, {t:'公園散步',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'天空',c:'n'}, {t:'飄著',c:'v'}, {t:'朵朵',c:'adj'}, {t:'白色的',c:'adj'}, {t:'雲朵',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'我們',c:'prep'}, {t:'在',c:'prep'}, {t:'圖書館',c:'n'}, {t:'靜靜地',c:'adj'}, {t:'看書',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'小狗',c:'n'}, {t:'搖著',c:'v'}, {t:'尾巴',c:'n'}, {t:'歡迎',c:'v'}, {t:'主人回家',c:'n'}, {t:'。',c:'punc'}] }
+                ],
+                hard: [ // 8+ words
+                    { words: [{t:'放學',c:'v'}, {t:'回家後',c:'prep'}, {t:'，',c:'punc'}, {t:'我',c:'prep'}, {t:'先',c:'adj'}, {t:'洗手',c:'v'}, {t:'再',c:'prep'}, {t:'做功課',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'休假日',c:'n'}, {t:'，',c:'punc'}, {t:'爸爸',c:'n'}, {t:'帶',c:'v'}, {t:'我們',c:'prep'}, {t:'全家',c:'n'}, {t:'去',c:'v'}, {t:'海邊玩耍',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'花園裏',c:'n'}, {t:'盛開著',c:'v'}, {t:'五顏六色的',c:'adj'}, {t:'花朵',c:'n'}, {t:'，',c:'punc'}, {t:'真吸睛',c:'adj'}, {t:'啊',c:'prep'}, {t:'！',c:'punc'}] },
+                    { words: [{t:'放學後',c:'n'}, {t:'，',c:'punc'}, {t:'我',c:'prep'}, {t:'和',c:'prep'}, {t:'媽媽',c:'n'}, {t:'一起',c:'adj'}, {t:'去',c:'v'}, {t:'超級市場',c:'n'}, {t:'買',c:'v'}, {t:'水果',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'體育課時',c:'n'}, {t:'，',c:'punc'}, {t:'大家',c:'prep'}, {t:'在',c:'prep'}, {t:'操場上',c:'n'}, {t:'盡情地',c:'adj'}, {t:'奔跑',c:'v'}, {t:'，',c:'punc'}, {t:'玩得',c:'v'}, {t:'十分開心',c:'adj'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'清晨',c:'n'}, {t:'，',c:'punc'}, {t:'小鳥',c:'n'}, {t:'在',c:'prep'}, {t:'樹枝上',c:'n'}, {t:'歡快地',c:'adj'}, {t:'歌唱',c:'v'}, {t:'，',c:'punc'}, {t:'喚醒了',c:'v'}, {t:'大地',c:'n'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'因為',c:'prep'}, {t:'下雨了',c:'v'}, {t:'，',c:'punc'}, {t:'所以',c:'prep'}, {t:'我們',c:'prep'}, {t:'留在',c:'v'}, {t:'課室裏',c:'n'}, {t:'玩遊戲',c:'v'}, {t:'。',c:'punc'}] },
+                    { words: [{t:'小明',c:'n'}, {t:'扶',c:'v'}, {t:'一位',c:'adj'}, {t:'老太太',c:'n'}, {t:'過馬路',c:'v'}, {t:'，',c:'punc'}, {t:'真是個',c:'adj'}, {t:'好孩子',c:'n'}, {t:'！',c:'punc'}] }
+                ]
+            },
+            en: {
+                easy: [ // 4-5 words
+                    { words: [{t:'The',c:'prep'}, {t:'cat',c:'n'}, {t:'sleeps',c:'v'}, {t:'on',c:'prep'}, {t:'the',c:'prep'}, {t:'mat.',c:'n'}] },
+                    { words: [{t:'I',c:'prep'}, {t:'like',c:'v'}, {t:'fresh',c:'adj'}, {t:'apples.',c:'n'}] },
+                    { words: [{t:'Birds',c:'n'}, {t:'can',c:'v'}, {t:'fly',c:'v'}, {t:'high.',c:'adj'}] },
+                    { words: [{t:'She',c:'prep'}, {t:'reads',c:'v'}, {t:'a',c:'prep'}, {t:'book.',c:'n'}] },
+                    { words: [{t:'Dogs',c:'n'}, {t:'run',c:'v'}, {t:'very',c:'adj'}, {t:'fast.',c:'adj'}] },
+                    { words: [{t:'We',c:'prep'}, {t:'play',c:'v'}, {t:'soccer',c:'n'}, {t:'together.',c:'adj'}] },
+                    { words: [{t:'The',c:'prep'}, {t:'sun',c:'n'}, {t:'shines',c:'v'}, {t:'brightly.',c:'adj'}] },
+                    { words: [{t:'He',c:'prep'}, {t:'drinks',c:'v'}, {t:'cold',c:'adj'}, {t:'water.',c:'n'}] },
+                    { words: [{t:'My',c:'prep'}, {t:'dog',c:'n'}, {t:'barks',c:'v'}, {t:'loudly.',c:'adj'}] },
+                    { words: [{t:'Fish',c:'n'}, {t:'swim',c:'v'}, {t:'in',c:'prep'}, {t:'water.',c:'n'}] },
+                    { words: [{t:'They',c:'prep'}, {t:'sing',c:'v'}, {t:'sweet',c:'adj'}, {t:'songs.',c:'n'}] },
+                    { words: [{t:'Look',c:'v'}, {t:'at',c:'prep'}, {t:'the',c:'prep'}, {t:'moon.',c:'n'}] }
+                ],
+                medium: [ // 6-7 words
+                    { words: [{t:'The',c:'prep'}, {t:'little',c:'adj'}, {t:'boy',c:'n'}, {t:'plays',c:'v'}, {t:'in',c:'prep'}, {t:'the',c:'prep'}, {t:'park.',c:'n'}] },
+                    { words: [{t:'My',c:'prep'}, {t:'teacher',c:'n'}, {t:'tells',c:'v'}, {t:'us',c:'prep'}, {t:'a',c:'prep'}, {t:'funny',c:'adj'}, {t:'story.',c:'n'}] },
+                    { words: [{t:'A',c:'prep'}, {t:'cute',c:'adj'}, {t:'rabbit',c:'n'}, {t:'hops',c:'v'}, {t:'on',c:'prep'}, {t:'the',c:'prep'}, {t:'grass.',c:'n'}] },
+                    { words: [{t:'They',c:'prep'}, {t:'eat',c:'v'}, {t:'sweet',c:'adj'}, {t:'ice',c:'n'}, {t:'cream',c:'n'}, {t:'today.',c:'n'}] },
+                    { words: [{t:'The',c:'prep'}, {t:'yellow',c:'adj'}, {t:'duck',c:'n'}, {t:'swims',c:'v'}, {t:'in',c:'prep'}, {t:'the',c:'prep'}, {t:'lake.',c:'n'}] },
+                    { words: [{t:'She',c:'prep'}, {t:'wears',c:'v'}, {t:'a',c:'prep'}, {t:'pretty',c:'adj'}, {t:'pink',c:'adj'}, {t:'dress.',c:'n'}] },
+                    { words: [{t:'We',c:'prep'}, {t:'draw',c:'v'}, {t:'pictures',c:'n'}, {t:'in',c:'prep'}, {t:'art',c:'n'}, {t:'class.',c:'n'}] },
+                    { words: [{t:'My',c:'prep'}, {t:'father',c:'n'}, {t:'drives',c:'v'}, {t:'a',c:'prep'}, {t:'blue',c:'adj'}, {t:'car.',c:'n'}] },
+                    { words: [{t:'Children',c:'n'}, {t:'laugh',c:'v'}, {t:'happily',c:'adj'}, {t:'at',c:'prep'}, {t:'the',c:'prep'}, {t:'zoo.',c:'n'}] }
+                ],
+                hard: [ // 8+ words
+                    { words: [{t:'My',c:'prep'}, {t:'sister',c:'n'}, {t:'and',c:'prep'}, {t:'I',c:'prep'}, {t:'go',c:'v'}, {t:'to',c:'prep'}, {t:'school',c:'n'}, {t:'every',c:'adj'}, {t:'morning.',c:'n'}] },
+                    { words: [{t:'Look',c:'v'}, {t:'at',c:'prep'}, {t:'the',c:'prep'}, {t:'colorful',c:'adj'}, {t:'rainbow',c:'n'}, {t:'in',c:'prep'}, {t:'the',c:'prep'}, {t:'blue',c:'adj'}, {t:'sky!',c:'n'}] },
+                    { words: [{t:'After',c:'prep'}, {t:'school,',c:'n'}, {t:'I',c:'prep'}, {t:'always',c:'adj'}, {t:'do',c:'v'}, {t:'my',c:'prep'}, {t:'homework',c:'n'}, {t:'with',c:'prep'}, {t:'my',c:'prep'}, {t:'mother.',c:'n'}] },
+                    { words: [{t:'The',c:'prep'}, {t:'kind',c:'adj'}, {t:'teacher',c:'n'}, {t:'helps',c:'v'}, {t:'the',c:'prep'}, {t:'students',c:'n'}, {t:'read',c:'v'}, {t:'books.',c:'n'}] },
+                    { words: [{t:'We',c:'prep'}, {t:'had',c:'v'}, {t:'a',c:'prep'}, {t:'wonderful',c:'adj'}, {t:'picnic',c:'n'}, {t:'under',c:'prep'}, {t:'the',c:'prep'}, {t:'big',c:'adj'}, {t:'tree.',c:'n'}] },
+                    { words: [{t:'Every',c:'adj'}, {t:'Sunday,',c:'n'}, {t:'my',c:'prep'}, {t:'family',c:'n'}, {t:'eats',c:'v'}, {t:'delicious',c:'adj'}, {t:'dinner',c:'n'}, {t:'together.',c:'adj'}] }
+                ]
+            }
+        };
+    </script>
+
+    <!-- UI Localization Dictionary -->
+    <script>
+        const I18N = {
+            zh: {
+                appTitle: "升小一重組句子大挑戰",
+                appSubtitle: "Primary Sentence Unscramble App",
+                navHome: "主頁",
+                startBadge: "升小一語文學習小幫手",
+                startHeading: "準備好挑戰組句能力了嗎？",
+                startDesc: "拖放或點擊詞語卡片，組合出正確通順的句子！點擊任何詞語皆會自動發音！",
+                lblNameInput: "請輸入小朋友的姓名或暱稱：",
+                lblLangSelect: "選擇語言 Language:",
+                lblDiffSelect: "選擇難度等級：",
+                diffEasyTitle: "簡單 Easy", diffEasySub: "4-5 個詞語",
+                diffMediumTitle: "普通 Medium", diffMediumSub: "6-7 個詞語",
+                diffHardTitle: "困難 Hard", diffHardSub: "8+ 個詞語",
+                colorLegend: "💡 詞性顏色提示：",
+                tags: [
+                    { label: '名詞 Noun', cls: 'bg-blue-100 text-blue-700 border-blue-300' },
+                    { label: '動詞 Verb', cls: 'bg-red-100 text-red-700 border-red-300' },
+                    { label: '形容/副詞 Adj', cls: 'bg-amber-100 text-amber-700 border-amber-300' },
+                    { label: '代/介/連詞 Prep', cls: 'bg-purple-100 text-purple-700 border-purple-300' },
+                    { label: '標點 Punctuation', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' }
+                ],
+                btnStart: "開始挑戰 (10 題)",
+                btnViewLb: "查看英雄高分榜",
+                lblProgress: "進度",
+                hintDrag: "拖拽或點擊詞語放到答案區 (點擊會發音)：",
+                btnListenPrompt: "聽題目朗讀",
+                btnReplayAudio: "再聽一次",
+                lblAnswerZone: "【 重組後的句子 】",
+                lblSourceZone: "【 可選詞語 】",
+                btnReset: "重設",
+                btnCheck: "檢查答案",
+                btnNext: "下一題",
+                lblResultCorrect: "答對題數",
+                lblResultTime: "總用時",
+                lblResultScore: "獲得總分",
+                btnPlayAgain: "再玩一次",
+                btnResultLb: "龍虎榜",
+                lblLeaderboardTitle: "高分龍虎榜",
+                thRank: "名次", thName: "姓名", thLang: "語言", thDiff: "難度", thScore: "得分", thTime: "用時", thDate: "日期",
+                btnClearLb: "清除所有榜單", btnLbBack: "返回主頁",
+                modalEnterNameTitle: "請輸入姓名", modalEnterNameMsg: "請輸入小朋友的姓名，方便記錄成績喔！",
+                confirmExitTitle: "返回主頁", confirmExitMsg: "確定要返回主選單嗎？當前的遊戲進度將不會保留喔！"
+            },
+            en: {
+                appTitle: "Sentence Unscramble Challenge",
+                appSubtitle: "Primary 1 Fun Word Ordering Game",
+                navHome: "Home",
+                startBadge: "Primary 1 Starter Learning Helper",
+                startHeading: "Ready to build awesome sentences?",
+                startDesc: "Drag & drop or tap the word cards to form correct sentences! Every word speaks when tapped!",
+                lblNameInput: "Enter Player Name or Nickname:",
+                lblLangSelect: "Select Language 選擇語言:",
+                lblDiffSelect: "Select Difficulty Level:",
+                diffEasyTitle: "Simple Easy", diffEasySub: "4-5 Words",
+                diffMediumTitle: "Medium", diffMediumSub: "6-7 Words",
+                diffHardTitle: "Hard", diffHardSub: "8+ Words",
+                colorLegend: "💡 Word Category Color Hints:",
+                tags: [
+                    { label: 'Noun', cls: 'bg-blue-100 text-blue-700 border-blue-300' },
+                    { label: 'Verb', cls: 'bg-red-100 text-red-700 border-red-300' },
+                    { label: 'Adjective/Adv', cls: 'bg-amber-100 text-amber-700 border-amber-300' },
+                    { label: 'Prep/Article/Pronoun', cls: 'bg-purple-100 text-purple-700 border-purple-300' },
+                    { label: 'Punctuation', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' }
+                ],
+                btnStart: "Start Challenge (10 Qs)",
+                btnViewLb: "View Leaderboard",
+                lblProgress: "Progress",
+                hintDrag: "Drag or tap words into the answer box (word pronounces on tap):",
+                btnListenPrompt: "Listen Prompt",
+                btnReplayAudio: "Listen Again",
+                lblAnswerZone: "[ Your Reordered Sentence ]",
+                lblSourceZone: "[ Word Pool ]",
+                btnReset: "Reset",
+                btnCheck: "Check Answer",
+                btnNext: "Next Question",
+                lblResultCorrect: "Correct",
+                lblResultTime: "Time Taken",
+                lblResultScore: "Total Score",
+                btnPlayAgain: "Play Again",
+                btnResultLb: "Leaderboard",
+                lblLeaderboardTitle: "High Score Leaderboard",
+                thRank: "Rank", thName: "Name", thLang: "Lang", thDiff: "Diff", thScore: "Score", thTime: "Time", thDate: "Date",
+                btnClearLb: "Clear Leaderboard", btnLbBack: "Back Home",
+                modalEnterNameTitle: "Enter Name", modalEnterNameMsg: "Please enter a player name to save your score!",
+                confirmExitTitle: "Return Home", confirmExitMsg: "Are you sure you want to go back to the home screen? Your game progress will be lost."
+            }
+        };
+    </script>
+
+    <!-- Application Core Logic -->
+    <script>
+        let gameState = {
+            playerName: '',
+            selectedLanguage: 'zh',
+            selectedDifficulty: 'easy',
+            questions: [],
+            currentQuestionIndex: 0,
+            score: 0,
+            correctCount: 0,
+            timer: 0,
+            timerInterval: null,
+            draggedItem: null
+        };
+
+        const WORD_COLORS = {
+            n: 'bg-blue-500 text-white border-blue-600',
+            v: 'bg-red-500 text-white border-red-600',
+            adj: 'bg-amber-500 text-white border-amber-600',
+            prep: 'bg-purple-500 text-white border-purple-600',
+            punc: 'bg-emerald-500 text-white border-emerald-600'
+        };
+
+        window.onload = function() {
+            selectLanguage('zh');
+            selectDifficulty('easy');
+        };
+
+        function selectLanguage(lang) {
+            playSound('click');
+            gameState.selectedLanguage = lang;
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.className = 'lang-btn border-2 border-blue-500 bg-blue-50/80 ring-2 ring-blue-300 p-3.5 rounded-2xl text-center font-bold text-slate-700 transition flex items-center justify-center space-x-2';
+                } else {
+                    btn.className = 'lang-btn border-2 border-slate-200 bg-slate-50 p-3.5 rounded-2xl text-center font-bold text-slate-700 transition flex items-center justify-center space-x-2';
+                }
+            });
+
+            applyUIRender();
+        }
+
+        function selectDifficulty(diff) {
+            playSound('click');
+            gameState.selectedDifficulty = diff;
+
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                if (btn.getAttribute('data-diff') === diff) {
+                    btn.className = 'diff-btn border-2 border-blue-500 bg-blue-50/80 ring-2 ring-blue-300 p-3 rounded-2xl text-center font-bold text-slate-700 transition flex flex-col items-center';
+                } else {
+                    btn.className = 'diff-btn border-2 border-slate-200 bg-slate-50 p-3 rounded-2xl text-center font-bold text-slate-700 transition flex flex-col items-center';
+                }
             });
         }
 
-        function updateDisplay() {
-            if (!currentText.trim()) {
-                wordDisplay.innerHTML = `<span class="text-indigo-200/80 font-bold text-3xl sm:text-5xl animate-pulse">Type to Spell!</span>`;
-                statusLabel.textContent = "Tap & Spell!";
-                emojiDisplay.classList.add('hidden');
-                emojiDisplay.innerHTML = '';
+        function applyUIRender() {
+            const t = I18N[gameState.selectedLanguage];
+
+            document.getElementById('app-title').textContent = t.appTitle;
+            document.getElementById('app-subtitle').textContent = t.appSubtitle;
+            document.getElementById('lbl-nav-home').textContent = t.navHome;
+            document.getElementById('game-btn-home').textContent = t.navHome;
+            document.getElementById('start-badge').textContent = t.startBadge;
+            document.getElementById('start-heading').textContent = t.startHeading;
+            document.getElementById('start-desc').textContent = t.startDesc;
+            document.getElementById('lbl-name-input').innerHTML = `<i class="fa-solid fa-pen-nib text-blue-500 mr-1"></i> ${t.lblNameInput}`;
+            document.getElementById('lbl-lang-select').innerHTML = `<i class="fa-solid fa-language text-purple-500 mr-1"></i> ${t.lblLangSelect}`;
+            document.getElementById('lbl-diff-select').innerHTML = `<i class="fa-solid fa-layer-group text-yellow-500 mr-1"></i> ${t.lblDiffSelect}`;
+
+            document.getElementById('diff-easy-title').textContent = t.diffEasyTitle;
+            document.getElementById('diff-easy-sub').textContent = t.diffEasySub;
+            document.getElementById('diff-medium-title').textContent = t.diffMediumTitle;
+            document.getElementById('diff-medium-sub').textContent = t.diffMediumSub;
+            document.getElementById('diff-hard-title').textContent = t.diffHardTitle;
+            document.getElementById('diff-hard-sub').textContent = t.diffHardSub;
+
+            document.getElementById('lbl-color-legend').textContent = t.colorLegend;
+
+            const tagContainer = document.getElementById('color-tags-container');
+            tagContainer.innerHTML = '';
+            t.tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = `${tag.cls} px-2 py-1 rounded-md border`;
+                span.textContent = tag.label;
+                tagContainer.appendChild(span);
+            });
+
+            document.getElementById('btn-start-game').innerHTML = `<span>${t.btnStart}</span> <i class="fa-solid fa-circle-play"></i>`;
+            document.getElementById('btn-view-leaderboard').textContent = t.btnViewLb;
+
+            document.getElementById('lbl-progress').textContent = t.lblProgress;
+            document.getElementById('game-hint-drag').innerHTML = `<i class="fa-solid fa-hand-pointer mr-1 text-blue-400"></i> ${t.hintDrag}`;
+            document.getElementById('btn-listen-prompt').textContent = t.btnListenPrompt;
+            document.getElementById('btn-replay-audio').textContent = t.btnReplayAudio;
+            document.getElementById('lbl-answer-zone').textContent = t.lblAnswerZone;
+            document.getElementById('lbl-source-zone').textContent = t.lblSourceZone;
+
+            document.getElementById('lbl-btn-reset').textContent = t.btnReset;
+            document.getElementById('lbl-btn-check').textContent = t.btnCheck;
+            document.getElementById('lbl-btn-next').textContent = t.btnNext;
+
+            document.getElementById('lbl-result-correct').textContent = t.lblResultCorrect;
+            document.getElementById('lbl-result-time').textContent = t.lblResultTime;
+            document.getElementById('lbl-result-score').textContent = t.lblResultScore;
+            document.getElementById('btn-play-again').textContent = t.btnPlayAgain;
+            document.getElementById('btn-result-leaderboard').textContent = t.btnResultLb;
+
+            document.getElementById('lbl-leaderboard-title').textContent = t.lblLeaderboardTitle;
+            document.getElementById('th-rank').textContent = t.thRank;
+            document.getElementById('th-name').textContent = t.thName;
+            document.getElementById('th-lang').textContent = t.thLang;
+            document.getElementById('th-diff').textContent = t.thDiff;
+            document.getElementById('th-score').textContent = t.thScore;
+            document.getElementById('th-time').textContent = t.thTime;
+            document.getElementById('th-date').textContent = t.thDate;
+            document.getElementById('btn-clear-lb').innerHTML = `<i class="fa-solid fa-trash-can mr-1"></i> ${t.btnClearLb}`;
+            document.getElementById('btn-lb-back').textContent = t.btnLbBack;
+        }
+
+        function startGame(e) {
+            e.preventDefault();
+            playSound('click');
+
+            const nameInput = document.getElementById('player-name').value.trim();
+            const t = I18N[gameState.selectedLanguage];
+
+            if (!nameInput) {
+                showModal(t.modalEnterNameTitle, t.modalEnterNameMsg);
                 return;
             }
 
-            const rawWords = currentText.split(' ');
-            let html = '';
-            let matchedEmojis = [];
+            gameState.playerName = nameInput;
+            document.getElementById('display-player-name').textContent = gameState.playerName;
+            document.getElementById('header-user-info').classList.remove('hidden');
 
-            rawWords.forEach((wordStr, wIdx) => {
-                if (!wordStr) {
-                    html += `<div class="w-4 sm:w-8"></div>`;
+            const langBank = QUESTION_BANK[gameState.selectedLanguage] || QUESTION_BANK['zh'];
+            const pool = langBank[gameState.selectedDifficulty] || langBank['easy'];
+            let shuffled = [...pool].sort(() => 0.5 - Math.random());
+
+            gameState.questions = [];
+            while (gameState.questions.length < 10) {
+                gameState.questions.push(...shuffled);
+            }
+            gameState.questions = gameState.questions.slice(0, 10);
+
+            gameState.currentQuestionIndex = 0;
+            gameState.score = 0;
+            gameState.correctCount = 0;
+            gameState.timer = 0;
+
+            startTimer();
+            showGameScreen();
+            loadQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.timer = 0;
+            updateTimerDisplay();
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(gameState.timer / 60).toString().padStart(2, '0');
+            const secs = (gameState.timer % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+        }
+
+        function showGameScreen() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-leaderboard').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('flex');
+        }
+
+        function showStartScreen() {
+            clearInterval(gameState.timerInterval);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-leaderboard').classList.add('hidden');
+            document.getElementById('screen-start').classList.remove('hidden');
+            document.getElementById('header-user-info').classList.add('hidden');
+        }
+
+        function loadQuestion() {
+            const q = gameState.questions[gameState.currentQuestionIndex];
+            document.getElementById('question-number').textContent = `${gameState.currentQuestionIndex + 1} / 10`;
+            document.getElementById('score-display').textContent = `${gameState.score}`;
+
+            const answerZone = document.getElementById('answer-zone');
+            const sourceZone = document.getElementById('source-zone');
+            const correctBox = document.getElementById('correct-sentence-box');
+
+            answerZone.innerHTML = '';
+            sourceZone.innerHTML = '';
+            correctBox.classList.add('hidden');
+
+            document.getElementById('btn-check').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            document.getElementById('btn-reset').disabled = false;
+            document.getElementById('btn-reset').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            let shuffledWords = [...q.words].map((w, idx) => ({ ...w, originalIdx: idx }));
+            let isSame = true;
+            while (isSame && shuffledWords.length > 1) {
+                shuffledWords.sort(() => 0.5 - Math.random());
+                isSame = shuffledWords.every((val, i) => val.originalIdx === i);
+            }
+
+            shuffledWords.forEach((item, index) => {
+                const card = createWordCard(item, `word-${index}`);
+                sourceZone.appendChild(card);
+            });
+
+            setupDropZones();
+        }
+
+        function createWordCard(item, uniqueId) {
+            const card = document.createElement('div');
+            card.id = uniqueId;
+            card.className = `word-card ${WORD_COLORS[item.c] || 'bg-blue-500 text-white'} px-3.5 py-2 md:px-4 md:py-2.5 rounded-2xl font-black text-base md:text-xl shadow-md border-b-4 flex items-center justify-center cursor-pointer select-none m-1`;
+            card.textContent = item.t;
+            card.setAttribute('draggable', 'true');
+            card.dataset.type = item.c;
+            card.dataset.text = item.t;
+
+            card.addEventListener('click', () => {
+                // Speak word on tap
+                speakWord(item.t, gameState.selectedLanguage);
+
+                if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+
+                playSound('click');
+                const answerZone = document.getElementById('answer-zone');
+                const sourceZone = document.getElementById('source-zone');
+
+                if (card.parentElement.id === 'source-zone') {
+                    answerZone.appendChild(card);
+                } else {
+                    sourceZone.appendChild(card);
+                }
+            });
+
+            card.addEventListener('dragstart', (e) => {
+                // Speak word on drag start
+                speakWord(item.t, gameState.selectedLanguage);
+
+                if (!document.getElementById('btn-next').classList.contains('hidden')) {
+                    e.preventDefault();
                     return;
                 }
-
-                const syllables = getIpaPhoneticAnalysis(wordStr);
-                const emoji = getEmojiMatch(wordStr);
-                if (emoji) matchedEmojis.push(emoji);
-
-                html += `<div id="word-block-${wIdx}" class="word-block inline-flex items-center p-1 rounded-2xl transition-all duration-200">`;
-
-                syllables.forEach((syl, sIdx) => {
-                    html += `<div class="inline-flex items-center">`;
-
-                    if (syl.onset) {
-                        html += `
-                            <span id="part-${wIdx}-${sIdx}-onset" class="part-card text-bubblePink font-black px-0.5 sm:px-1 py-0.5 rounded-xl transition-all duration-200">
-                                ${syl.onset}
-                            </span>
-                        `;
-                    }
-
-                    if (syl.rime) {
-                        html += `
-                            <span id="part-${wIdx}-${sIdx}-rime" class="part-card text-bubbleBlue font-black px-0.5 sm:px-1 py-0.5 rounded-xl transition-all duration-200">
-                                ${syl.rime}
-                            </span>
-                        `;
-                    }
-
-                    html += `</div>`;
-                });
-
-                html += `</div>`;
+                gameState.draggedItem = card;
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', uniqueId);
             });
 
-            wordDisplay.innerHTML = html;
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                gameState.draggedItem = null;
+            });
 
-            if (matchedEmojis.length > 0) {
-                emojiDisplay.innerHTML = matchedEmojis.map(e => `<span>${e}</span>`).join('');
-                emojiDisplay.classList.remove('hidden');
+            return card;
+        }
+
+        function setupDropZones() {
+            const zones = [document.getElementById('answer-zone'), document.getElementById('source-zone')];
+
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drag-over');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    if (gameState.draggedItem && document.getElementById('btn-next').classList.contains('hidden')) {
+                        zone.appendChild(gameState.draggedItem);
+                        playSound('click');
+                    }
+                });
+            });
+        }
+
+        function resetCurrentQuestion() {
+            if (!document.getElementById('btn-next').classList.contains('hidden')) return;
+            playSound('click');
+            const answerZone = document.getElementById('answer-zone');
+            const sourceZone = document.getElementById('source-zone');
+            
+            const cards = Array.from(answerZone.children);
+            cards.forEach(card => sourceZone.appendChild(card));
+        }
+
+        function checkAnswer() {
+            const answerZone = document.getElementById('answer-zone');
+            const userCards = Array.from(answerZone.children);
+            const currentQ = gameState.questions[gameState.currentQuestionIndex];
+            const isEn = (gameState.selectedLanguage === 'en');
+
+            if (userCards.length < currentQ.words.length) {
+                playSound('wrong');
+                const msg = isEn ? 'Please place all words into the answer box!' : '還沒有把所有詞語放進答案區喔！';
+                showModal(isEn ? 'Hint' : '提示', msg);
+                return;
+            }
+
+            const joinChar = isEn ? ' ' : '';
+            const userSentence = userCards.map(c => c.dataset.text).join(joinChar);
+            const correctSentence = currentQ.words.map(w => w.t).join(joinChar);
+            const isCorrect = (userSentence.trim() === correctSentence.trim());
+
+            if (isCorrect) {
+                playSound('correct');
+                gameState.score += 10;
+                gameState.correctCount++;
+                document.getElementById('score-display').textContent = `${gameState.score}`;
+
+                answerZone.classList.add('animate-correct');
+                setTimeout(() => answerZone.classList.remove('animate-correct'), 800);
             } else {
-                emojiDisplay.classList.add('hidden');
-                emojiDisplay.innerHTML = '';
+                playSound('wrong');
+                answerZone.classList.add('animate-shake');
+                setTimeout(() => answerZone.classList.remove('animate-shake'), 500);
             }
+
+            displayCorrectSentenceBox(currentQ, isCorrect);
+
+            document.getElementById('btn-check').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
+            document.getElementById('btn-reset').disabled = true;
+            document.getElementById('btn-reset').classList.add('opacity-50', 'cursor-not-allowed');
+
+            speakCorrectSentence();
         }
 
-        function pressKey(char, e) {
-            playPopSound();
-            createBurst(e);
-            stopSpeech();
+        function displayCorrectSentenceBox(question, isCorrect) {
+            const correctBox = document.getElementById('correct-sentence-box');
+            const displayContainer = document.getElementById('correct-sentence-display');
+            const badge = document.getElementById('result-status-badge');
+            const isEn = (gameState.selectedLanguage === 'en');
 
-            if (currentText.length < 32) {
-                currentText += char;
-                updateDisplay();
-                resetTypingTimer();
-            }
-        }
+            displayContainer.innerHTML = '';
 
-        function pressSpace(e) {
-            playPopSound();
-            createBurst(e);
-            stopSpeech();
-
-            if (currentText.length > 0 && !currentText.endsWith(' ') && currentText.length < 32) {
-                currentText += ' ';
-                updateDisplay();
-                resetTypingTimer();
-            }
-        }
-
-        function backspace(e) {
-            playPopSound();
-            createBurst(e);
-            stopSpeech();
-
-            currentText = currentText.slice(0, -1);
-            updateDisplay();
-            if (currentText.length > 0) {
-                resetTypingTimer();
+            if (isCorrect) {
+                badge.className = "text-xs font-black px-2.5 py-1 rounded-md bg-emerald-500 text-white";
+                badge.textContent = isEn ? "🎉 Awesome! Correct Answer:" : "🎉 太棒了！回答正確：";
+                correctBox.className = "bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 animate-fade-in";
             } else {
-                statusLabel.textContent = "Tap & Spell!";
-                emojiDisplay.classList.add('hidden');
-                emojiDisplay.innerHTML = '';
+                badge.className = "text-xs font-black px-2.5 py-1 rounded-md bg-orange-500 text-white";
+                badge.textContent = isEn ? "💡 Correct Sentence:" : "💡 完整正確句子應該是：";
+                correctBox.className = "bg-orange-50 border-2 border-orange-300 rounded-2xl p-4 animate-fade-in";
+            }
+
+            question.words.forEach(w => {
+                const tag = document.createElement('button');
+                tag.type = 'button';
+                tag.className = `${WORD_COLORS[w.c] || 'bg-blue-500 text-white'} px-3 py-1 rounded-xl text-base md:text-lg font-bold shadow-sm inline-block hover:opacity-90 active:scale-95 transition`;
+                tag.textContent = w.t;
+                tag.onclick = () => speakWord(w.t, gameState.selectedLanguage);
+                displayContainer.appendChild(tag);
+            });
+
+            correctBox.classList.remove('hidden');
+        }
+
+        function speakCorrectSentence() {
+            const currentQ = gameState.questions[gameState.currentQuestionIndex];
+            const joinChar = (gameState.selectedLanguage === 'en') ? ' ' : '';
+            const correctSentence = currentQ.words.map(w => w.t).join(joinChar);
+            speakText(correctSentence, gameState.selectedLanguage);
+        }
+
+        function speakSentencePrompt() {
+            speakCorrectSentence();
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            gameState.currentQuestionIndex++;
+
+            if (gameState.currentQuestionIndex < 10) {
+                loadQuestion();
+            } else {
+                finishGame();
             }
         }
 
-        function clearWord() {
-            stopSpeech();
-            currentText = "";
-            updateDisplay();
-            statusLabel.textContent = "Tap & Spell!";
-            emojiDisplay.classList.add('hidden');
-            emojiDisplay.innerHTML = '';
-        }
+        function finishGame() {
+            clearInterval(gameState.timerInterval);
+            playSound('win');
 
-        function resetTypingTimer() {
-            statusLabel.textContent = "Keep typing...";
-            if (typingTimer) clearTimeout(typingTimer);
-
-            typingTimer = setTimeout(() => {
-                if (currentText.trim().length > 0) {
-                    executePhonicsSpeech();
-                }
-            }, PAUSE_THRESHOLD);
-        }
-
-        function executePhonicsSpeech() {
-            if (!('speechSynthesis' in window) || !currentText.trim()) return;
-
-            stopSpeech();
-            const rawWords = currentText.split(' ').filter(w => w.trim().length > 0);
-
-            mascot.classList.add('mascot-pulse');
-            speakBadge.classList.remove('hidden');
-
-            rawWords.forEach((wordStr, wIdx) => {
-                const syllables = getIpaPhoneticAnalysis(wordStr);
-
-                syllables.forEach((syl, sIdx) => {
-                    const hasOnset = syl.onset && syl.onset.trim() !== '';
-
-                    // Step 1: Onset + "ar" (ONLY executed if an initial onset consonant exists)
-                    if (hasOnset && syl.onsetArSpoken) {
-                        const initUtt = new SpeechSynthesisUtterance(syl.onsetArSpoken);
-                        initUtt.rate = 0.85;
-                        initUtt.pitch = 1.25;
-
-                        initUtt.onstart = () => {
-                            highlightElement(`part-${wIdx}-${sIdx}-onset`);
-                            statusLabel.textContent = `${syl.onset.toUpperCase()} ("${syl.onsetArSpoken}")`;
-                        };
-
-                        window.speechSynthesis.speak(initUtt);
-                    }
-
-                    // Step 2: Vowel / Rime sound (Only spoken individually if there was an onset to prevent repeating for vowel-starting words)
-                    if (hasOnset && syl.rime && syl.rimeSpoken) {
-                        const rimeUtt = new SpeechSynthesisUtterance(syl.rimeSpoken);
-                        rimeUtt.rate = 0.85;
-                        rimeUtt.pitch = 1.25;
-
-                        rimeUtt.onstart = () => {
-                            highlightElement(`part-${wIdx}-${sIdx}-rime`);
-                            statusLabel.textContent = `${syl.rime.toUpperCase()} ("${syl.rimeSpoken}")`;
-                        };
-
-                        window.speechSynthesis.speak(rimeUtt);
-                    }
-
-                    // Step 3: Combined Syllable / Word Sound (Directly executed for vowel-starting words without sound repetition)
-                    const groupUtt = new SpeechSynthesisUtterance(syl.combinedSpoken);
-                    groupUtt.rate = 0.8;
-                    groupUtt.pitch = 1.2;
-
-                    groupUtt.onstart = () => {
-                        highlightSyllableGroup(wIdx, sIdx);
-                        statusLabel.textContent = `${syl.text.toUpperCase()}`;
-                    };
-
-                    window.speechSynthesis.speak(groupUtt);
+            try {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
                 });
+            } catch(e) {}
 
-                // Syllable/Word Complete Pronunciation
-                const wordUtt = new SpeechSynthesisUtterance(wordStr.toLowerCase());
-                wordUtt.rate = 0.75;
-                wordUtt.pitch = 1.2;
+            const mins = Math.floor(gameState.timer / 60).toString().padStart(2, '0');
+            const secs = (gameState.timer % 60).toString().padStart(2, '0');
+            const timeStr = `${mins}:${secs}`;
 
-                wordUtt.onstart = () => {
-                    highlightWordBlock(wIdx);
-                    statusLabel.textContent = `${wordStr.toUpperCase()}!  `;
-                };
+            document.getElementById('result-correct-count').textContent = `${gameState.correctCount} / 10`;
+            document.getElementById('result-time-taken').textContent = timeStr;
+            document.getElementById('result-final-score').textContent = gameState.score;
 
-                if (wIdx === rawWords.length - 1) {
-                    wordUtt.onend = () => {
-                        resetHighlights();
-                        mascot.classList.remove('mascot-pulse');
-                        speakBadge.classList.add('hidden');
-                        statusLabel.textContent = "Great job!";
-                    };
-                }
+            const isEn = (gameState.selectedLanguage === 'en');
+            let feedback = isEn ? "Outstanding sentence builder!" : "太棒了！簡直是小學學霸！";
+            let emoji = "🏆";
 
-                window.speechSynthesis.speak(wordUtt);
+            if (gameState.score >= 90) {
+                feedback = isEn ? "Superstar Sentence Master!" : "太棒了！小學學霸！";
+                emoji = "🌟";
+            } else if (gameState.score >= 70) {
+                feedback = isEn ? "Great job! Keep it up!" : "做得好！表現非常優異！";
+                emoji = "🎉";
+            } else {
+                feedback = isEn ? "Good effort! Practice makes perfect!" : "繼續加油！熟能生巧喔！";
+                emoji = "💪";
+            }
+
+            document.getElementById('result-heading').textContent = isEn ? "Challenge Completed!" : "挑戰完成！";
+            document.getElementById('result-feedback').textContent = `"${feedback}"`;
+            document.getElementById('result-emoji').textContent = emoji;
+
+            const speakFeedback = isEn 
+                ? `Challenge completed! ${gameState.playerName}, score ${gameState.score} points. ${feedback}`
+                : `挑戰完成！${gameState.playerName}，得分${gameState.score}分。${feedback}`;
+            speakText(speakFeedback, gameState.selectedLanguage);
+
+            const diffLabelMap = {
+                easy: isEn ? 'Simple (4-5)' : '簡單 (4-5詞)',
+                medium: isEn ? 'Medium (6-7)' : '普通 (6-7詞)',
+                hard: isEn ? 'Hard (8+)' : '困難 (8+詞)'
+            };
+
+            saveToLeaderboard({
+                name: gameState.playerName,
+                lang: gameState.selectedLanguage.toUpperCase(),
+                diff: diffLabelMap[gameState.selectedDifficulty],
+                score: gameState.score,
+                time: timeStr,
+                rawTime: gameState.timer,
+                date: new Date().toLocaleDateString()
+            });
+
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-result').classList.remove('hidden');
+        }
+
+        function playAgain() {
+            playSound('click');
+            const langBank = QUESTION_BANK[gameState.selectedLanguage] || QUESTION_BANK['zh'];
+            const pool = langBank[gameState.selectedDifficulty] || langBank['easy'];
+            let shuffled = [...pool].sort(() => 0.5 - Math.random());
+
+            gameState.questions = [];
+            while (gameState.questions.length < 10) {
+                gameState.questions.push(...shuffled);
+            }
+            gameState.questions = gameState.questions.slice(0, 10);
+
+            gameState.currentQuestionIndex = 0;
+            gameState.score = 0;
+            gameState.correctCount = 0;
+
+            startTimer();
+            showGameScreen();
+            loadQuestion();
+        }
+
+        function saveToLeaderboard(record) {
+            let list = JSON.parse(localStorage.getItem('sentence_app_leaderboard') || '[]');
+            list.push(record);
+            list.sort((a, b) => b.score - a.score || a.rawTime - b.rawTime);
+            list = list.slice(0, 15);
+            localStorage.setItem('sentence_app_leaderboard', JSON.stringify(list));
+        }
+
+        function showLeaderboardScreen() {
+            playSound('click');
+            const tbody = document.getElementById('leaderboard-table-body');
+            tbody.innerHTML = '';
+
+            let list = JSON.parse(localStorage.getItem('sentence_app_leaderboard') || '[]');
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-slate-400">尚無紀錄！立刻開始遊戲挑戰上榜吧。</td></tr>`;
+            } else {
+                list.forEach((item, index) => {
+                    let rankBadge = `${index + 1}`;
+                    if (index === 0) rankBadge = '🥇 1';
+                    if (index === 1) rankBadge = '🥈 2';
+                    if (index === 2) rankBadge = '🥉 3';
+
+                    const row = document.createElement('tr');
+                    row.className = index % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                    row.innerHTML = `
+                        <td class="p-3 font-black">${rankBadge}</td>
+                        <td class="p-3 text-blue-600">${escapeHtml(item.name)}</td>
+                        <td class="p-3"><span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold">${item.lang}</span></td>
+                        <td class="p-3"><span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-xs font-bold">${item.diff}</span></td>
+                        <td class="p-3 text-yellow-600 font-black">${item.score}</td>
+                        <td class="p-3 font-mono">${item.time}</td>
+                        <td class="p-3 text-xs text-slate-400">${item.date}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-leaderboard').classList.remove('hidden');
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Are you sure you want to clear all high scores? / 確定要清除所有高分紀錄嗎？')) {
+                localStorage.removeItem('sentence_app_leaderboard');
+                showLeaderboardScreen();
+            }
+        }
+
+        function confirmExit() {
+            const t = I18N[gameState.selectedLanguage];
+            showModal(t.confirmExitTitle, t.confirmExitMsg, '🏠', true, () => {
+                showStartScreen();
             });
         }
 
-        function highlightSyllableGroup(wIdx, sIdx) {
-            resetHighlights();
-            const initEl = document.getElementById(`part-${wIdx}-${sIdx}-onset`);
-            const rimeEl = document.getElementById(`part-${wIdx}-${sIdx}-rime`);
-            if (initEl) initEl.classList.add('phoneme-active', 'bg-yellow-200');
-            if (rimeEl) rimeEl.classList.add('phoneme-active', 'bg-yellow-200');
-        }
+        function showModal(title, msg, icon = '💡', showCancel = false, onConfirm = null) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = msg;
+            document.getElementById('modal-icon').textContent = icon;
 
-        function highlightWordBlock(wIdx) {
-            resetHighlights();
-            const block = document.getElementById(`word-block-${wIdx}`);
-            if (block) {
-                block.querySelectorAll('.part-card').forEach(el => {
-                    el.classList.add('phoneme-active', 'bg-yellow-200');
-                });
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            if (showCancel) {
+                cancelBtn.classList.remove('hidden');
+            } else {
+                cancelBtn.classList.add('hidden');
             }
+
+            confirmBtn.onclick = () => {
+                closeModal();
+                if (onConfirm) onConfirm();
+            };
+
+            document.getElementById('custom-modal').classList.remove('hidden');
         }
 
-        function repeatSpeech() {
-            if (currentText.trim()) {
-                executePhonicsSpeech();
-            }
+        function closeModal() {
+            playSound('click');
+            document.getElementById('custom-modal').classList.add('hidden');
         }
 
-        function highlightElement(id) {
-            resetHighlights();
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.add('phoneme-active', 'bg-yellow-200');
-            }
-        }
-
-        function resetHighlights() {
-            document.querySelectorAll('.part-card').forEach(el => {
-                el.classList.remove('phoneme-active', 'bg-yellow-200');
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
             });
         }
-
-        function stopSpeech() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-            if (typingTimer) clearTimeout(typingTimer);
-            mascot.classList.remove('mascot-pulse');
-            speakBadge.classList.add('hidden');
-            resetHighlights();
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.altKey || e.metaKey) return;
-
-            if (e.key === 'Backspace') {
-                backspace(null);
-            } else if (e.key === 'Escape') {
-                clearWord();
-            } else if (e.key === ' ') {
-                e.preventDefault();
-                pressSpace(null);
-            } else if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
-                pressKey(e.key.toUpperCase(), null);
-            }
-        });
-
-        updateDisplay();
     </script>
 </body>
 </html>
-
