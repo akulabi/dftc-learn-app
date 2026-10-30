@@ -60,8 +60,8 @@
 
     <!-- Application JavaScript Logic -->
     <script>
-        // Curated bright, child-friendly colors
-        const colors = [
+        // Curated bright, child-friendly colors for badges
+        const colorPalette = [
             'bg-amber-400 text-white',
             'bg-pink-400 text-white',
             'bg-sky-400 text-white',
@@ -70,15 +70,18 @@
             'bg-rose-400 text-white',
             'bg-indigo-400 text-white',
             'bg-orange-400 text-white',
-            'bg-teal-400 text-white'
+            'bg-teal-400 text-white',
+            'bg-lime-500 text-white',
+            'bg-violet-400 text-white',
+            'bg-fuchsia-400 text-white'
         ];
 
-        // Helper function to pick a random color
+        // Helper function to pick a random color from the palette
         function getRandomColor() {
-            return colors[Math.floor(Math.random() * colors.length)];
+            return colorPalette[Math.floor(Math.random() * colorPalette.length)];
         }
 
-        // List of pages with contextual icons
+        // List of pages inside the /pages/ directory with contextual icons
         const pagesList = [
             { id: '1', title: 'Chinese Speaking', file: 'chinese_speaking.html', icon: 'fa-comments' },
             { id: '2', title: 'Chinese Writing', file: 'chinese_writing.html', icon: 'fa-pen-to-square' },
@@ -117,9 +120,38 @@
                 const fullPath = `pages/${page.file}`;
                 const link = document.createElement('a');
                 
-                // Get a random color for each card
+                // Get a bright random color for each card's icon badge
                 const randomColorClass = getRandomColor();
 
                 link.href = fullPath;
                 link.target = '_blank';
-                link.className = 'group flex items-center justify-between p-3 rounded-2xl border-2 border-sky-100
+                link.className = 'group flex items-center justify-between p-3 rounded-2xl border-2 border-sky-100 bg-white hover:border-sky-300 hover:bg-sky-50 transition-all shadow-sm hover:shadow-md hover:scale-[1.01]';
+
+                link.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl ${randomColorClass} flex items-center justify-center shrink-0 text-base font-bold shadow-sm transition-transform group-hover:rotate-6">
+                            <i class="fa-solid ${page.icon}"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="font-bold text-sm text-slate-800">${page.title}</div>
+                        </div>
+                    </div>
+                    <div class="p-2 text-sky-400 group-hover:text-sky-600 transition-colors shrink-0">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+                    </div>
+                `;
+
+                pagesListContainer.appendChild(link);
+            });
+        }
+
+        // Search Input Event Listener
+        searchInput.addEventListener('input', (e) => {
+            renderPages(e.target.value.trim());
+        });
+
+        // Initial render on page load
+        window.addEventListener('DOMContentLoaded', () => renderPages());
+    </script>
+</body>
+</html>
