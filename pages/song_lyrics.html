@@ -671,6 +671,7 @@
       selectedVoice = voiceSelect.value !== "" ? voices[parseInt(voiceSelect.value)] : (isChineseText ? findBestCantoneseVoice(voices) : null);
 
       if (isPlaying) {
+        stopSpeechEngine();
         jumpToWordIndex(currentTokenIdx >= 0 ? currentTokenIdx : 0, true);
       }
     }
@@ -680,6 +681,7 @@
       document.getElementById('speed-val').innerText = `${parseFloat(rateVal)}x`;
 
       if (isPlaying) {
+        stopSpeechEngine();
         jumpToWordIndex(currentTokenIdx >= 0 ? currentTokenIdx : 0, true);
       }
     }
@@ -695,20 +697,26 @@
 
     function clearTimers() {
       clearTimeout(lineSpeechTimer);
+      lineSpeechTimer = null;
       wordProgressTimers.forEach(t => clearTimeout(t));
       wordProgressTimers = [];
     }
 
-    function pauseSpeech() {
+    function stopSpeechEngine() {
       clearTimers();
-      synth.cancel();
+      if (synth.speaking || synth.pending) {
+        synth.cancel();
+      }
+    }
+
+    function pauseSpeech() {
+      stopSpeechEngine();
       isPlaying = false;
       updatePlayButtonUI(false);
     }
 
     function stopSpeech() {
-      clearTimers();
-      synth.cancel();
+      stopSpeechEngine();
       isPlaying = false;
       clearHighlights();
       currentTokenIdx = -1;
@@ -733,8 +741,7 @@
     }
 
     function jumpToWordIndex(startIndex, startSpeechImmediately = true) {
-      clearTimers();
-      synth.cancel();
+      stopSpeechEngine();
 
       if (wordTokens.length === 0) return;
       if (startIndex < 0) startIndex = 0;
@@ -751,6 +758,9 @@
     }
 
     function speakLineFromToken(startTokenIdx) {
+      // Clean up active utterance or scheduled triggers to prevent overlapping speech
+      stopSpeechEngine();
+
       if (startTokenIdx >= wordTokens.length) {
         stopSpeech();
         return;
@@ -780,10 +790,12 @@
         currentUtterance.voice = targetVoice;
       }
 
-      // PRE-CALIBRATED TIMING ALGORITHM (Fixes highlight lag behind speech)
-      const ANTICIPATORY_BIAS_MS = 80;
+      // PRE-CALIBRATED TIMING ALGORITHM (Scaled for slow & fast speech rates)
+      // At lower speeds (e.g. 0.5x, 0.7x), increase lead time proportionally
+      const ANTICIPATORY_BIAS_MS = Math.round(120 / speedRate);
       let charOffset = 0;
       let accumTimeMs = 0;
+      // Character time duration scales inversely with speech rate
       const baseMsPerChar = (isChineseText ? 280 : 100) / speedRate;
 
       tokensToSpeak.forEach((tok, idx) => {
@@ -822,7 +834,7 @@
           const charIndex = e.charIndex;
           const matchedToken = tokensToSpeak.find(t => (charIndex + 1) >= t.charStart && charIndex < t.charEnd);
 
-          if (matchedToken) {
+          if (matchedToken && matchedToken.index >= currentTokenIdx) {
             currentTokenIdx = matchedToken.index;
             highlightWordAndAutoCenter(matchedToken.index);
           }
