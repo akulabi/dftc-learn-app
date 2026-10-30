@@ -51,8 +51,8 @@
                 <input type="text" id="search-input" placeholder="Search pages..." class="w-full bg-sky-50 text-sm text-slate-700 placeholder-sky-400 pl-10 pr-4 py-2.5 rounded-2xl border-2 border-sky-200 focus:outline-none focus:border-sky-400 transition-colors font-bold">
             </div>
 
-            <!-- List Container (Always 2 Columns) -->
-            <div id="pages-list" class="grid grid-cols-2 gap-3">
+            <!-- List Container (Single Column) -->
+            <div id="pages-list" class="grid grid-cols-1 gap-3">
                 <!-- Items populated by JavaScript -->
             </div>
         </main>
@@ -87,7 +87,7 @@
 
             if (filteredPages.length === 0) {
                 pagesListContainer.innerHTML = `
-                    <div class="col-span-2 py-8 text-center text-slate-400 font-bold text-sm">
+                    <div class="col-span-1 py-8 text-center text-slate-400 font-bold text-sm">
                         <i class="fa-solid fa-face-frown text-2xl mb-2 text-sky-300 block"></i>
                         No pages found matching "${query}"
                     </div>
