@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>幼稚園中英文認字大挑戰 Kindergarten Word & Picture Matching Game</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', 'Fredoka One', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(180deg, #bae6fd 0%, #e0e7ff 50%, #f3e8ff 100%);
+    }
+
+    /* Pop Explosion Animation */
+    .balloon-pop {
+      animation: popAnim 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+    }
+
+    @keyframes popAnim {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      40% { transform: scale(1.4); opacity: 0.9; filter: brightness(1.4); }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    /* Target Pulse Animation */
+    @keyframes targetGlow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 10px 15px rgba(99, 102, 241, 0.25)); }
+      50% { transform: scale(1.03); filter: drop-shadow(0 15px 25px rgba(99, 102, 241, 0.45)); }
+    }
+
+    .target-pulse {
+      animation: targetGlow 3s ease-in-out infinite;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border: 4px solid #FBBF24;
+    }
+
+    /* Avatar radio selector styling */
+    .avatar-option input:checked + div {
+      border-color: #4F46E5;
+      background-color: #EEF2FF;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between text-gray-800 relative">
+
+  <!-- Header Bar -->
+  <header class="w-full bg-white/90 backdrop-blur-md shadow-md py-2 px-4 flex justify-between items-center z-40 border-b-4 border-yellow-400">
+    <div class="flex items-center gap-2 cursor-pointer" onclick="confirmReturnHome()">
+      <span class="text-3xl animate-bounce"> </span>
+      <div>
+        <h1 class="text-lg sm:text-2xl font-black text-indigo-900 tracking-wide leading-none">幼稚園中英文認字大挑戰</h1>
+        <p class="text-[10px] text-indigo-600 font-bold hidden sm:block">Kindergarten Chinese & English Word Recognition Game</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="toggleAudioMute()" id="muteBtn" class="p-2 bg-yellow-100 hover:bg-yellow-200 rounded-full text-yellow-700 font-bold border-2 border-yellow-400 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center shadow active:scale-95 transition" title="靜音切換">
+         
+      </button>
+      <button onclick="showLeaderboardModal()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-full text-xs sm:text-base border-2 border-purple-800 shadow flex items-center gap-1 active:scale-95 transition">
+          <span>龍虎榜</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="flex-grow flex items-center justify-center p-2 w-full max-w-6xl mx-auto relative overflow-hidden">
+
+    <!-- ================= 1. HOME SCREEN ================= -->
+    <div id="homeScreen" class="w-full glass-card rounded-3xl p-4 sm:p-8 shadow-2xl text-center transition-all duration-300 max-h-[90vh] overflow-y-auto z-40">
+      <div class="inline-block bg-yellow-300 text-indigo-950 font-black px-4 py-1 rounded-full text-xs sm:text-sm mb-3 shadow">
+          專為 K1 - K3 幼兒設計 ‧ 純廣東話/純英語發音 ‧ 全螢幕飄浮汽球
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-black text-indigo-900 mb-2 tracking-tight">  全螢幕飄浮汽球認字  </h1>
+      <p class="text-gray-600 font-bold text-xs sm:text-base mb-5">汽球會在全螢幕頂層飄浮移動，點擊正確的汽球吧！</p>
+
+      <!-- Step 1: Matching Mode Selection -->
+      <div class="mb-5 bg-indigo-50/80 p-3 sm:p-4 rounded-2xl border-2 border-indigo-200 text-left">
+        <label class="block text-indigo-950 font-black text-sm sm:text-lg mb-2">
+            選擇玩法模式 (Match Sub-Mode):
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="modePicToWord" onclick="setMatchMode('picToWord')" class="py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 transition-all flex items-center justify-center gap-3 shadow-md bg-yellow-400 border-yellow-600 text-indigo-950 scale-[1.02]">
+            <span class="text-3xl">  ➔  </span>
+            <div class="text-left">
+              <div>看圖猜字</div>
+              <div class="text-xs font-normal opacity-80">中間看圖片 ‧ 點擊飄浮字詞汽球</div>
+            </div>
+          </button>
+          <button id="modeWordToPic" onclick="setMatchMode('wordToPic')" class="py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 border-gray-300 bg-white text-gray-600 hover:bg-yellow-100 transition-all flex items-center justify-center gap-3 shadow-md">
+            <span class="text-3xl">  ➔  </span>
+            <div class="text-left">
+              <div>看詞猜圖</div>
+              <div class="text-xs font-normal opacity-80">中間看字詞 ‧ 點擊飄浮圖片汽球</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Language & Mode Selection -->
+      <div class="mb-5 bg-indigo-50/80 p-3 sm:p-4 rounded-2xl border-2 border-indigo-200 text-left">
+        <label class="block text-indigo-950 font-black text-sm sm:text-lg mb-2">
+            選擇語言與關卡 (Language & Mode):
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Chinese 45s Challenge -->
+          <button onclick="startGame('zh', 45)" class="py-3.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-emerald-700 active:scale-95 transition flex flex-col items-center justify-center">
+            <span class="flex items-center gap-1">  中文 45秒挑戰</span>
+            <span class="text-[11px] font-bold bg-emerald-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">純廣東話 (2-3字)</span>
+          </button>
+          <!-- English 45s Challenge -->
+          <button onclick="startGame('en', 45)" class="py-3.5 px-3 bg-blue-500 hover:bg-blue-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-blue-700 active:scale-95 transition flex flex-col items-center justify-center">
+            <span class="flex items-center gap-1">  英文 45秒挑戰</span>
+            <span class="text-[11px] font-bold bg-blue-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">English Speed Challenge</span>
+          </button>
+          <!-- Unlimited Chinese Practice -->
+          <button onclick="startGame('zh_practice', 0)" class="py-3.5 px-3 bg-purple-500 hover:bg-purple-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-purple-700 active:scale-95 transition flex flex-col items-center justify-center">
+            <span class="flex items-center gap-1">  無限時中文練習</span>
+            <span class="text-[11px] font-bold bg-purple-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">廣東話 無壓力</span>
+          </button>
+          <!-- Unlimited English Practice -->
+          <button onclick="startGame('en_practice', 0)" class="py-3.5 px-3 bg-indigo-500 hover:bg-indigo-600 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-indigo-700 active:scale-95 transition flex flex-col items-center justify-center">
+            <span class="flex items-center gap-1">  無限時英文練習</span>
+            <span class="text-[11px] font-bold bg-indigo-700 px-2.5 py-0.5 rounded-full mt-1 shadow-inner">English Unlimited</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Settings Drawer (Collapsible) -->
+      <div class="border-2 border-indigo-200 rounded-2xl bg-white overflow-hidden shadow-inner text-left">
+        <button onclick="toggleCategoryDrawer()" class="w-full py-3 px-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-950 font-extrabold text-xs sm:text-base flex justify-between items-center transition">
+          <span class="flex items-center gap-2">  自訂學習類別 (已選: <span id="catCountBadge" class="text-indigo-600 font-black">11/11</span>)</span>
+          <span id="drawerArrow" class="text-lg font-bold transition-transform duration-200">▼</span>
+        </button>
+        <div id="categoryDrawer" class="hidden p-3 bg-indigo-50/50">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-gray-500">預設 11 個主題全部開啟：</span>
+            <div class="flex gap-2">
+              <button onclick="selectAllCategories(true)" class="text-xs bg-indigo-600 text-white font-bold px-2 py-1 rounded hover:bg-indigo-700">全選</button>
+              <button onclick="selectAllCategories(false)" class="text-xs bg-gray-400 text-white font-bold px-2 py-1 rounded hover:bg-gray-500">清除</button>
+            </div>
+          </div>
+          <div id="categoryCheckboxes" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <!-- Checkboxes injected dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 2. GAME PLAY ARENA ================= -->
+    <div id="gameScreen" class="hidden w-full h-full flex flex-col items-center justify-between relative overflow-hidden">
+      
+      <!-- Top HUD Stats Bar -->
+      <div class="w-full bg-white/95 backdrop-blur rounded-2xl p-2.5 sm:p-3 shadow-md mb-2 flex justify-between items-center border-2 border-yellow-400 z-30 relative">
+        <div class="flex items-center gap-3">
+          <div class="text-emerald-700 font-black text-base sm:text-xl flex items-center gap-1">
+            <span>得分:</span>
+            <span id="scoreText" class="text-2xl sm:text-3xl text-emerald-600 font-black">0</span>
+          </div>
+          <div class="hidden sm:block">
+            <span id="modeDisplayBadge" class="bg-indigo-100 text-indigo-900 font-black text-xs sm:text-sm px-3 py-1 rounded-full border border-indigo-300">
+              看圖猜字
+            </span>
+          </div>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timerContainer" class="flex items-center gap-2 bg-red-100 px-3.5 py-1 rounded-full border-2 border-red-400 shadow-inner">
+          <span class="text-red-500 font-black text-base sm:text-lg"> </span>
+          <span id="timerText" class="text-xl sm:text-3xl font-black text-red-600">45</span>
+        </div>
+
+        <!-- Pause / Menu Button -->
+        <button onclick="openPauseModal()" class="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-yellow-400 hover:bg-yellow-500 text-indigo-950 font-black rounded-xl text-xs sm:text-sm transition shadow border-b-2 border-yellow-600 active:scale-95 flex items-center gap-1">
+          <span> </span> <span>暫停</span>
+        </button>
+      </div>
+
+      <!-- FULL SCREEN ARENA CONTAINER -->
+      <div id="gameArena" class="w-full flex-grow relative overflow-hidden flex items-center justify-center">
+
+        <!-- CENTER DISPLAY TARGET CARD -->
+        <div id="centerTargetCard" class="z-20 target-pulse bg-white/95 border-4 border-yellow-400 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col items-center justify-center min-w-[200px] max-w-[270px] sm:min-w-[280px] sm:max-w-[340px] text-center pointer-events-auto">
+          
+          <!-- TARGET VIEW 1: Picture Mode (Enlarged Emoji) -->
+          <div id="targetPicView" class="flex flex-col items-center">
+            <div id="targetEmojiDisplay" class="text-7xl sm:text-9xl filter drop-shadow-md cursor-pointer transform hover:scale-105 transition" onclick="speakCurrentTarget()" title="點擊收聽發音">
+               
+            </div>
+            <span class="text-[11px] text-indigo-600 font-bold mt-2 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+              點擊圖片收聽題目發音
+            </span>
+          </div>
+
+          <!-- TARGET VIEW 2: Word Mode (Enlarged Word Label) -->
+          <div id="targetWordView" class="hidden flex flex-col items-center justify-center">
+            <div class="bg-indigo-50 border-2 border-indigo-300 px-4 py-3 rounded-2xl mb-2 flex items-center gap-2 shadow-sm">
+              <span id="targetWordDisplay" class="text-3xl sm:text-5xl font-black text-indigo-950 tracking-wider">
+                狗隻
+              </span>
+              <button onclick="speakCurrentTarget()" class="p-2 bg-yellow-400 hover:bg-yellow-500 text-indigo-950 rounded-xl text-xl shadow active:scale-95 transition border border-yellow-600" title="點擊收聽發音">
+                 
+              </button>
+            </div>
+            <span class="text-[11px] text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+              點擊喇叭按鈕收聽發音
+            </span>
+          </div>
+
+        </div>
+
+        <!-- FULL-SCREEN DYNAMIC PHYSICS BALLOONS LAYER (TOP Z-INDEX) -->
+        <div id="balloonPhysicsLayer" class="absolute inset-0 z-30 pointer-events-none">
+          <!-- Floating Balloons placed dynamically via JS physics loop -->
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= 3. GAME OVER MODAL ================= -->
+    <div id="gameOverModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center border-4 border-yellow-400">
+        <div class="text-6xl mb-2"> </div>
+        <h2 class="text-3xl font-black text-indigo-950 mb-1">挑戰完成！</h2>
+        <p class="text-gray-600 font-bold text-sm mb-4" id="gameOverMsg">好棒的嘗試！再接再厲！</p>
+        
+        <div class="bg-indigo-50 p-4 rounded-2xl mb-4 border-2 border-indigo-200">
+          <p class="text-gray-500 text-xs font-bold uppercase tracking-wide">最終獲得分數 Final Score</p>
+          <p id="finalScore" class="text-5xl font-black text-emerald-600 my-1">0</p>
+          <p class="text-xs text-indigo-600 font-bold" id="finalModeText">看圖猜字 (中文認字)</p>
+        </div>
+
+        <!-- Avatar Selection -->
+        <div class="mb-3 text-left">
+          <label class="block text-xs font-bold text-gray-600 mb-1">選擇頭像 (Select Avatar):</label>
+          <div class="flex justify-center gap-3 mb-2">
+            <label class="avatar-option cursor-pointer">
+              <input type="radio" name="playerAvatar" value=" " checked class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+            </label>
+            <label class="avatar-option cursor-pointer">
+              <input type="radio" name="playerAvatar" value=" " class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+            </label>
+            <label class="avatar-option cursor-pointer">
+              <input type="radio" name="playerAvatar" value=" " class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+            </label>
+            <label class="avatar-option cursor-pointer">
+              <input type="radio" name="playerAvatar" value=" " class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+            </label>
+            <label class="avatar-option cursor-pointer">
+              <input type="radio" name="playerAvatar" value=" " class="hidden">
+              <div class="text-2xl p-2 rounded-xl border-2 border-gray-200 transition"> </div>
+            </label>
+          </div>
+          <label class="block text-xs font-bold text-gray-600 mb-1">輸入名字登錄龍虎榜 (Player Name):</label>
+          <input type="text" id="playerNameInput" maxlength="10" placeholder="小葵 / Alex" class="w-full px-4 py-2.5 rounded-xl border-2 border-indigo-300 focus:outline-none focus:border-indigo-600 text-center font-bold text-lg bg-indigo-50/50">
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="saveScoreAndClose()" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-lg shadow-md border-b-4 border-emerald-700 active:scale-95 transition">
+            儲存成績  
+          </button>
+          <button onclick="showHomeScreen()" class="flex-1 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-black rounded-xl text-lg shadow-md active:scale-95 transition">
+            返主頁  
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 4. PAUSE / MENU MODAL ================= -->
+    <div id="pauseModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center border-4 border-indigo-300">
+        <h2 class="text-2xl font-black text-indigo-900 mb-4">  遊戲暫停中</h2>
+        <div class="space-y-3">
+          <button onclick="resumeGame()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-lg shadow border-b-4 border-emerald-700 active:scale-95 transition">
+            繼續遊戲  
+          </button>
+          <button onclick="showHomeScreen()" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-lg shadow border-b-4 border-rose-700 active:scale-95 transition">
+            返回主頁  
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 5. LEADERBOARD MODAL ================= -->
+    <div id="leaderboardModal" class="hidden fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border-4 border-purple-400 max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-black text-purple-900 flex items-center gap-2">  榮譽龍虎榜 Leaderboard</h2>
+          <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold"> </button>
+        </div>
+
+        <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+          <button onclick="filterLeaderboard('all')" id="tabAll" class="px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-purple-600 text-white">全部 All</button>
+          <button onclick="filterLeaderboard('zh')" id="tabZh" class="px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-purple-100 text-purple-800">中文模式</button>
+          <button onclick="filterLeaderboard('en')" id="tabEn" class="px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-purple-100 text-purple-800">英文模式</button>
+        </div>
+
+        <div id="leaderboardList" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[220px]">
+          <!-- Leaderboard entries -->
+        </div>
+
+        <button onclick="closeLeaderboardModal()" class="mt-4 w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl text-base shadow">
+          關閉 Close
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="text-center py-1.5 text-xs text-indigo-950/70 font-extrabold z-40 bg-white/40 backdrop-blur-sm">
+    適合幼兒園 K1-K3 學習範疇 ‧ 45秒倒數與全螢幕飄浮汽球 ‧ 答對加延遲1.0秒聽清發音
+  </footer>
+
+  <script>
+    // --- 1. VOCABULARY DATABASE (11 Categories, Strictly 2-3 Chinese Characters & English) ---
+    const wordDatabase = [
+      // 1. 動物 (Animals)
+      { id: "a1", cat: "動物", zh: "狗隻", en: "Dog", emoji: " " },
+      { id: "a2", cat: "動物", zh: "貓咪", en: "Cat", emoji: " " },
+      { id: "a3", cat: "動物", zh: "大象", en: "Elephant", emoji: " " },
+      { id: "a4", cat: "動物", zh: "兔子", en: "Rabbit", emoji: " " },
+      { id: "a5", cat: "動物", zh: "獅子", en: "Lion", emoji: " " },
+      { id: "a6", cat: "動物", zh: "長頸鹿", en: "Giraffe", emoji: " " },
+      { id: "a7", cat: "動物", zh: "熊貓", en: "Panda", emoji: " " },
+      { id: "a8", cat: "動物", zh: "老虎", en: "Tiger", emoji: " " },
+
+      // 2. 水果食物 (Food & Fruits)
+      { id: "f1", cat: "食物水果", zh: "蘋果", en: "Apple", emoji: " " },
+      { id: "f2", cat: "食物水果", zh: "香蕉", en: "Banana", emoji: " " },
+      { id: "f3", cat: "食物水果", zh: "草莓", en: "Strawberry", emoji: " " },
+      { id: "f4", cat: "食物水果", zh: "西瓜", en: "Watermelon", emoji: " " },
+      { id: "f5", cat: "食物水果", zh: "橙子", en: "Orange", emoji: " " },
+      { id: "f6", cat: "食物水果", zh: "葡萄", en: "Grapes", emoji: " " },
+
+      // 3. 交通工具 (Vehicles)
+      { id: "v1", cat: "交通", zh: "巴士", en: "Bus", emoji: " " },
+      { id: "v2", cat: "交通", zh: "飛機", en: "Airplane", emoji: " " },
+      { id: "v3", cat: "交通", zh: "火車", en: "Train", emoji: " " },
+      { id: "v4", cat: "交通", zh: "計程車", en: "Taxi", emoji: " " },
+      { id: "v5", cat: "交通", zh: "輪船", en: "Ship", emoji: " " },
+      { id: "v6", cat: "交通", zh: "單車", en: "Bicycle", emoji: " " },
+
+      // 4. 顏色形狀 (Colors & Shapes)
+      { id: "c1", cat: "顏色形狀", zh: "紅色", en: "Red", emoji: " " },
+      { id: "c2", cat: "顏色形狀", zh: "藍色", en: "Blue", emoji: " " },
+      { id: "c3", cat: "顏色形狀", zh: "黃色", en: "Yellow", emoji: " " },
+      { id: "c4", cat: "顏色形狀", zh: "綠色", en: "Green", emoji: " " },
+      { id: "c5", cat: "顏色形狀", zh: "圓形", en: "Circle", emoji: " " },
+      { id: "c6", cat: "顏色形狀", zh: "三角形", en: "Triangle", emoji: " " },
+
+      // 5. 身體部位 (Body Parts)
+      { id: "b1", cat: "身體", zh: "眼睛", en: "Eyes", emoji: " " },
+      { id: "b2", cat: "身體", zh: "耳朵", en: "Ears", emoji: " " },
+      { id: "b3", cat: "身體", zh: "嘴巴", en: "Mouth", emoji: " " },
+      { id: "b4", cat: "身體", zh: "雙手", en: "Hands", emoji: " " },
+      { id: "b5", cat: "身體", zh: "腳丫", en: "Feet", emoji: " " },
+
+      // 6. 日常用品 (Daily Objects)
+      { id: "d1", cat: "日常用品", zh: "牙刷", en: "Toothbrush", emoji: " " },
+      { id: "d2", cat: "日常用品", zh: "水杯", en: "Cup", emoji: " " },
+      { id: "d3", cat: "日常用品", zh: "毛巾", en: "Towel", emoji: " " },
+      { id: "d4", cat: "日常用品", zh: "書包", en: "Schoolbag", emoji: " " },
+      { id: "d5", cat: "日常用品", zh: "雨傘", en: "Umbrella", emoji: " " },
+
+      // 7. 自然天氣 (Weather & Nature)
+      { id: "n1", cat: "自然天氣", zh: "太陽", en: "Sun", emoji: " " },
+      { id: "n2", cat: "自然天氣", zh: "月亮", en: "Moon", emoji: " " },
+      { id: "n3", cat: "自然天氣", zh: "星星", en: "Star", emoji: " " },
+      { id: "n4", cat: "自然天氣", zh: "彩虹", en: "Rainbow", emoji: " " },
+      { id: "n5", cat: "自然天氣", zh: "下雨", en: "Rain", emoji: " " },
+
+      // 8. 情緒感受 (Emotions)
+      { id: "e1", cat: "情緒感受", zh: "開心", en: "Happy", emoji: " " },
+      { id: "e2", cat: "情緒感受", zh: "傷心", en: "Sad", emoji: " " },
+      { id: "e3", cat: "情緒感受", zh: "生氣", en: "Angry", emoji: " " },
+      { id: "e4", cat: "情緒感受", zh: "害怕", en: "Scared", emoji: " " },
+      { id: "e5", cat: "情緒感受", zh: "驚喜", en: "Surprised", emoji: " " },
+
+      // 9. 家居用品 (Furniture & Home)
+      { id: "h1", cat: "家居用品", zh: "睡床", en: "Bed", emoji: " " },
+      { id: "h2", cat: "家居用品", zh: "椅子", en: "Chair", emoji: " " },
+      { id: "h3", cat: "家居用品", zh: "台燈", en: "Lamp", emoji: " " },
+      { id: "h4", cat: "家居用品", zh: "時鐘", en: "Clock", emoji: " " },
+
+      // 10. 運動娛樂 (Sports & Play)
+      { id: "sp1", cat: "運動娛樂", zh: "足球", en: "Football", emoji: " " },
+      { id: "sp2", cat: "運動娛樂", zh: "籃球", en: "Basketball", emoji: " " },
+      { id: "sp3", cat: "運動娛樂", zh: "滑梯", en: "Slide", emoji: " " },
+      { id: "sp4", cat: "運動娛樂", zh: "秋千", en: "Swing", emoji: " " },
+
+      // 11. 數字 (Numbers)
+      { id: "num1", cat: "數字", zh: "數字一", en: "One", emoji: " " },
+      { id: "num2", cat: "數字", zh: "數字二", en: "Two", emoji: " " },
+      { id: "num3", cat: "數字", zh: "數字三", en: "Three", emoji: " " },
+      { id: "num4", cat: "數字", zh: "數字五", en: "Five", emoji: " " }
+    ];
+
+    // Color Palettes for SVG Balloons
+    const balloonColors = [
+      { fill: "#f87171", stroke: "#dc2626", text: "#ffffff" },
+      { fill: "#60a5fa", stroke: "#2563eb", text: "#ffffff" },
+      { fill: "#34d399", stroke: "#059669", text: "#ffffff" },
+      { fill: "#fbbf24", stroke: "#d97706", text: "#1e1b4b" },
+      { fill: "#c084fc", stroke: "#9333ea", text: "#ffffff" },
+      { fill: "#f472b6", stroke: "#db2777", text: "#ffffff" }
+    ];
+
+    // --- GAME STATE VARIABLES ---
+    let currentMatchMode = "picToWord"; // 'picToWord' or 'wordToPic'
+    let selectedCategories = [];
+    let questionDeck = [];
+    let currentQuestion = null;
+    let score = 0;
+    let gameTime = 45;
+    let timerInterval = null;
+    let gameLanguageMode = 'zh'; // 'zh', 'en', 'zh_practice', 'en_practice'
+    let activeQuestionLang = 'zh'; // Strictly 'zh' or 'en'
+    let isAudioMuted = false;
+    let isProcessingChoice = false;
+
+    // Physics Engine Variables
+    let balloons = [];
+    let physicsAnimFrame = null;
+
+    // Web Audio Synthesizer
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSoundEffect(type) {
+      if (isAudioMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(850, now + 0.08);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'correct') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.1);
+        osc.frequency.setValueAtTime(783.99, now + 0.2);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(175, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    // TTS Speech Output (Strict Cantonese zh-HK vs English en-US)
+    function speakText(text, lang = 'zh') {
+      if (isAudioMuted || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === 'en' ? 'en-US' : 'zh-HK';
+      utterance.rate = 0.88;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      populateCategories();
+      updateCategoryBadge();
+    };
+
+    function setMatchMode(mode) {
+      currentMatchMode = mode;
+      const btnPic = document.getElementById('modePicToWord');
+      const btnWord = document.getElementById('modeWordToPic');
+
+      if (mode === 'picToWord') {
+        btnPic.className = "py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 transition-all flex items-center justify-center gap-3 shadow-md bg-yellow-400 border-yellow-600 text-indigo-950 scale-[1.02]";
+        btnWord.className = "py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 border-gray-300 bg-white text-gray-600 hover:bg-yellow-100 transition-all flex items-center justify-center gap-3 shadow-md";
+      } else {
+        btnWord.className = "py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 transition-all flex items-center justify-center gap-3 shadow-md bg-yellow-400 border-yellow-600 text-indigo-950 scale-[1.02]";
+        btnPic.className = "py-3 px-4 rounded-2xl font-black text-base sm:text-lg border-4 border-gray-300 bg-white text-gray-600 hover:bg-yellow-100 transition-all flex items-center justify-center gap-3 shadow-md";
+      }
+    }
+
+    function populateCategories() {
+      const categories = [...new Set(wordDatabase.map(item => item.cat))];
+      selectedCategories = [...categories];
+
+      const container = document.getElementById('categoryCheckboxes');
+      container.innerHTML = '';
+
+      categories.forEach(cat => {
+        const label = document.createElement('label');
+        label.className = "flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm border border-indigo-100 cursor-pointer font-bold text-xs sm:text-sm text-gray-700 hover:bg-indigo-50";
+        label.innerHTML = `
+          <input type="checkbox" checked value="${cat}" onchange="toggleCategory('${cat}')" class="w-4 h-4 accent-indigo-600 rounded">
+          <span>${cat}</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    function selectAllCategories(status) {
+      const categories = [...new Set(wordDatabase.map(item => item.cat))];
+      if (status) {
+        selectedCategories = [...categories];
+      } else {
+        selectedCategories = [categories[0]];
+      }
+      populateCategories();
+      updateCategoryBadge();
+    }
+
+    function toggleCategoryDrawer() {
+      const drawer = document.getElementById('categoryDrawer');
+      const arrow = document.getElementById('drawerArrow');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        drawer.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function toggleCategory(cat) {
+      if (selectedCategories.includes(cat)) {
+        if (selectedCategories.length === 1) {
+          alert('請至少保留一個學習類別！');
+          populateCategories();
+          return;
+        }
+        selectedCategories = selectedCategories.filter(c => c !== cat);
+      } else {
+        selectedCategories.push(cat);
+      }
+      updateCategoryBadge();
+    }
+
+    function updateCategoryBadge() {
+      const total = [...new Set(wordDatabase.map(item => item.cat))].length;
+      document.getElementById('catCountBadge').innerText = `${selectedCategories.length}/${total}`;
+    }
+
+    function toggleAudioMute() {
+      isAudioMuted = !isAudioMuted;
+      document.getElementById('muteBtn').innerText = isAudioMuted ? ' ' : ' ';
+    }
+
+    // --- GAME ENGINE ---
+    function startGame(langMode, timeSec) {
+      initAudio();
+      gameLanguageMode = langMode;
+      
+      // Determine strict language active for questions and TTS
+      if (langMode === 'en' || langMode === 'en_practice') {
+        activeQuestionLang = 'en';
+      } else {
+        activeQuestionLang = 'zh';
+      }
+
+      gameTime = timeSec;
+      score = 0;
+      isProcessingChoice = false;
+
+      const filteredPool = wordDatabase.filter(item => selectedCategories.includes(item.cat));
+
+      if (filteredPool.length < 6) {
+        alert('選取的類別題目不足 6 題，請在設定中勾選更多類別！');
+        return;
+      }
+
+      questionDeck = shuffleArray([...filteredPool]);
+
+      document.getElementById('homeScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+      document.getElementById('scoreText').innerText = score;
+
+      const modeText = currentMatchMode === 'picToWord' ? '看圖猜字' : '看詞猜圖';
+      let langText = '廣東話';
+      if (langMode === 'en') langText = 'English 45s';
+      else if (langMode === 'zh') langText = '中文 45s';
+      else if (langMode === 'en_practice') langText = 'English Practice';
+      else if (langMode === 'zh_practice') langText = '廣東話練習';
+
+      document.getElementById('modeDisplayBadge').innerText = `${modeText} (${langText})`;
+
+      const timerContainer = document.getElementById('timerContainer');
+      if (gameTime > 0) {
+        timerContainer.classList.remove('hidden');
+        document.getElementById('timerText').innerText = gameTime;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+      } else {
+        timerContainer.classList.add('hidden');
+      }
+
+      nextQuestion();
+    }
+
+    function updateTimer() {
+      gameTime--;
+      document.getElementById('timerText').innerText = gameTime;
+      if (gameTime <= 0) {
+        clearInterval(timerInterval);
+        endGame();
+      }
+    }
+
+    function nextQuestion() {
+      isProcessingChoice = false;
+
+      if (questionDeck.length === 0) {
+        const filteredPool = wordDatabase.filter(item => selectedCategories.includes(item.cat));
+        questionDeck = shuffleArray([...filteredPool]);
+      }
+
+      currentQuestion = questionDeck.pop();
+
+      const filteredPool = wordDatabase.filter(item => selectedCategories.includes(item.cat));
+      const distractors = filteredPool.filter(item => item.id !== currentQuestion.id);
+      const shuffledDistractors = shuffleArray(distractors).slice(0, 5);
+      const choiceOptions = shuffleArray([currentQuestion, ...shuffledDistractors]);
+
+      // Render Center Target Card
+      const targetPicView = document.getElementById('targetPicView');
+      const targetWordView = document.getElementById('targetWordView');
+
+      if (currentMatchMode === 'picToWord') {
+        targetPicView.classList.remove('hidden');
+        targetWordView.classList.add('hidden');
+        document.getElementById('targetEmojiDisplay').innerText = currentQuestion.emoji;
+      } else {
+        targetPicView.classList.add('hidden');
+        targetWordView.classList.remove('hidden');
+        // Strictly Chinese text for Chinese mode, English text for English mode
+        const wordText = activeQuestionLang === 'en' ? currentQuestion.en : currentQuestion.zh;
+        document.getElementById('targetWordDisplay').innerText = wordText;
+        
+        setTimeout(() => speakCurrentTarget(), 250);
+      }
+
+      // Spawn Balloons into Full-Screen Physics Engine
+      initBalloonPhysics(choiceOptions);
+    }
+
+    function speakCurrentTarget() {
+      if (!currentQuestion) return;
+      const textToSpeak = activeQuestionLang === 'en' ? currentQuestion.en : currentQuestion.zh;
+      speakText(textToSpeak, activeQuestionLang);
+    }
+
+    // --- FULL SCREEN CONTINUOUS FLOATING PHYSICS ENGINE ---
+    function initBalloonPhysics(choiceOptions) {
+      if (physicsAnimFrame) {
+        cancelAnimationFrame(physicsAnimFrame);
+      }
+
+      const layer = document.getElementById('balloonPhysicsLayer');
+      layer.innerHTML = '';
+      balloons = [];
+
+      const arena = document.getElementById('gameArena');
+      const bounds = arena.getBoundingClientRect();
+
+      const bWidth = window.innerWidth < 640 ? 110 : 135;
+      const bHeight = window.innerWidth < 640 ? 135 : 160;
+
+      // Calculate initial positions scattered across screen
+      const spawnZones = [
+        { x: bounds.width * 0.12, y: bounds.height * 0.12 },
+        { x: bounds.width * 0.72, y: bounds.height * 0.12 },
+        { x: bounds.width * 0.08, y: bounds.height * 0.52 },
+        { x: bounds.width * 0.76, y: bounds.height * 0.52 },
+        { x: bounds.width * 0.20, y: bounds.height * 0.76 },
+        { x: bounds.width * 0.65, y: bounds.height * 0.76 }
+      ];
+
+      choiceOptions.forEach((option, index) => {
+        const color = balloonColors[index % balloonColors.length];
+        const zone = spawnZones[index % spawnZones.length];
+
+        const wrapper = document.createElement('div');
+        wrapper.className = "absolute pointer-events-auto transform transition-transform";
+        wrapper.style.width = `${bWidth}px`;
+        wrapper.style.height = `${bHeight}px`;
+
+        let contentInside = '';
+        if (currentMatchMode === 'picToWord') {
+          // Strictly Chinese text choices for Chinese mode, English text choices for English mode
+          const displayText = activeQuestionLang === 'en' ? option.en : option.zh;
+          contentInside = `<span class="text-lg sm:text-xl font-black tracking-wide drop-shadow text-center px-1.5" style="color: ${color.text};">${displayText}</span>`;
+        } else {
+          contentInside = `<span class="text-4xl sm:text-5xl filter drop-shadow leading-none">${option.emoji}</span>`;
+        }
+
+        wrapper.innerHTML = `
+          <div class="relative w-full h-full cursor-pointer focus:outline-none filter drop-shadow-xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center">
+            <svg viewBox="0 0 100 125" class="w-full h-full overflow-visible">
+              <!-- Balloon String -->
+              <path d="M50 92 Q 45 105 52 118" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <!-- Balloon Body -->
+              <path d="M50 5 C 20 5 8 32 8 55 C 8 78 35 90 50 92 C 65 90 92 78 92 55 C 92 32 80 5 50 5 Z" fill="${color.fill}" stroke="${color.stroke}" stroke-width="4"/>
+              <!-- Highlight Reflection -->
+              <ellipse cx="32" cy="24" rx="10" ry="16" fill="white" opacity="0.35" transform="rotate(-25 32 24)"/>
+              <!-- Balloon Knot -->
+              <polygon points="44,92 56,92 50,98" fill="${color.stroke}"/>
+            </svg>
+            <div class="absolute inset-0 pb-3 flex items-center justify-center">
+              ${contentInside}
+            </div>
+          </div>
+        `;
+
+        wrapper.onclick = () => handleChoice(option, wrapper);
+        layer.appendChild(wrapper);
+
+        // Physics properties for drifting
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.6 + Math.random() * 0.7;
+
+        balloons.push({
+          elem: wrapper,
+          x: zone.x,
+          y: zone.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          w: bWidth,
+          h: bHeight
+        });
+      });
+
+      // Start 60 FPS floating loop
+      updatePhysicsLoop();
+    }
+
+    function updatePhysicsLoop() {
+      const arena = document.getElementById('gameArena');
+      if (!arena) return;
+      const bounds = arena.getBoundingClientRect();
+
+      balloons.forEach(b => {
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Bounce off screen boundaries
+        if (b.x <= 0) {
+          b.x = 0;
+          b.vx = Math.abs(b.vx);
+        } else if (b.x + b.w >= bounds.width) {
+          b.x = bounds.width - b.w;
+          b.vx = -Math.abs(b.vx);
+        }
+
+        if (b.y <= 0) {
+          b.y = 0;
+          b.vy = Math.abs(b.vy);
+        } else if (b.y + b.h >= bounds.height) {
+          b.y = bounds.height - b.h;
+          b.vy = -Math.abs(b.vy);
+        }
+
+        // Gentle float sway
+        b.vx += (Math.random() - 0.5) * 0.04;
+        b.vy += (Math.random() - 0.5) * 0.04;
+
+        // Clamp speed limit
+        const maxSpeed = 1.4;
+        const currentSpeed = Math.hypot(b.vx, b.vy);
+        if (currentSpeed > maxSpeed) {
+          b.vx = (b.vx / currentSpeed) * maxSpeed;
+          b.vy = (b.vy / currentSpeed) * maxSpeed;
+        }
+
+        b.elem.style.transform = `translate3d(${b.x}px, ${b.y}px, 0px)`;
+      });
+
+      physicsAnimFrame = requestAnimationFrame(updatePhysicsLoop);
+    }
+
+    // --- CHOICE EVALUATION ---
+    function handleChoice(option, balloonElem) {
+      if (isProcessingChoice) return;
+      isProcessingChoice = true;
+
+      const isCorrect = option.id === currentQuestion.id;
+
+      balloonElem.classList.add('balloon-pop');
+      playSoundEffect('pop');
+
+      const textToRead = activeQuestionLang === 'en' ? currentQuestion.en : currentQuestion.zh;
+
+      if (isCorrect) {
+        score += 10;
+        document.getElementById('scoreText').innerText = score;
+        playSoundEffect('correct');
+        confetti({ particleCount: 45, spread: 75, origin: { y: 0.65 } });
+
+        speakText(textToRead, activeQuestionLang);
+
+        // 1.0s Delay to listen clearly without speech cutoff
+        setTimeout(() => {
+          nextQuestion();
+        }, 1050);
+      } else {
+        playSoundEffect('wrong');
+        balloonElem.style.opacity = '0.25';
+        balloonElem.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+          isProcessingChoice = false;
+        }, 350);
+      }
+    }
+
+    // --- PAUSE & HOME MODALS ---
+    function openPauseModal() {
+      clearInterval(timerInterval);
+      if (physicsAnimFrame) cancelAnimationFrame(physicsAnimFrame);
+      document.getElementById('pauseModal').classList.remove('hidden');
+    }
+
+    function resumeGame() {
+      document.getElementById('pauseModal').classList.add('hidden');
+      if (gameTime > 0) {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+      }
+      updatePhysicsLoop();
+    }
+
+    function confirmReturnHome() {
+      if (!document.getElementById('gameScreen').classList.contains('hidden')) {
+        openPauseModal();
+      } else {
+        showHomeScreen();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      if (physicsAnimFrame) cancelAnimationFrame(physicsAnimFrame);
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameOverModal').classList.remove('hidden');
+      document.getElementById('finalScore').innerText = score;
+
+      const modeLabel = currentMatchMode === 'picToWord' ? '看圖猜字' : '看詞猜圖';
+      const langLabel = activeQuestionLang === 'zh' ? '中文' : '英文';
+      document.getElementById('finalModeText').innerText = `${modeLabel} (${langLabel})`;
+
+      if (score >= 60) {
+        document.getElementById('gameOverMsg').innerText = "  太棒了！你是不折不扣的認字小達人！";
+        confetti({ particleCount: 110, spread: 100, origin: { y: 0.5 } });
+      } else {
+        document.getElementById('gameOverMsg').innerText = "  做得好！再試一次突破最高分吧！";
+      }
+    }
+
+    function showHomeScreen() {
+      clearInterval(timerInterval);
+      if (physicsAnimFrame) cancelAnimationFrame(physicsAnimFrame);
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameOverModal').classList.add('hidden');
+      document.getElementById('pauseModal').classList.add('hidden');
+      document.getElementById('leaderboardModal').classList.add('hidden');
+      document.getElementById('homeScreen').classList.remove('hidden');
+    }
+
+    // --- LEADERBOARD (LOCALSTORAGE) ---
+    function saveScoreAndClose() {
+      const nameInput = document.getElementById('playerNameInput').value.trim() || '小天才';
+      const selectedAvatar = document.querySelector('input[name="playerAvatar"]:checked')?.value || ' ';
+      
+      const newRecord = {
+        name: nameInput,
+        avatar: selectedAvatar,
+        score: score,
+        mode: currentMatchMode,
+        lang: activeQuestionLang,
+        date: new Date().toLocaleDateString()
+      };
+
+      const existingRecords = JSON.parse(localStorage.getItem('k_game_scores_v5') || '[]');
+      existingRecords.push(newRecord);
+      existingRecords.sort((a, b) => b.score - a.score);
+      localStorage.setItem('k_game_scores_v5', JSON.stringify(existingRecords.slice(0, 30)));
+
+      showHomeScreen();
+      showLeaderboardModal();
+    }
+
+    function showLeaderboardModal() {
+      document.getElementById('leaderboardModal').classList.remove('hidden');
+      filterLeaderboard('all');
+    }
+
+    function closeLeaderboardModal() {
+      document.getElementById('leaderboardModal').classList.add('hidden');
+    }
+
+    function filterLeaderboard(filter) {
+      ['all', 'zh', 'en'].forEach(tab => {
+        const btn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        if (tab === filter) {
+          btn.className = "px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-purple-600 text-white shadow";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-purple-100 text-purple-800 hover:bg-purple-200";
+        }
+      });
+
+      const records = JSON.parse(localStorage.getItem('k_game_scores_v5') || '[]');
+      const listContainer = document.getElementById('leaderboardList');
+      listContainer.innerHTML = '';
+
+      const filtered = records.filter(item => filter === 'all' || item.lang === filter);
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `<div class="text-center py-8 text-gray-400 font-bold">尚無紀錄，快來挑戰吧！</div>`;
+        return;
+      }
+
+      filtered.forEach((rec, idx) => {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center p-3 rounded-2xl bg-purple-50 border border-purple-100 font-bold text-sm";
+        
+        const medal = idx === 0 ? ' ' : (idx === 1 ? ' ' : (idx === 2 ? ' ' : `#${idx + 1}`));
+        const modeTag = rec.mode === 'picToWord' ? '看圖猜字' : '看詞猜圖';
+        const langTag = rec.lang === 'en' ? 'EN' : '中文';
+        const avatar = rec.avatar || ' ';
+
+        item.innerHTML = `
+          <div class="flex items-center gap-2 sm:gap-3">
+            <span class="text-xl w-6 text-center font-black">${medal}</span>
+            <span class="text-2xl">${avatar}</span>
+            <div>
+              <span class="text-indigo-950 font-black">${escapeHtml(rec.name)}</span>
+              <span class="text-[10px] sm:text-xs text-purple-600 ml-1.5 bg-purple-200 px-2 py-0.5 rounded-full">${modeTag} (${langTag})</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-emerald-600 font-black text-lg">${rec.score} 分</span>
+            <div class="text-[10px] text-gray-400">${rec.date}</div>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    // --- UTILITIES ---
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
+
