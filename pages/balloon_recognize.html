@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-HK" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>中文/英文句子認字遊戲 - 氣球爆爆樂</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        skyLight: '#f0f9ff',
+                        creamBg: '#fefce8',
+                        noun: '#3b82f6',
+                        verb: '#ef4444',
+                        adj: '#22c55e',
+                        other: '#f59e0b',
+                    },
+                    boxShadow: {
+                        '3d-balloon': 'inset -10px -14px 20px rgba(0,0,0,0.18), inset 8px 8px 14px rgba(255,255,255,0.85), 0 12px 20px -4px rgba(0, 0, 0, 0.15)',
+                        'card-pop': '0 12px 28px -6px rgba(14, 165, 233, 0.15), 0 8px 12px -6px rgba(0, 0, 0, 0.05)',
+                        'bubbly': '0 8px 0px 0px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Noto+Sans+TC:wght@700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0f2fe;
+            color: #1e293b;
+            overflow: hidden;
+        }
+
+        /* 3D Glossy Balloon specular highlights - Kid-Friendly Light Palette */
+        .balloon-gloss {
+            position: relative;
+            border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
+        }
+        .balloon-gloss::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 16%;
+            width: 28%;
+            height: 28%;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .balloon-gloss::after {
+            content: '↑';
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #cbd5e1;
+            font-size: 16px;
+            font-weight: 900;
+            pointer-events: none;
+        }
+
+        /* Animated SVG Ring */
+        .countdown-circle {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Balloon Pop Effect */
+        @keyframes popAnimation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .popping {
+            animation: popAnimation 0.22s forwards ease-out;
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="h-full w-full flex items-center justify-center p-0 md:p-4">
+
+    <!-- App Frame Outer Container (Kid Light Theme) -->
+    <div id="app-frame" class="w-full h-[100dvh] md:max-w-md lg:max-w-lg md:h-[94vh] bg-sky-50 md:rounded-[2.5rem] shadow-2xl flex flex-col relative overflow-hidden border-0 md:border-8 border-sky-200">
+
+        <!-- ================= HOME SCREEN ================= -->
+        <div id="home-screen" class="flex-1 flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-b from-sky-100 via-amber-50/50 to-pink-50 overflow-y-auto">
+            
+            <!-- App Header Title -->
+            <div class="text-center mt-2">
+                <div class="inline-block bg-amber-300 text-amber-950 text-xs font-extrabold px-4 py-1 rounded-full uppercase tracking-wider shadow-sm mb-2 border border-amber-400">
+                    🎈 兒童雙語認字遊戲 🎈
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black text-sky-900 tracking-tight leading-tight drop-shadow-sm">
+                    中文 / 英文<br><span class="text-pink-500 text-2xl sm:text-3xl">句子氣球爆爆樂</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-sky-700 font-extrabold mt-1">
+                    點擊氣球、聽發音，輕鬆學好句子！
+                </p>
+            </div>
+
+            <!-- Home Menu Card -->
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-5 shadow-card-pop border-4 border-sky-100 my-2 space-y-4">
+                
+                <!-- 1. Language Switching Tabs (EXCLUSIVE TO HOME SCREEN) -->
+                <div>
+                    <label class="block text-xs font-black text-sky-900 mb-1.5 text-center">
+                        選擇語言 / Select Language
+                    </label>
+                    <div class="grid grid-cols-2 gap-2 bg-sky-100/70 p-1.5 rounded-2xl border-2 border-sky-200">
+                        <button id="lang-btn-zh" onclick="setLanguage('zh-HK')" class="py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all bg-white text-sky-600 shadow-md border-2 border-sky-200">
+                            廣東話 / 中文
+                        </button>
+                        <button id="lang-btn-en" onclick="setLanguage('en-US')" class="py-2.5 rounded-lg text-xs sm:text-sm font-black transition-all text-slate-500 hover:text-slate-700">
+                            English
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Difficulty Buttons -->
+                <div>
+                    <label class="block text-xs font-black text-sky-900 mb-1.5 text-center">
+                        選擇難度 / Difficulty
+                    </label>
+                    <div class="space-y-2.5">
+                        <button onclick="startGame('easy')" class="w-full py-3 px-4 bg-emerald-400 hover:bg-emerald-500 active:scale-[0.98] text-white rounded-2xl font-black text-sm shadow-bubbly transition flex items-center justify-between border-2 border-emerald-300">
+                            <span>🌱 簡單 (Easy)</span>
+                            <span class="bg-white/30 text-white text-xs px-2.5 py-0.5 rounded-lg">3-4 字詞</span>
+                        </button>
+                        <button onclick="startGame('normal')" class="w-full py-3 px-4 bg-sky-400 hover:bg-sky-500 active:scale-[0.98] text-white rounded-2xl font-black text-sm shadow-bubbly transition flex items-center justify-between border-2 border-sky-300">
+                            <span>⭐ 普通 (Normal)</span>
+                            <span class="bg-white/30 text-white text-xs px-2.5 py-0.5 rounded-lg">5-6 字詞</span>
+                        </button>
+                        <button onclick="startGame('hard')" class="w-full py-3 px-4 bg-pink-400 hover:bg-pink-500 active:scale-[0.98] text-white rounded-2xl font-black text-sm shadow-bubbly transition flex items-center justify-between border-2 border-pink-300">
+                            <span>🔥 挑戰 (Hard)</span>
+                            <span class="bg-white/30 text-white text-xs px-2.5 py-0.5 rounded-lg">7+ 字詞</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Leaderboard Entry Button -->
+                <button onclick="openLeaderboard()" class="w-full py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-800 font-black rounded-2xl text-xs sm:text-sm border-2 border-amber-300 flex items-center justify-center space-x-2 transition shadow-sm">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                    <span>查看英雄榜 Leaderboard</span>
+                </button>
+            </div>
+
+            <!-- Footer Badge -->
+            <div class="text-center text-[11px] text-sky-700 font-extrabold mb-1">
+                適合 4-8 歲兒童 ‧ 語音發音與大字體學習
+            </div>
+        </div>
+
+        <!-- ================= GAMEPLAY SCREEN ================= -->
+        <div id="game-screen" class="hidden flex-1 flex flex-col bg-gradient-to-b from-sky-100 via-sky-50 to-blue-100 relative overflow-hidden">
+            
+            <!-- Game Top Header Bar -->
+            <div class="bg-white/90 backdrop-blur border-b-4 border-sky-200 px-3 py-2 flex items-center justify-between z-30 shrink-0 shadow-sm">
+                
+                <!-- Left: Home & Speech Replay Icons -->
+                <div class="flex items-center space-x-2">
+                    <button id="btn-home" onclick="goHome()" class="w-10 h-10 bg-rose-400 hover:bg-rose-500 text-white rounded-2xl flex items-center justify-center text-base font-black shadow-bubbly active:scale-95 transition-transform border-2 border-rose-300" title="回到主頁">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                    <button onclick="playTargetSpeech()" class="w-10 h-10 bg-amber-400 hover:bg-amber-500 text-white rounded-2xl flex items-center justify-center text-base font-black shadow-bubbly active:scale-95 transition-transform border-2 border-amber-300" title="重播整句發音">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+
+                <!-- Middle: Stats (Progress & Score) -->
+                <div class="flex items-center space-x-3 font-black">
+                    <div class="text-center bg-sky-100/80 px-2.5 py-1 rounded-xl border border-sky-200">
+                        <div class="text-sky-600 text-[10px]">進度</div>
+                        <div id="hud-progress" class="text-sky-800 text-xs sm:text-sm">1/5</div>
+                    </div>
+                    <div class="text-center bg-amber-100/80 px-2.5 py-1 rounded-xl border border-amber-200">
+                        <div class="text-amber-600 text-[10px]">得分</div>
+                        <div id="hud-score" class="text-amber-800 text-xs sm:text-sm">0</div>
+                    </div>
+                </div>
+
+                <!-- Right: Static In-Game Language Indicator Badge -->
+                <div class="flex items-center space-x-2">
+                    <span id="hud-lang-badge" class="bg-indigo-100 text-indigo-700 text-xs font-black px-3 py-1.5 rounded-xl border-2 border-indigo-200">
+                        廣東話
+                    </span>
+                    <button onclick="openLeaderboard()" class="w-10 h-10 bg-purple-400 hover:bg-purple-500 text-white rounded-2xl flex items-center justify-center text-base font-black shadow-bubbly active:scale-95 transition-transform border-2 border-purple-300">
+                        <i class="fa-solid fa-trophy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Word Tray Area (Positioned directly below top header bar) -->
+            <div id="word-tray-container" class="p-2.5 bg-white/70 backdrop-blur z-20 shadow-sm border-b-2 border-sky-200 shrink-0">
+                <div class="bg-sky-50 border-3 border-dashed border-sky-300 rounded-2xl p-2">
+                    <div class="flex items-center justify-between text-xs font-black text-sky-800 mb-1.5 px-1">
+                        <span>🧩 點擊氣球組成句子：</span>
+                        <span class="text-[10px] text-sky-500">順序點擊</span>
+                    </div>
+                    <!-- Dynamic Word Slots -->
+                    <div id="word-tray-slots" class="flex flex-wrap gap-2 items-center justify-center min-h-[46px]">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Speech Toast Indicator -->
+            <div id="speech-toast" class="hidden absolute top-36 left-1/2 transform -translate-x-1/2 bg-white/95 text-sky-900 px-4 py-2 rounded-full text-xs font-black shadow-lg flex items-center space-x-2 z-40 border-2 border-sky-300 pointer-events-none">
+                <span class="animate-pulse text-amber-500 text-sm">🔊</span>
+                <span>朗讀句子中...</span>
+            </div>
+
+            <!-- Balloon Stage Area -->
+            <div id="balloon-stage" class="flex-1 relative overflow-hidden w-full h-full bg-gradient-to-b from-sky-50/50 via-amber-50/30 to-blue-100/60">
+            </div>
+
+        </div>
+
+        <!-- ================= MODAL 1: 3-SECOND VICTORY COUNTDOWN ================= -->
+        <div id="modal-completion" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl border-4 border-amber-300 transform transition-transform">
+                <div class="text-5xl mb-1 animate-bounce">🎉</div>
+                <h3 class="text-xl font-black text-sky-900 mb-1">太棒了！答對了！</h3>
+                
+                <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3 my-3">
+                    <p id="modal-full-sentence" class="text-lg sm:text-xl font-black text-indigo-600 leading-relaxed">
+                        --
+                    </p>
+                </div>
+
+                <!-- Timestamp-driven SVG Ring Countdown (Explicitly 3 -> 2 -> 1 -> 0) -->
+                <div class="relative w-20 h-20 mx-auto my-2 flex items-center justify-center">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+                        <circle id="countdown-ring" class="countdown-circle" cx="50" cy="50" r="45" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0"/>
+                    </svg>
+                    <span id="countdown-number" class="absolute text-2xl font-black text-slate-800">3</span>
+                </div>
+
+                <p class="text-xs font-black text-sky-600">即將進入下一關...</p>
+            </div>
+        </div>
+
+        <!-- ================= MODAL 2: LEADERBOARD ================= -->
+        <div id="modal-leaderboard" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-5 w-full max-w-xs text-center shadow-2xl border-4 border-purple-200">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-black text-sky-900 flex items-center space-x-2">
+                        <span class="text-amber-400 text-lg">🏆</span>
+                        <span>最高分英雄榜</span>
+                    </h3>
+                    <button onclick="closeLeaderboard()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+                </div>
+
+                <div id="leaderboard-list" class="space-y-2 mb-4 text-left max-h-52 overflow-y-auto pr-1">
+                </div>
+
+                <button onclick="closeLeaderboard()" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-black py-2.5 rounded-xl text-xs shadow-bubbly active:scale-95 transition-transform">
+                    關閉
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= APPLICATION ENGINE ================= -->
+    <script>
+        // --- 1. Sentence Database ---
+        const SENTENCE_DATABASE = {
+            'zh-HK': {
+                easy: [
+                    [ {t:'太陽', g:'n'}, {t:'升起了', g:'v'}, {t:'。', g:'p'} ],
+                    [ {t:'小狗', g:'n'}, {t:'在跑步', g:'v'}, {t:'。', g:'p'} ],
+                    [ {t:'我', g:'n'}, {t:'吃蘋果', g:'v'}, {t:'。', g:'p'} ],
+                    [ {t:'小貓', g:'n'}, {t:'很可愛', g:'a'}, {t:'。', g:'p'} ],
+                    [ {t:'鳥兒', g:'n'}, {t:'飛得高', g:'v'}, {t:'。', g:'p'} ]
+                ],
+                normal: [
+                    [ {t:'美麗的', g:'a'}, {t:'花朵', g:'n'}, {t:'盛開了', g:'v'}, {t:'。', g:'p'} ],
+                    [ {t:'妹妹', g:'n'}, {t:'喜歡', g:'v'}, {t:'看圖書', g:'n'}, {t:'。', g:'p'} ],
+                    [ {t:'今天', g:'o'}, {t:'天氣', g:'n'}, {t:'非常晴朗', g:'a'}, {t:'。', g:'p'} ],
+                    [ {t:'爸爸', g:'n'}, {t:'開着', g:'v'}, {t:'藍色的', g:'a'}, {t:'汽車', g:'n'}, {t:'。', g:'p'} ]
+                ],
+                hard: [
+                    [ {t:'勤勞的', g:'a'}, {t:'蜜蜂', g:'n'}, {t:'忙着', g:'v'}, {t:'採集', g:'v'}, {t:'甜甜的', g:'a'}, {t:'花蜜', g:'n'}, {t:'。', g:'p'} ],
+                    [ {t:'勇敢的', g:'a'}, {t:'消防員', g:'n'}, {t:'快速地', g:'a'}, {t:'撲滅了', g:'v'}, {t:'大火', g:'n'}, {t:'！', g:'p'} ]
+                ]
+            },
+            'en-US': {
+                easy: [
+                    [ {t:'The sun', g:'n'}, {t:'rises', g:'v'}, {t:'fast', g:'a'}, {t:'.', g:'p'} ],
+                    [ {t:'I', g:'n'}, {t:'like', g:'v'}, {t:'apples', g:'n'}, {t:'.', g:'p'} ],
+                    [ {t:'Cats', g:'n'}, {t:'are', g:'v'}, {t:'cute', g:'a'}, {t:'.', g:'p'} ]
+                ],
+                normal: [
+                    [ {t:'The yellow', g:'a'}, {t:'sun', g:'n'}, {t:'shines', g:'v'}, {t:'brightly', g:'a'}, {t:'.', g:'p'} ],
+                    [ {t:'My sister', g:'n'}, {t:'reads', g:'v'}, {t:'a story', g:'a'}, {t:'book', g:'n'}, {t:'.', g:'p'} ]
+                ],
+                hard: [
+                    [ {t:'The clever', g:'a'}, {t:'monkey', g:'n'}, {t:'swings', g:'v'}, {t:'happily', g:'a'}, {t:'in trees', g:'n'}, {t:'.', g:'p'} ]
+                ]
+            }
+        };
+
+        // --- 2. State Variables ---
+        let currentLang = 'zh-HK';
+        let currentDifficulty = 'easy';
+        let currentRound = 0;
+        const TOTAL_ROUNDS = 5;
+        let currentScore = 0;
+
+        let modalCountdownInterval = null;
+        let activeTargetTokens = [];
+        let currentWordIndex = 0;
+        let balloons = [];
+        let usedSentenceIndices = {};
+
+        let animationFrameId = null;
+        let resizeObserver = null;
+        const SPEED_FACTOR = 0.45; // Soft 0.5x floating velocity
+
+        // --- 3. Web Audio Synthesizer ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playPopSound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(850, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {}
+        }
+
+        function playErrorSound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(120, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) {}
+        }
+
+        function playVictorySound() {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.18, audioCtx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.08 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + idx * 0.08);
+                    osc.stop(audioCtx.currentTime + idx * 0.08 + 0.2);
+                });
+            } catch (e) {}
+        }
+
+        // --- 4. Web Speech API TTS (0.6x Speed) ---
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = currentLang;
+            utterance.rate = 0.6; // Kid-friendly pace
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playTargetSpeech() {
+            if (!activeTargetTokens || activeTargetTokens.length === 0) return;
+            const fullSentence = activeTargetTokens.map(t => t.t).join('');
+            
+            const toast = document.getElementById('speech-toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 1800);
+
+            speakText(fullSentence);
+        }
+
+        // --- 5. Home Screen Language Toggle ---
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('lang-btn-zh').className = `py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${lang === 'zh-HK' ? 'bg-white text-sky-600 shadow-md border-2 border-sky-200' : 'text-slate-500 hover:text-slate-700'}`;
+            document.getElementById('lang-btn-en').className = `py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all ${lang === 'en-US' ? 'bg-white text-sky-600 shadow-md border-2 border-sky-200' : 'text-slate-500 hover:text-slate-700'}`;
+        }
+
+        // --- 6. Game Flow & Instant Home Handler ---
+        function startGame(difficulty) {
+            initAudio();
+            currentDifficulty = difficulty;
+            currentRound = 0;
+            currentScore = 0;
+
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            document.getElementById('hud-lang-badge').innerText = currentLang === 'zh-HK' ? '廣東話' : 'English';
+
+            setupResizeObserver();
+            loadNextQuestion();
+        }
+
+        // INSTANT Home Action: Immediately cancels speech, timers, animations
+        function goHome() {
+            stopModalCountdown();
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            const stage = document.getElementById('balloon-stage');
+            if (stage) stage.innerHTML = '';
+            balloons = [];
+
+            document.getElementById('modal-completion').classList.add('hidden');
+            document.getElementById('modal-leaderboard').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+        }
+
+        // --- 7. Load Round Questions ---
+        function loadNextQuestion() {
+            currentRound++;
+            if (currentRound > TOTAL_ROUNDS) {
+                finishGameSession();
+                return;
+            }
+
+            document.getElementById('hud-progress').innerText = `${currentRound}/${TOTAL_ROUNDS}`;
+            document.getElementById('hud-score').innerText = currentScore;
+
+            const bank = SENTENCE_DATABASE[currentLang][currentDifficulty];
+            const poolKey = `${currentLang}_${currentDifficulty}`;
+            if (!usedSentenceIndices[poolKey]) usedSentenceIndices[poolKey] = [];
+
+            if (usedSentenceIndices[poolKey].length >= bank.length) {
+                usedSentenceIndices[poolKey] = [];
+            }
+
+            let availableIndices = [];
+            for (let i = 0; i < bank.length; i++) {
+                if (!usedSentenceIndices[poolKey].includes(i)) availableIndices.push(i);
+            }
+
+            const chosenIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            usedSentenceIndices[poolKey].push(chosenIdx);
+
+            activeTargetTokens = bank[chosenIdx];
+            currentWordIndex = 0;
+
+            renderWordTray();
+            spawnBalloons();
+            playTargetSpeech();
+        }
+
+        // --- 8. Render Dashed Word Tray ---
+        function renderWordTray() {
+            const container = document.getElementById('word-tray-slots');
+            container.innerHTML = '';
+
+            activeTargetTokens.forEach((token, idx) => {
+                const slot = document.createElement('div');
+                slot.className = 'w-10 h-10 sm:w-12 sm:h-12 border-2 border-dashed border-sky-300 rounded-2xl flex items-center justify-center text-sky-400 font-black bg-white text-xs sm:text-sm transition-all shadow-sm';
+                slot.id = `tray-slot-${idx}`;
+                slot.innerText = idx + 1;
+                container.appendChild(slot);
+            });
+        }
+
+        // --- 9. Balloon Spawning & Physics Engine ---
+        function getGrammarBgClass(g) {
+            switch(g) {
+                case 'n': return 'bg-noun border-blue-300 text-white';
+                case 'v': return 'bg-verb border-rose-300 text-white';
+                case 'a': return 'bg-adj border-emerald-300 text-white';
+                default: return 'bg-other border-amber-300 text-white';
+            }
+        }
+
+        function spawnBalloons() {
+            const stage = document.getElementById('balloon-stage');
+            stage.innerHTML = '';
+            balloons = [];
+
+            const stageWidth = stage.clientWidth || 340;
+            const stageHeight = stage.clientHeight || 420;
+
+            // Larger balloon radius for kid-friendly readability
+            const radius = Math.min(Math.max(stageWidth * 0.13, 44), 62); 
+
+            activeTargetTokens.forEach((token, idx) => {
+                let spawnX, spawnY, valid = false, attempts = 0;
+                while (!valid && attempts < 200) {
+                    spawnX = Math.random() * (stageWidth - radius * 2.2) + radius;
+                    spawnY = Math.random() * (stageHeight - radius * 2.2) + radius;
+
+                    valid = true;
+                    for (let b of balloons) {
+                        const dist = Math.hypot(spawnX - b.x, spawnY - b.y);
+                        if (dist < radius + b.radius + 12) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    attempts++;
+                }
+
+                const el = document.createElement('div');
+                const grammarColor = getGrammarBgClass(token.g);
+                el.className = `absolute rounded-full flex items-center justify-center font-black cursor-pointer shadow-3d-balloon border-3 ${grammarColor} balloon-gloss z-10 text-center leading-tight transition-transform active:scale-90`;
+                el.style.width = `${radius * 2}px`;
+                el.style.height = `${radius * 2.3}px`;
+                
+                // Larger typography with fluid scale clamp
+                el.innerHTML = `
+                    <span class="px-1.5 drop-shadow-md text-[clamp(1.1rem,4.5vw,1.5rem)] tracking-wide">
+                        ${token.t}
+                    </span>
+                `;
+
+                const bObj = {
+                    id: idx,
+                    token: token.t,
+                    el: el,
+                    x: spawnX,
+                    y: spawnY,
+                    vx: (Math.random() - 0.5) * SPEED_FACTOR,
+                    vy: (Math.random() - 0.5) * SPEED_FACTOR,
+                    radius: radius
+                };
+
+                el.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    handleBalloonTap(bObj);
+                });
+
+                stage.appendChild(el);
+                balloons.push(bObj);
+            });
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            runPhysicsLoop();
+        }
+
+        function runPhysicsLoop() {
+            const stage = document.getElementById('balloon-stage');
+            if (!stage || stage.clientWidth === 0) return;
+
+            const stageW = stage.clientWidth;
+            const stageH = stage.clientHeight;
+
+            for (let i = 0; i < balloons.length; i++) {
+                let b = balloons[i];
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Border bouncing
+                if (b.x - b.radius < 4) { b.x = b.radius + 4; b.vx *= -1; }
+                if (b.x + b.radius > stageW - 4) { b.x = stageW - b.radius - 4; b.vx *= -1; }
+                if (b.y - b.radius < 6) { b.y = b.radius + 6; b.vy *= -1; }
+                if (b.y + b.radius > stageH - 10) { b.y = stageH - b.radius - 10; b.vy *= -1; }
+
+                // Elastic Collision Pairwise Solver
+                for (let j = i + 1; j < balloons.length; j++) {
+                    let b2 = balloons[j];
+                    let dx = b2.x - b.x;
+                    let dy = b2.y - b.y;
+                    let dist = Math.hypot(dx, dy);
+                    let minDist = b.radius + b2.radius + 8;
+
+                    if (dist < minDist && dist > 0) {
+                        let overlap = minDist - dist;
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+
+                        b.x -= nx * overlap * 0.5;
+                        b.y -= ny * overlap * 0.5;
+                        b2.x += nx * overlap * 0.5;
+                        b2.y += ny * overlap * 0.5;
+
+                        let tempVx = b.vx;
+                        let tempVy = b.vy;
+                        b.vx = b2.vx;
+                        b.vy = b2.vy;
+                        b2.vx = tempVx;
+                        b2.vy = tempVy;
+                    }
+                }
+
+                b.el.style.transform = `translate3d(${b.x - b.radius}px, ${b.y - b.radius}px, 0)`;
+            }
+
+            animationFrameId = requestAnimationFrame(runPhysicsLoop);
+        }
+
+        // --- 10. Tap Logic & Speech Synthesis ---
+        function handleBalloonTap(balloonObj) {
+            // Trigger instant speech pronunciation on EVERY tap
+            speakText(balloonObj.token);
+
+            const expectedToken = activeTargetTokens[currentWordIndex];
+
+            if (balloonObj.token === expectedToken.t) {
+                playPopSound();
+                currentScore += 20;
+                document.getElementById('hud-score').innerText = currentScore;
+
+                // Fill slot in word tray
+                const slot = document.getElementById(`tray-slot-${currentWordIndex}`);
+                if (slot) {
+                    slot.className = `w-auto min-w-[40px] px-2.5 h-10 sm:h-12 border-none font-black text-white text-sm sm:text-base rounded-2xl flex items-center justify-center shadow-md ${getGrammarBgClass(expectedToken.g)}`;
+                    slot.innerText = expectedToken.t;
+                }
+
+                balloonObj.el.classList.add('popping');
+                setTimeout(() => {
+                    if (balloonObj.el.parentNode) balloonObj.el.parentNode.removeChild(balloonObj.el);
+                    balloons = balloons.filter(b => b.id !== balloonObj.id);
+                }, 200);
+
+                currentWordIndex++;
+
+                if (currentWordIndex >= activeTargetTokens.length) {
+                    setTimeout(triggerCompletionSequence, 300);
+                }
+
+            } else {
+                playErrorSound();
+                balloonObj.el.style.transform += ' scale(0.9)';
+                setTimeout(() => {
+                    balloonObj.el.style.transform = balloonObj.el.style.transform.replace(' scale(0.9)', '');
+                }, 150);
+            }
+        }
+
+        // --- 11. 3-Second Completion Countdown Flow ---
+        function triggerCompletionSequence() {
+            playVictorySound();
+            const fullSentence = activeTargetTokens.map(t => t.t).join('');
+
+            document.getElementById('modal-full-sentence').innerText = fullSentence;
+            const modal = document.getElementById('modal-completion');
+            modal.classList.remove('hidden');
+
+            // Asynchronously pronounce complete sentence
+            speakText(fullSentence);
+
+            // Execute 3000ms timestamp countdown (3 -> 2 -> 1 -> 0)
+            runModalCountdown();
+        }
+
+        function runModalCountdown() {
+            stopModalCountdown();
+
+            const durationMs = 3000;
+            const startTime = Date.now();
+            const ring = document.getElementById('countdown-ring');
+            const numEl = document.getElementById('countdown-number');
+            const maxDash = 283;
+
+            ring.style.strokeDashoffset = '0';
+            numEl.innerText = '3';
+
+            modalCountdownInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const remaining = Math.max(0, durationMs - elapsed);
+
+                // SVG offset shrinking
+                const offset = ((durationMs - remaining) / durationMs) * maxDash;
+                ring.style.strokeDashoffset = offset.toFixed(1);
+
+                // Integer step (3 -> 2 -> 1 -> 0)
+                const numVal = Math.ceil(remaining / 1000);
+                numEl.innerText = Math.max(0, numVal);
+
+                if (remaining <= 0) {
+                    stopModalCountdown();
+                    document.getElementById('modal-completion').classList.add('hidden');
+                    loadNextQuestion(); // Proceed directly to next sentence
+                }
+            }, 40);
+        }
+
+        function stopModalCountdown() {
+            if (modalCountdownInterval) {
+                clearInterval(modalCountdownInterval);
+                modalCountdownInterval = null;
+            }
+        }
+
+        // --- 12. Leaderboard & Session Storage ---
+        function finishGameSession() {
+            saveScore(currentScore);
+            alert(`🎉 太棒了！挑戰完成！\n你的得分為：${currentScore} 分`);
+            goHome();
+        }
+
+        function saveScore(score) {
+            let leaderboard = JSON.parse(localStorage.getItem('balloon_game_scores') || '[]');
+            leaderboard.push({
+                score: score,
+                date: new Date().toLocaleDateString(),
+                lang: currentLang === 'zh-HK' ? '廣東話' : 'English',
+                diff: currentDifficulty
+            });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 5);
+            localStorage.setItem('balloon_game_scores', JSON.stringify(leaderboard));
+        }
+
+        function openLeaderboard() {
+            const listContainer = document.getElementById('leaderboard-list');
+            const leaderboard = JSON.parse(localStorage.getItem('balloon_game_scores') || '[]');
+
+            if (leaderboard.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-sky-400 text-xs py-4 font-bold">暫無紀錄</div>';
+            } else {
+                listContainer.innerHTML = leaderboard.map((item, idx) => `
+                    <div class="flex items-center justify-between p-2.5 bg-sky-50 rounded-2xl border border-sky-100 text-xs font-black">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-amber-400 text-white' : 'bg-sky-200 text-sky-700'} flex items-center justify-center font-black text-xs">${idx + 1}</span>
+                            <span class="text-sky-900">${item.lang} (${item.diff})</span>
+                        </div>
+                        <span class="text-pink-500 font-black text-sm">${item.score} 分</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('modal-leaderboard').classList.add('hidden');
+        }
+
+        function setupResizeObserver() {
+            if (resizeObserver) return;
+            const stage = document.getElementById('balloon-stage');
+            if (!stage) return;
+
+            resizeObserver = new ResizeObserver(() => {
+                const w = stage.clientWidth;
+                const h = stage.clientHeight;
+                balloons.forEach(b => {
+                    b.x = Math.max(b.radius, Math.min(w - b.radius, b.x));
+                    b.y = Math.max(b.radius, Math.min(h - b.radius, b.y));
+                });
+            });
+            resizeObserver.observe(stage);
+        }
+    </script>
+</body>
+</html>
