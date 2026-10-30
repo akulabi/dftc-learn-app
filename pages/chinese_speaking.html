@@ -131,8 +131,8 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <button id="btn-home-nav" onclick="handleGoHomeDirect()" class="hidden kid-btn bg-white hover:bg-slate-100 text-slate-700 w-12 h-12 rounded-2xl border-2 border-slate-200 flex items-center justify-center text-xl shadow-sm" title="  返主頁">
-         
+      <button id="btn-home-nav" onclick="handleGoHomeDirect()" class="hidden kid-btn bg-white hover:bg-slate-100 text-slate-700 w-12 h-12 rounded-2xl border-2 border-slate-200 flex items-center justify-center text-xl shadow-sm" title="🏠 返主頁">
+        🏠
       </button>
     </div>
   </header>
@@ -152,27 +152,27 @@
         <!-- 5 Difficulty Level Selector -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <button onclick="selectDifficulty('level1')" id="diff-level1" class="diff-btn kid-btn bg-emerald-50 border-4 border-emerald-400 text-emerald-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-emerald-100 ring-4 ring-amber-400 scale-105">
-            <span class="text-lg">  Level 1: 萌芽級</span>
+            <span class="text-lg">⭐ Level 1: 萌芽級</span>
             <span class="text-xs font-bold text-emerald-700">首100字 (3-5字短句)</span>
           </button>
           
           <button onclick="selectDifficulty('level2')" id="diff-level2" class="diff-btn kid-btn bg-sky-50 border-4 border-sky-400 text-sky-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-sky-100">
-            <span class="text-lg">   Level 2: 基礎級</span>
+            <span class="text-lg">⭐⭐ Level 2: 基礎級</span>
             <span class="text-xs font-bold text-sky-700">200字 (5-7字句子)</span>
           </button>
 
           <button onclick="selectDifficulty('level3')" id="diff-level3" class="diff-btn kid-btn bg-indigo-50 border-4 border-indigo-400 text-indigo-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-indigo-100">
-            <span class="text-lg">    Level 3: 進階級</span>
+            <span class="text-lg">⭐⭐⭐ Level 3: 進階級</span>
             <span class="text-xs font-bold text-indigo-700">300字 (7-9字句子)</span>
           </button>
 
           <button onclick="selectDifficulty('level4')" id="diff-level4" class="diff-btn kid-btn bg-purple-50 border-4 border-purple-400 text-purple-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center hover:bg-purple-100">
-            <span class="text-lg">     Level 4: 提高級</span>
+            <span class="text-lg">⭐⭐⭐⭐ Level 4: 提高級</span>
             <span class="text-xs font-bold text-purple-700">400字 (9-12字句子)</span>
           </button>
 
           <button onclick="selectDifficulty('level5')" id="diff-level5" class="diff-btn kid-btn bg-rose-50 border-4 border-rose-400 text-rose-800 font-extrabold p-3 rounded-2xl text-base flex flex-col items-center sm:col-span-2 md:col-span-1 hover:bg-rose-100">
-            <span class="text-lg">      Level 5: 飛躍級</span>
+            <span class="text-lg">⭐⭐⭐⭐⭐ Level 5: 飛躍級</span>
             <span class="text-xs font-bold text-rose-700">500字 (複句/長句)</span>
           </button>
         </div>
@@ -184,10 +184,10 @@
 
       <div class="flex flex-wrap justify-center gap-3">
         <button onclick="showLeaderboard()" class="kid-btn bg-white hover:bg-slate-50 text-amber-600 font-extrabold px-6 py-3 rounded-2xl border-2 border-amber-200 flex items-center gap-2 text-base">
-            龍虎榜
+          🏆 龍虎榜
         </button>
         <button onclick="toggleInstructions()" class="kid-btn bg-white hover:bg-slate-50 text-slate-600 font-extrabold px-6 py-3 rounded-2xl border-2 border-slate-200 flex items-center gap-2 text-base">
-            玩法說明
+          💡 玩法說明
         </button>
       </div>
     </div>
@@ -198,13 +198,13 @@
       <!-- Minimal Header Stats Bar -->
       <div class="w-full flex justify-between items-center bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-slate-200 shadow-sm">
         <div class="flex items-center gap-2 text-indigo-600 font-black text-xl">
-          <span> </span> <span id="question-tracker">1/10</span>
+          <span>🎯</span> <span id="question-tracker">1/10</span>
         </div>
         <div id="difficulty-badge" class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-700">
           Level 1 萌芽級
         </div>
         <div class="flex items-center gap-2 text-amber-500 font-black text-xl">
-          <span> </span> <span id="game-score">0</span>
+          <span>⭐</span> <span id="game-score">0</span>
         </div>
       </div>
 
@@ -228,13 +228,13 @@
 
       <!-- Icon-Driven Action Control Bar -->
       <div class="w-full flex items-center justify-center gap-8 pt-2">
-        <button id="btn-mic" onclick="handleMicClick()" class="kid-btn relative w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" title="  開始朗讀">
-          <span id="mic-icon"> </span>
+        <button id="btn-mic" onclick="handleMicClick()" class="kid-btn relative w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" title="🎤 開始朗讀">
+          <span id="mic-icon">🎤</span>
           <div id="mic-pulse" class="hidden absolute inset-0 rounded-full border-4 border-purple-300 recording-pulse"></div>
         </button>
 
-        <button id="btn-skip" onclick="skipQuestion()" class="kid-btn w-16 h-16 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl shadow-md" title="  跳過（聽解答）">
-           
+        <button id="btn-skip" onclick="skipQuestion()" class="kid-btn w-16 h-16 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-300 rounded-2xl flex items-center justify-center text-2xl shadow-md" title="⏭️ 跳過（聽解答）">
+          ⏭️
         </button>
       </div>
     </div>
@@ -243,7 +243,7 @@
     <div id="screen-result" class="hidden w-full max-w-xl flex flex-col items-center text-center space-y-6">
       <div class="bg-white p-8 rounded-3xl shadow-xl border-4 border-white w-full flex flex-col items-center">
         <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-amber-500 text-5xl mb-4 shadow-inner">
-           
+          🏆
         </div>
         
         <h2 class="text-3xl font-black text-slate-800 mb-1">太棒了！朗讀大功告成！</h2>
@@ -271,10 +271,10 @@
 
         <div class="w-full flex flex-col gap-3">
           <button onclick="saveResultAndRestart()" class="kid-btn bg-kidYellow hover:bg-amber-300 text-amber-950 font-black py-4 rounded-2xl text-xl flex items-center justify-center gap-2">
-              再玩一次
+            🔄 再玩一次
           </button>
           <button onclick="saveResultAndShowLeaderboard()" class="kid-btn bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-3 rounded-2xl text-base">
-              查看龍虎榜
+            🏆 查看龍虎榜
           </button>
         </div>
       </div>
@@ -286,7 +286,7 @@
         <div class="flex justify-between items-center mb-6">
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-500 text-2xl">
-               
+              🏆
             </div>
             <h2 class="text-2xl font-black text-slate-800">朗讀龍虎榜 (Top 10)</h2>
           </div>
@@ -314,7 +314,7 @@
         </div>
 
         <button onclick="handleGoHomeDirect()" class="kid-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl text-lg flex items-center justify-center gap-2">
-            返主頁
+          🏠 返主頁
         </button>
       </div>
     </div>
@@ -326,7 +326,7 @@
     <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-left space-y-4">
       <div class="flex justify-between items-center">
         <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
-            玩法說明
+          💡 玩法說明
         </h3>
         <button onclick="toggleInstructions()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
       </div>
@@ -335,11 +335,11 @@
         <p>2. <strong>自動開啟麥克風</strong>：題目載入後系統自動啟動麥克風收音。</p>
         <p>3. 朗讀評測（支援廣東話同音字比對，如 着/著、他/她/它/牠、做/作、在/再）：</p>
         <ul class="list-disc pl-5 font-bold space-y-1 my-2">
-          <li class="text-emerald-600">  綠色：發音正確（含同音字對比）</li>
-          <li class="text-red-500">  紅色：讀錯字</li>
-          <li class="text-amber-500">  橙黃色：漏字 / 跳過</li>
+          <li class="text-emerald-600">🟩 綠色：發音正確（含同音字對比）</li>
+          <li class="text-red-500">🟥 紅色：讀錯字</li>
+          <li class="text-amber-500">🟧 橙黃色：漏字 / 跳過</li>
         </ul>
-        <p>4. 答對或點擊   時，麥克風關閉 0.5 秒釋放音訊，彈出示範視窗播放廣東話標準發音，完成後才自動進入下一題。</p>
+        <p>4. 答對或點擊 ⏭️ 時，麥克風關閉 0.5 秒釋放音訊，彈出示範視窗播放廣東話標準發音，完成後才自動進入下一題。</p>
       </div>
       <button onclick="toggleInstructions()" class="kid-btn w-full bg-indigo-600 text-white font-extrabold py-3 rounded-2xl text-base">
         知道，開始玩！
@@ -351,7 +351,7 @@
   <div id="demoModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4">
     <div class="bg-white text-slate-800 rounded-3xl p-6 md:p-8 max-w-md w-full text-center flex flex-col items-center space-y-5 shadow-2xl border-4 border-amber-300">
       <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-amber-500 text-4xl animate-bounce shadow-inner">
-        <span id="demo-icon"> </span>
+        <span id="demo-icon">🔊</span>
       </div>
       <h3 id="demo-title" class="text-2xl font-black text-indigo-950">老師示範中...</h3>
       
@@ -362,14 +362,14 @@
       <p id="demo-subtitle" class="text-slate-500 text-sm font-bold">請聽標準廣東話發音</p>
       
       <button onclick="skipDemoPlayback()" class="kid-btn w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black py-3 rounded-2xl text-lg border-b-4 border-amber-600 flex items-center justify-center gap-2">
-        跳過示範  
+        跳過示範 ⏭️
       </button>
     </div>
   </div>
 
   <!-- Toast Message -->
   <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-xl font-bold flex items-center gap-3">
-    <span id="toast-icon"> </span>
+    <span id="toast-icon">ℹ️</span>
     <span id="toast-msg">提示訊息</span>
   </div>
 
@@ -540,7 +540,7 @@
           instance.lang = activeCantoneseLang;
         }
         if (event.error === 'not-allowed') {
-          showToast("請允許麥克風權限", " ");
+          showToast("請允許麥克風權限", "⚠️");
           isListening = false;
           updateMicUI(false);
         }
@@ -805,13 +805,13 @@
       sentenceBox.innerText = targetSentence;
 
       if (isCorrect) {
-        title.innerText = "全對！好棒呀！ ";
+        title.innerText = "全對！好棒呀！🎉";
         subtitle.innerText = "請聽標準廣東話示範發音";
-        icon.innerText = " ";
+        icon.innerText = "⭐";
       } else {
-        title.innerText = "老師示範中...  ";
+        title.innerText = "老師示範中... 👨‍🏫";
         subtitle.innerText = "請聽正確廣東話答案";
-        icon.innerText = " ";
+        icon.innerText = "🔊";
       }
 
       overlay.classList.remove('hidden');
@@ -1002,9 +1002,9 @@
         leaderboard.forEach((item, index) => {
           const tr = document.createElement('tr');
           let rankBadge = `<span class="font-black text-slate-500">${index + 1}</span>`;
-          if (index === 0) rankBadge = ` `;
-          if (index === 1) rankBadge = ` `;
-          if (index === 2) rankBadge = ` `;
+          if (index === 0) rankBadge = `🥇`;
+          if (index === 1) rankBadge = `🥈`;
+          if (index === 2) rankBadge = `🥉`;
 
           tr.innerHTML = `
             <td class="py-3 px-2 text-base">${rankBadge}</td>
@@ -1034,7 +1034,7 @@
       );
     }
 
-    function showToast(msg, icon = ' ') {
+    function showToast(msg, icon = 'ℹ️') {
       const toast = document.getElementById('toast');
       document.getElementById('toast-msg').innerText = msg;
       document.getElementById('toast-icon').innerText = icon;
@@ -1054,4 +1054,3 @@
   </script>
 </body>
 </html>
-
