@@ -389,7 +389,200 @@
                 ];
             }
 
-            // Consonant-le Rule (-ble, -cle, -dle, -fle, -gle, -ple, -tle, -zle)
+            // 1. Single-Syllable -SE / -RSE / -LSE Endings (e.g., HOUSE -> h-ouse, HORSE -> h-orse)
+            const seMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY]+(?:R|L)?SE)$/i);
+            if (seMatch) {
+                const onset = seMatch[1].toLowerCase();
+                const rime = seMatch[2].toLowerCase();
+                const onsetData = parseOnsetPhonetics(onset, rime[0]);
+                return [{
+                    text: uppercaseWord.toLowerCase(),
+                    onset: onset,
+                    rime: rime,
+                    onsetArSpoken: onsetData.spoken,
+                    rimeSpoken: rime,
+                    combinedSpoken: uppercaseWord.toLowerCase()
+                }];
+            }
+
+            // 2. Productive Suffixes (JOYFUL -> joy-f-ul, GRACEFUL -> gr-ace-f-ul)
+            const suffixMatch = uppercaseWord.match(/^(.+?)(FUL|LESS|NESS|MENT)$/i);
+            if (suffixMatch) {
+                const root = suffixMatch[1].toLowerCase();
+                const suffix = suffixMatch[2].toLowerCase();
+
+                let rootOnset = '', rootRime = root;
+                const vIdx = root.search(/[aeiouy]/i);
+
+                if (vIdx === 0) {
+                    rootOnset = '';
+                    rootRime = root;
+                } else if (vIdx > 0) {
+                    rootOnset = root.slice(0, vIdx);
+                    rootRime = root.slice(vIdx);
+                }
+
+                const onsetDataRoot = parseOnsetPhonetics(rootOnset, rootRime ? rootRime[0] : '');
+
+                let sufOnset = '', sufRime = suffix;
+                const sufVIdx = suffix.search(/[aeiouy]/i);
+                if (sufVIdx > 0) {
+                    sufOnset = suffix.slice(0, sufVIdx);
+                    sufRime = suffix.slice(sufVIdx);
+                }
+                const onsetDataSuf = parseOnsetPhonetics(sufOnset, sufRime ? sufRime[0] : '');
+
+                return [
+                    {
+                        text: root,
+                        onset: rootOnset,
+                        rime: rootRime,
+                        onsetArSpoken: onsetDataRoot.spoken,
+                        rimeSpoken: rootRime,
+                        combinedSpoken: root
+                    },
+                    {
+                        text: suffix,
+                        onset: sufOnset,
+                        rime: sufRime,
+                        onsetArSpoken: onsetDataSuf.spoken,
+                        rimeSpoken: sufRime,
+                        combinedSpoken: suffix
+                    }
+                ];
+            }
+
+            // 3. -URE Suffix + Medial Consonant Split (PICTURE -> p-ic-t-ure)
+            const ureMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY][^AEIOUY])([^AEIOUY])URE$/i);
+            if (ureMatch) {
+                const initOnset = ureMatch[1].toLowerCase();
+                const initRime = ureMatch[2].toLowerCase();
+                const medialC = ureMatch[3].toLowerCase();
+
+                const onsetData1 = parseOnsetPhonetics(initOnset, initRime[0]);
+                const onsetData2 = parseOnsetPhonetics(medialC, 'u');
+
+                return [
+                    {
+                        text: initOnset + initRime,
+                        onset: initOnset,
+                        rime: initRime,
+                        onsetArSpoken: onsetData1.spoken,
+                        rimeSpoken: initRime,
+                        combinedSpoken: initOnset + initRime
+                    },
+                    {
+                        text: medialC + 'ure',
+                        onset: medialC,
+                        rime: 'ure',
+                        onsetArSpoken: onsetData2.spoken,
+                        rimeSpoken: 'ure',
+                        combinedSpoken: medialC + 'ure'
+                    }
+                ];
+            }
+
+            // 4. Medial Consonant Blend Syllable Split (PROBLEM -> pr-o-bl-em, COMPLETE -> c-om-pl-ete, COMPRESS -> c-om-pr-ess)
+            const blendSplitMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY][^AEIOUY]?)((?:BL|CL|FL|GL|PL|SL|BR|CR|DR|FR|GR|PR|TR)[AEIOUY].*)$/i);
+            if (blendSplitMatch) {
+                const part1Onset = blendSplitMatch[1].toLowerCase();
+                const part1Rime = blendSplitMatch[2].toLowerCase();
+                const part2Raw = blendSplitMatch[3].toLowerCase();
+
+                const onsetData1 = parseOnsetPhonetics(part1Onset, part1Rime[0]);
+
+                let part2Onset = '', part2Rime = part2Raw;
+                const vIdx2 = part2Raw.search(/[aeiouy]/i);
+                if (vIdx2 > 0) {
+                    part2Onset = part2Raw.slice(0, vIdx2);
+                    part2Rime = part2Raw.slice(vIdx2);
+                }
+                const onsetData2 = parseOnsetPhonetics(part2Onset, part2Rime[0]);
+
+                return [
+                    {
+                        text: part1Onset + part1Rime,
+                        onset: part1Onset,
+                        rime: part1Rime,
+                        onsetArSpoken: onsetData1.spoken,
+                        rimeSpoken: part1Rime,
+                        combinedSpoken: part1Onset + part1Rime
+                    },
+                    {
+                        text: part2Raw,
+                        onset: part2Onset,
+                        rime: part2Rime,
+                        onsetArSpoken: onsetData2.spoken,
+                        rimeSpoken: part2Rime,
+                        combinedSpoken: part2Raw
+                    }
+                ];
+            }
+
+            // 5. Nasal Coda Bridge Split (BLANKET -> bl-an-k-et)
+            const blanketMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY][NKMS])([^AEIOUY])([AEIOUY].*)$/i);
+            if (blanketMatch) {
+                const initOnset = blanketMatch[1].toLowerCase();
+                const initRime = blanketMatch[2].toLowerCase();
+                const bridgeC = blanketMatch[3].toLowerCase();
+                const tailRime = blanketMatch[4].toLowerCase();
+
+                const onsetData1 = parseOnsetPhonetics(initOnset, initRime[0]);
+                const onsetData2 = parseOnsetPhonetics(bridgeC, tailRime[0]);
+
+                return [
+                    {
+                        text: initOnset + initRime,
+                        onset: initOnset,
+                        rime: initRime,
+                        onsetArSpoken: onsetData1.spoken,
+                        rimeSpoken: initRime,
+                        combinedSpoken: initOnset + initRime
+                    },
+                    {
+                        text: bridgeC + tailRime,
+                        onset: bridgeC,
+                        rime: tailRime,
+                        onsetArSpoken: onsetData2.spoken,
+                        rimeSpoken: tailRime,
+                        combinedSpoken: bridgeC + tailRime
+                    }
+                ];
+            }
+
+            // 6. Generalized -LY Morphological Split (LOVELY -> l-ove-l-y)
+            if (uppercaseWord.endsWith('LY') && uppercaseWord.length > 3) {
+                const stem = uppercaseWord.slice(0, -2).toLowerCase();
+                let stemOnset = '', stemRime = stem;
+                const vIdx = stem.search(/[aeiouy]/i);
+                if (vIdx > 0) {
+                    stemOnset = stem.slice(0, vIdx);
+                    stemRime = stem.slice(vIdx);
+                }
+                const onsetData1 = parseOnsetPhonetics(stemOnset, stemRime[0]);
+                const onsetData2 = parseOnsetPhonetics('l', 'y');
+
+                return [
+                    {
+                        text: stem,
+                        onset: stemOnset,
+                        rime: stemRime,
+                        onsetArSpoken: onsetData1.spoken,
+                        rimeSpoken: stemRime,
+                        combinedSpoken: stem
+                    },
+                    {
+                        text: 'ly',
+                        onset: 'l',
+                        rime: 'y',
+                        onsetArSpoken: onsetData2.spoken,
+                        rimeSpoken: 'ee',
+                        combinedSpoken: 'ly'
+                    }
+                ];
+            }
+
+            // 7. Consonant-le Rule (APPLE -> ap-ple, PURPLE -> pur-ple)
             const cleMatch = uppercaseWord.match(/^(.+?)([^AEIOUY])LE$/i);
             if (cleMatch && cleMatch[1].length > 0) {
                 const prefixWord = cleMatch[1];
@@ -433,7 +626,7 @@
                 return [prefixSyllable, cleSyllable];
             }
 
-            // Medial Digraph Detector ('th', 'sh', 'ch', 'ph', 'wh')
+            // 8. Medial Digraph Detector ('th', 'sh', 'ch', 'ph', 'wh')
             const medialDigraphMatch = uppercaseWord.match(/^([^AEIOUY]*[AEIOUY]+)(TH|SH|CH|PH|WH)([AEIOUY].*)$/i);
             if (medialDigraphMatch) {
                 const part1 = medialDigraphMatch[1].toLowerCase();
@@ -470,10 +663,10 @@
                 return [syl1, syl2];
             }
 
-            // Trailing 'Y' Sound
+            // 9. Trailing 'Y' Sound
             if (uppercaseWord.endsWith('Y') && uppercaseWord.length > 1) {
                 const body = uppercaseWord.slice(0, -1);
-                if (['SKY', 'WHY', 'FLY'].includes(uppercaseWord)) {
+                if (!/[AEIOU]/.test(body) || body.length <= 2) {
                     const onsetData = parseOnsetPhonetics(body, 'y');
                     return [{
                         text: uppercaseWord.toLowerCase(),
@@ -483,44 +676,10 @@
                         rimeSpoken: 'eye',
                         combinedSpoken: uppercaseWord.toLowerCase()
                     }];
-                } else {
-                    const onsetData = parseOnsetPhonetics(body, 'y');
-                    return [{
-                        text: uppercaseWord.toLowerCase(),
-                        onset: body.toLowerCase(),
-                        rime: 'y',
-                        onsetArSpoken: onsetData.spoken,
-                        rimeSpoken: 'ee',
-                        combinedSpoken: body.toLowerCase() + 'ee'
-                    }];
                 }
             }
 
-            // Trailing '-SE' Suffix Pattern (e.g. HOUSE -> H + OUSE, CLOSE -> CL + OSE)
-            if (uppercaseWord.endsWith('SE') && uppercaseWord.length > 2) {
-                const stem = uppercaseWord.slice(0, -2); // e.g. "HOU" for HOUSE
-                let onset = '', rimeBody = stem;
-
-                const firstVowelIdx = stem.search(/[aeiouy]/i);
-                if (firstVowelIdx > 0) {
-                    onset = stem.slice(0, firstVowelIdx);
-                    rimeBody = stem.slice(firstVowelIdx);
-                }
-
-                const onsetData = parseOnsetPhonetics(onset, rimeBody[0]);
-                const fullRime = rimeBody + 'se'; // e.g. "ouse"
-
-                return [{
-                    text: uppercaseWord.toLowerCase(),
-                    onset: onset.toLowerCase(),
-                    rime: fullRime.toLowerCase(),
-                    onsetArSpoken: onsetData.spoken,
-                    rimeSpoken: rimeBody.toLowerCase() + 's', // e.g. "ou" + "s"
-                    combinedSpoken: onset.toLowerCase() + rimeBody.toLowerCase() + 's'
-                }];
-            }
-
-            // Magic 'E' Pattern
+            // 10. Magic 'E' Pattern
             const magicEMatch = uppercaseWord.match(/^([^AEIOUY]+)([AEIOUY])([^AEIOUY]+)E$/i);
             if (magicEMatch) {
                 const onset = magicEMatch[1];
@@ -540,7 +699,7 @@
                 }];
             }
 
-            // Dynamic Syllable Splitter
+            // 11. Dynamic Syllable Splitter
             const syls = uppercaseWord.match(/[^AEIOUY]*[AEIOUY]+(?:[^AEIOUY]*$|[^AEIOUY](?=[^AEIOUY][AEIOUY])|(?=[^AEIOUY][AEIOUY]))?/gi) || [uppercaseWord];
 
             return syls.map(syl => {
