@@ -303,6 +303,28 @@
       </div>
     </div>
 
+    <!-- 改進建議彈出視窗 (IMPROVEMENT FEEDBACK MODAL) -->
+    <div id="modal-feedback" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-3 border-amber-300 w-full max-w-md rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b-2 border-amber-100 pb-2">
+          <h3 class="text-lg font-black text-amber-900 flex items-center gap-2">
+            💡 習字改進建議 (Improvement Tips)
+          </h3>
+          <button onclick="closeFeedbackAndProceed()" class="text-slate-400 hover:text-slate-700 text-lg font-bold p-1">✕</button>
+        </div>
+
+        <div id="feedback-content" class="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1 text-xs">
+          <!-- 動態載入診斷結果 -->
+        </div>
+
+        <div class="flex justify-end items-center pt-2 border-t border-slate-100">
+          <button onclick="closeFeedbackAndProceed()" class="bg-gradient-to-r from-warm-orange to-warm-coral hover:from-orange-500 hover:to-rose-500 text-white font-extrabold px-5 py-2 rounded-xl text-xs shadow-md active:scale-95">
+            明白了，繼續下一題 ✨
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 核心 JAVASCRIPT 邏輯 -->
     <script>
       const AppState = {
@@ -319,6 +341,7 @@
         strokeHistory: [[], []],
         writerInstances: [],
         characterDataCache: {},
+        pendingEvaluation: null,
         scores: JSON.parse(localStorage.getItem('hk_handwriting_scores') || '[]')
       };
 
@@ -394,6 +417,7 @@
         });
 
         document.getElementById('modal-leaderboard').classList.add('hidden');
+        document.getElementById('modal-feedback').classList.add('hidden');
         document.getElementById('screen-practice').classList.add('hidden');
         document.getElementById('screen-practice').classList.remove('flex');
         document.getElementById('screen-summary').classList.add('hidden');
@@ -448,7 +472,6 @@
 
         clearUserCanvas();
 
-        // Pre-fetch character stroke data for strict stroke sequence validation
         for (const char of AppState.currentWord) {
           if (!AppState.characterDataCache[char]) {
             try {
@@ -545,13 +568,22 @@
         window.speechSynthesis.speak(utterance);
       }
 
+      // Sequential animation: Character 1 first, then Character 2
       function playStrokeAnimation() {
         if (!AppState.showWatermark) {
           toggleWatermark();
         }
-        AppState.writerInstances.forEach(writer => {
-          if (writer) writer.animateCharacter();
-        });
+        if (AppState.writerInstances.length > 0) {
+          AppState.writerInstances[0].animateCharacter({
+            onComplete: function() {
+              if (AppState.writerInstances.length > 1) {
+                setTimeout(() => {
+                  AppState.writerInstances[1].animateCharacter();
+                }, 300);
+              }
+            }
+          });
+        }
       }
 
       function drawGridOnCanvas(gridCanvas) {
@@ -773,16 +805,21 @@
         });
       }
 
-      // Enhanced scoring engine: Shape Accuracy + Stroke Count & Sequence Order
-      function calculateCanvasScore(c, canvasIdx) {
-        if (!c) return 0;
+      // Detailed evaluation algorithm returning specific diagnostic details per character
+      function calculateCanvasScoreWithDiagnostics(c, canvasIdx) {
+        if (!c) {
+          return { score: 0, shapeScore: 0, strokeSeqScore: 0, isEmpty: true, charLabel: '' };
+        }
         
         const history = AppState.strokeHistory[canvasIdx];
-        if (!history || history.length === 0) return 0;
+        const char = AppState.currentWord.charAt(canvasIdx) || '大';
+
+        if (!history || history.length === 0) {
+          return { score: 0, shapeScore: 0, strokeSeqScore: 0, isEmpty: true, charLabel: char, expectedStrokes: 0, userStrokeCount: 0 };
+        }
 
         const w = c.width;
         const h = c.height;
-        const char = AppState.currentWord.charAt(canvasIdx) || '大';
         const charData = AppState.characterDataCache[char];
 
         // 1. Shape Coverage & Accuracy (Weight: 50%)
@@ -851,7 +888,9 @@
           else if (userAlpha && !refAlpha) offTargetPixels++;
         }
 
-        if (overlapPixels === 0 || userPixels === 0 || rawTargetPixels === 0) return 0;
+        if (overlapPixels === 0 || userPixels === 0 || rawTargetPixels === 0) {
+          return { score: 0, shapeScore: 0, strokeSeqScore: 0, isEmpty: false, charLabel: char, expectedStrokes: charData?.strokes?.length || 0, userStrokeCount: history.length };
+        }
 
         const targetCoverage = Math.min(1.0, overlapPixels / (rawTargetPixels * 0.95));
         const userAccuracy = overlapPixels / userPixels;
@@ -861,43 +900,37 @@
 
         // 2. Stroke Count & Sequence Order Validation (Weight: 50%)
         let strokeSeqScore = 100;
-        if (charData && charData.strokes && charData.strokes.length > 0) {
-          const expectedStrokes = charData.strokes.length;
-          const userStrokeCount = history.length;
+        let expectedStrokes = 0;
+        let userStrokeCount = history.length;
 
-          // Stroke count penalty
+        if (charData && charData.strokes && charData.strokes.length > 0) {
+          expectedStrokes = charData.strokes.length;
+
           const countDiff = Math.abs(expectedStrokes - userStrokeCount);
           if (countDiff > 0) {
             strokeSeqScore -= Math.min(50, countDiff * 15);
           }
 
-          // Check starting positions order match against HanziWriter bounding box transform
-          // HanziWriter coordinate space is typically 1024x1024 with inverted Y
-          const minX = 0, maxX = 1024, minY = 0, maxY = 1024;
           let matchedSequenceCount = 0;
           
           for (let i = 0; i < Math.min(expectedStrokes, userStrokeCount); i++) {
             const userSt = history[i];
             const startPt = userSt[0];
             
-            // Normalize user coordinate to 1024x1024 space
             const normX = (startPt.x / w) * 1024;
             const normY = (startPt.y / h) * 1024;
 
-            // Approximate expected start from HanziWriter stroke path data or bounding box
             const strokeSvgPath = charData.strokes[i];
-            // Extract starting M command from SVG path if possible
             const mMatch = strokeSvgPath.match(/M\s*([0-9.]+)[,\s]+([0-9.]+)/i);
             if (mMatch) {
               const expX = parseFloat(mMatch[1]);
               const expY = parseFloat(mMatch[2]);
               const dist = Math.hypot(normX - expX, normY - expY);
-              // Generous threshold of 350 units in 1024 space for child handwriting start position
               if (dist < 350) {
                 matchedSequenceCount++;
               }
             } else {
-              matchedSequenceCount++; // fallback if path format varies
+              matchedSequenceCount++;
             }
           }
 
@@ -905,28 +938,100 @@
           strokeSeqScore = Math.min(100, Math.max(20, strokeSeqScore * sequenceRatio + 30));
         }
 
-        // Final Composite Score: 50% Shape Accuracy + 50% Stroke Sequence
         let finalScore = Math.round((shapeScore * 0.5) + (strokeSeqScore * 0.5));
-        return Math.max(0, Math.min(100, finalScore));
+        return {
+          score: Math.max(0, Math.min(100, finalScore)),
+          shapeScore: Math.round(shapeScore),
+          strokeSeqScore: Math.round(strokeSeqScore),
+          isEmpty: false,
+          charLabel: char,
+          expectedStrokes: expectedStrokes,
+          userStrokeCount: userStrokeCount
+        };
       }
 
       function submitAndScore() {
         const chars = AppState.currentWord.split('');
-        let score1 = calculateCanvasScore(userCanvases[0], 0);
-        let score2 = chars.length > 1 ? calculateCanvasScore(userCanvases[1], 1) : score1;
+        let diag1 = calculateCanvasScoreWithDiagnostics(userCanvases[0], 0);
+        let diag2 = chars.length > 1 ? calculateCanvasScoreWithDiagnostics(userCanvases[1], 1) : null;
 
-        let score = Math.round((score1 + score2) / (chars.length > 1 ? 2 : 1));
+        let totalScore = diag2 ? Math.round((diag1.score + diag2.score) / 2) : diag1.score;
 
-        document.getElementById('score-text').textContent = score + ' 分';
-        AppState.roundScores.push(score);
+        document.getElementById('score-text').textContent = totalScore + ' 分';
+        AppState.roundScores.push(totalScore);
 
+        // If not full mark (100 marks), display diagnostic improvement modal
+        if (totalScore < 100) {
+          AppState.pendingEvaluation = { diag1, diag2, totalScore };
+          showFeedbackModal(diag1, diag2);
+        } else {
+          proceedToNextWord();
+        }
+      }
+
+      function showFeedbackModal(diag1, diag2) {
+        const content = document.getElementById('feedback-content');
+        if (!content) return;
+
+        let html = '';
+
+        const createDiagItem = (diag, index) => {
+          if (!diag) return '';
+          let tips = [];
+          
+          if (diag.isEmpty) {
+            tips.push('尚未在畫布上書寫，請在字帖上進行筆畫練習。');
+          } else {
+            if (diag.shapeScore < 85) {
+              tips.push(`字形貼合度得分較低 (${diag.shapeScore}分)：建議參考九宮格位置，確保字的結構與輪廓端正。`);
+            }
+            if (diag.strokeSeqScore < 85) {
+              if (diag.expectedStrokes > 0 && diag.userStrokeCount !== diag.expectedStrokes) {
+                tips.push(`筆畫數不匹配：正確筆畫為 ${diag.expectedStrokes} 畫，而你寫了 ${diag.userStrokeCount} 畫。`);
+              }
+              tips.push(`筆順順序得分較低 (${diag.strokeSeqScore}分)：請按「播放筆順」觀察標準起筆與順序。`);
+            }
+          }
+
+          if (tips.length === 0) {
+            tips.push('表現優異，筆劃與筆順基本正確！');
+          }
+
+          return `
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+              <div class="flex justify-between items-center font-black text-amber-900 border-b border-amber-100 pb-1">
+                <span>字帖${index === 0 ? '一' : '二'}：<strong class="text-warm-orange text-sm font-hk">「${diag.charLabel}」</strong></span>
+                <span class="text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">${diag.score} 分</span>
+              </div>
+              <ul class="list-disc list-inside text-slate-600 mt-1 space-y-1 leading-relaxed">
+                ${tips.map(t => `<li>${t}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        };
+
+        html += createDiagItem(diag1, 0);
+        if (diag2) {
+          html += createDiagItem(diag2, 1);
+        }
+
+        content.innerHTML = html;
+        document.getElementById('modal-feedback').classList.remove('hidden');
+      }
+
+      function closeFeedbackAndProceed() {
+        document.getElementById('modal-feedback').classList.add('hidden');
+        proceedToNextWord();
+      }
+
+      function proceedToNextWord() {
         AppState.currentWordIndex++;
         if (AppState.currentWordIndex < AppState.currentWordList.length) {
           setTimeout(() => {
             loadWordIndex(AppState.currentWordIndex);
-          }, 600);
+          }, 300);
         } else {
-          setTimeout(showSummary, 600);
+          setTimeout(showSummary, 300);
         }
       }
 
