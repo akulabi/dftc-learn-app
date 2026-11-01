@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Phonics Playground - Learn to Spell & Speak</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,17 +27,24 @@
                         bubblePurple: '#B5179E',
                     },
                     boxShadow: {
-                        'pop': '0 4px 0px rgba(0,0,0,0.15)',
+                        'pop': '0 3px 0px rgba(0,0,0,0.15)',
                     }
                 }
             }
         }
     </script>
     <style>
+        html, body {
+            height: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
         body {
             font-family: 'Fredoka', sans-serif;
             background: linear-gradient(135deg, #e0f7fa 0%, #fff9c4 50%, #fce4ec 100%);
-            touch-action: manipulation;
         }
 
         .key-btn {
@@ -47,7 +54,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         .key-btn:active {
-            transform: translateY(3px) scale(0.96) !important;
+            transform: translateY(2px) scale(0.96) !important;
             box-shadow: 0 1px 0px rgba(0,0,0,0.2) !important;
         }
 
@@ -89,24 +96,24 @@
         }
         @keyframes emojiBounce {
             0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-8px) scale(1.1) rotate(4deg); }
+            100% { transform: translateY(-6px) scale(1.1) rotate(4deg); }
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col justify-between p-1.5 sm:p-3 select-none relative">
+<body class="h-full w-full flex flex-col justify-between p-2 sm:p-4 select-none relative box-border">
 
     <!-- Particle Layer -->
     <div id="particleCanvas" class="fixed inset-0 pointer-events-none z-50"></div>
 
     <!-- Header / Mascot -->
-    <header class="w-full max-w-4xl mx-auto flex items-center justify-between z-10 px-2 py-0.5 shrink-0">
-        <div class="flex items-center gap-2 sm:gap-3">
-            <div id="mascot" class="w-8 h-8 sm:w-12 sm:h-12 bg-bubbleYellow rounded-full border-2 sm:border-4 border-amber-400 flex items-center justify-center shadow-md relative cursor-pointer active:scale-95 transition" onclick="repeatSpeech()">
-                <div class="text-lg sm:text-2xl">🐱</div>
-                <div id="speakBadge" class="hidden absolute -bottom-1 -right-1 bg-bubbleGreen text-white text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full border border-white flex items-center gap-0.5 shadow">
-                    <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full sound-wave"></span>
-                    <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.15s"></span>
-                    <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full sound-wave" style="animation-delay:0.3s"></span>
+    <header class="w-full max-w-4xl mx-auto flex items-center justify-between z-10 px-1 shrink-0">
+        <div class="flex items-center gap-2">
+            <div id="mascot" class="w-9 h-9 sm:w-12 sm:h-12 bg-bubbleYellow rounded-full border-2 sm:border-4 border-amber-400 flex items-center justify-center shadow-md relative cursor-pointer active:scale-95 transition" onclick="repeatSpeech()">
+                <div class="text-xl sm:text-2xl">🐱</div>
+                <div id="speakBadge" class="hidden absolute -bottom-1 -right-1 bg-bubbleGreen text-white text-[10px] sm:text-xs px-1 py-0.5 rounded-full border border-white flex items-center gap-0.5 shadow">
+                    <span class="w-1 h-1 bg-white rounded-full sound-wave"></span>
+                    <span class="w-1 h-1 bg-white rounded-full sound-wave" style="animation-delay:0.15s"></span>
+                    <span class="w-1 h-1 bg-white rounded-full sound-wave" style="animation-delay:0.3s"></span>
                 </div>
             </div>
             <div class="flex flex-col">
@@ -117,76 +124,76 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2">
-            <button onclick="repeatSpeech()" class="key-btn bg-bubbleGreen hover:bg-emerald-400 active:bg-emerald-500 text-white font-black text-xs sm:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-emerald-700 flex items-center gap-1">
+            <button onclick="repeatSpeech()" class="key-btn bg-bubbleGreen hover:bg-emerald-400 active:bg-emerald-500 text-white font-black text-xs sm:text-base px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl shadow-pop border-b-2 sm:border-b-4 border-emerald-700 flex items-center gap-1">
                 <i class="fa-solid fa-volume-high text-xs sm:text-base"></i>
                 <span>Say It!</span>
             </button>
 
-            <button onclick="clearWord()" class="key-btn bg-bubblePink hover:bg-pink-400 active:bg-pink-500 text-white font-black text-xs sm:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-700 flex items-center gap-1">
+            <button onclick="clearWord()" class="key-btn bg-bubblePink hover:bg-pink-400 active:bg-pink-500 text-white font-black text-xs sm:text-base px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-700 flex items-center gap-1">
                 <i class="fa-solid fa-trash-can text-xs sm:text-base"></i>
                 <span>Clear</span>
             </button>
         </div>
     </header>
 
-    <!-- Main Word Display (Compact Sizing to prevent keyboard pushing) -->
-    <main class="w-full max-w-4xl mx-auto flex flex-col items-center justify-center my-1 z-10 px-2 shrink flex-1 min-h-0 relative">
+    <!-- Main Word Display (Compact Flexible View) -->
+    <main class="w-full max-w-4xl mx-auto flex flex-col items-center justify-center z-10 px-1 shrink min-h-0 flex-1 my-auto relative">
         <!-- Floating Animated Emoji Container -->
-        <div id="emojiDisplay" class="hidden flex items-center justify-center gap-2 text-2xl sm:text-5xl mb-1 bounce-emoji drop-shadow-md transition-all duration-300">
+        <div id="emojiDisplay" class="hidden flex items-center justify-center gap-2 text-2xl sm:text-4xl mb-1 bounce-emoji drop-shadow-md transition-all duration-300">
         </div>
 
-        <div class="w-full h-full max-h-[120px] sm:max-h-[160px] bg-white/90 backdrop-blur-md rounded-xl sm:rounded-3xl p-1.5 sm:p-3 border-2 sm:border-4 border-indigo-200 shadow-lg flex items-center justify-center relative overflow-y-auto">
-            <div id="wordDisplay" class="text-xl sm:text-4xl md:text-5xl font-black font-sniglet tracking-wider text-center flex items-center justify-center gap-1.5 sm:gap-4 flex-wrap">
+        <div class="w-full max-h-[100px] sm:max-h-[140px] h-full bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-2 sm:p-4 border-2 sm:border-4 border-indigo-200 shadow-lg flex items-center justify-center relative overflow-y-auto">
+            <div id="wordDisplay" class="text-2xl sm:text-4xl md:text-5xl font-black font-sniglet tracking-wider text-center flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
                 <!-- Color-Coded Multi-Word Items -->
             </div>
         </div>
     </main>
 
-    <!-- Soft Keyboard Layout (Compact Layout guaranteed to fit on screen) -->
-    <footer class="w-full max-w-4xl mx-auto pb-0.5 sm:pb-1 z-10 shrink-0">
-        <div class="bg-white/80 backdrop-blur-md p-1 sm:p-2.5 rounded-xl sm:rounded-3xl shadow-lg border-2 sm:border-4 border-indigo-100 flex flex-col gap-1 sm:gap-1.5">
+    <!-- Soft Keyboard Layout (Uses dynamic viewport heights) -->
+    <footer class="w-full max-w-4xl mx-auto z-10 shrink-0 pb-1">
+        <div class="bg-white/85 backdrop-blur-md p-1 sm:p-2.5 rounded-2xl sm:rounded-3xl shadow-xl border-2 sm:border-4 border-indigo-100 flex flex-col gap-1 sm:gap-1.5">
             
-            <div class="flex justify-center gap-0.5 sm:gap-1.5">
-                <button onclick="pressKey('Q', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">Q</button>
-                <button onclick="pressKey('W', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">W</button>
-                <button onclick="pressKey('E', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubblePink text-white font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-pink-600">E</button>
-                <button onclick="pressKey('R', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">R</button>
-                <button onclick="pressKey('T', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">T</button>
-                <button onclick="pressKey('Y', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">Y</button>
-                <button onclick="pressKey('U', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubblePink text-white font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-pink-600">U</button>
-                <button onclick="pressKey('I', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubblePink text-white font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-pink-600">I</button>
-                <button onclick="pressKey('O', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubblePink text-white font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-pink-600">O</button>
-                <button onclick="pressKey('P', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">P</button>
+            <div class="flex justify-center gap-0.5 sm:gap-1">
+                <button onclick="pressKey('Q', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">Q</button>
+                <button onclick="pressKey('W', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">W</button>
+                <button onclick="pressKey('E', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubblePink text-white font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-600 flex items-center justify-center">E</button>
+                <button onclick="pressKey('R', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">R</button>
+                <button onclick="pressKey('T', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">T</button>
+                <button onclick="pressKey('Y', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">Y</button>
+                <button onclick="pressKey('U', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubblePink text-white font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-600 flex items-center justify-center">U</button>
+                <button onclick="pressKey('I', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubblePink text-white font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-600 flex items-center justify-center">I</button>
+                <button onclick="pressKey('O', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubblePink text-white font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-600 flex items-center justify-center">O</button>
+                <button onclick="pressKey('P', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">P</button>
             </div>
 
-            <div class="flex justify-center gap-0.5 sm:gap-1.5 px-0.5">
-                <button onclick="pressKey('A', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubblePink text-white font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-pink-600">A</button>
-                <button onclick="pressKey('S', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">S</button>
-                <button onclick="pressKey('D', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">D</button>
-                <button onclick="pressKey('F', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">F</button>
-                <button onclick="pressKey('G', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">G</button>
-                <button onclick="pressKey('H', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">H</button>
-                <button onclick="pressKey('J', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">J</button>
-                <button onclick="pressKey('K', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">K</button>
-                <button onclick="pressKey('L', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">L</button>
+            <div class="flex justify-center gap-0.5 sm:gap-1 px-1">
+                <button onclick="pressKey('A', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubblePink text-white font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-pink-600 flex items-center justify-center">A</button>
+                <button onclick="pressKey('S', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">S</button>
+                <button onclick="pressKey('D', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">D</button>
+                <button onclick="pressKey('F', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">F</button>
+                <button onclick="pressKey('G', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">G</button>
+                <button onclick="pressKey('H', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">H</button>
+                <button onclick="pressKey('J', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">J</button>
+                <button onclick="pressKey('K', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">K</button>
+                <button onclick="pressKey('L', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">L</button>
             </div>
 
-            <div class="flex justify-center gap-0.5 sm:gap-1.5">
-                <button onclick="pressKey('Z', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">Z</button>
-                <button onclick="pressKey('X', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">X</button>
-                <button onclick="pressKey('C', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">C</button>
-                <button onclick="pressKey('V', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">V</button>
-                <button onclick="pressKey('B', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">B</button>
-                <button onclick="pressKey('N', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">N</button>
-                <button onclick="pressKey('M', event)" class="key-btn flex-1 max-w-[50px] h-8 sm:h-11 bg-bubbleYellow text-amber-900 font-extrabold text-sm sm:text-xl rounded-lg shadow-pop border-b-2 sm:border-b-4 border-amber-400">M</button>
+            <div class="flex justify-center gap-0.5 sm:gap-1">
+                <button onclick="pressKey('Z', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">Z</button>
+                <button onclick="pressKey('X', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">X</button>
+                <button onclick="pressKey('C', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">C</button>
+                <button onclick="pressKey('V', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">V</button>
+                <button onclick="pressKey('B', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">B</button>
+                <button onclick="pressKey('N', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">N</button>
+                <button onclick="pressKey('M', event)" class="key-btn flex-1 max-w-[48px] h-9 sm:h-12 bg-bubbleYellow text-amber-900 font-extrabold text-base sm:text-2xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-amber-400 flex items-center justify-center">M</button>
                 
-                <button onclick="backspace(event)" class="key-btn flex-[1.4] max-w-[65px] h-8 sm:h-11 bg-bubbleOrange text-white font-extrabold text-xs sm:text-lg rounded-lg shadow-pop border-b-2 sm:border-b-4 border-orange-700 flex items-center justify-center">
+                <button onclick="backspace(event)" class="key-btn flex-[1.3] max-w-[62px] h-9 sm:h-12 bg-bubbleOrange text-white font-extrabold text-sm sm:text-xl rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-orange-700 flex items-center justify-center">
                     <i class="fa-solid fa-delete-left"></i>
                 </button>
             </div>
 
-            <div class="flex justify-center gap-2">
-                <button onclick="pressSpace(event)" class="key-btn flex-1 max-w-[300px] h-8 sm:h-10 bg-bubbleBlue text-white font-extrabold text-xs sm:text-base rounded-lg shadow-pop border-b-2 sm:border-b-4 border-cyan-800 flex items-center justify-center tracking-widest uppercase">
+            <div class="flex justify-center">
+                <button onclick="pressSpace(event)" class="key-btn flex-1 max-w-[320px] h-9 sm:h-11 bg-bubbleBlue text-white font-extrabold text-xs sm:text-base rounded-lg sm:rounded-xl shadow-pop border-b-2 sm:border-b-4 border-cyan-800 flex items-center justify-center tracking-widest uppercase">
                     SPACE
                 </button>
             </div>
@@ -736,7 +743,7 @@
 
         function updateDisplay() {
             if (!currentText.trim()) {
-                wordDisplay.innerHTML = `<span class="text-indigo-200/80 font-bold text-2xl sm:text-4xl animate-pulse">Type to Spell!</span>`;
+                wordDisplay.innerHTML = `<span class="text-indigo-200/80 font-bold text-xl sm:text-3xl animate-pulse">Type to Spell!</span>`;
                 statusLabel.textContent = "Tap & Spell!";
                 emojiDisplay.classList.add('hidden');
                 emojiDisplay.innerHTML = '';
