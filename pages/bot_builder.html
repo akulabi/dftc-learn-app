@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bot Builder: Secret Code Maze</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#7C3AED',
+                            pink: '#EC4899',
+                            yellow: '#F59E0B',
+                            green: '#10B981',
+                            blue: '#3B82F6'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+
+        /* Interactive Animations */
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .animate-gentle-bounce {
+            animation: gentle-bounce 2s infinite ease-in-out;
+        }
+
+        /* Tactile Command Buttons */
+        .cmd-block {
+            transition: all 0.12s ease-out;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+        }
+
+        .cmd-block:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.18);
+        }
+
+        .active-execution {
+            transform: scale(1.15) translateY(-4px) !important;
+            box-shadow: 0 0 0 4px #F59E0B, 0 8px 16px rgba(245, 158, 11, 0.4) !important;
+            z-index: 20;
+        }
+
+        #robot-avatar {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .bump-animation {
+            animation: bump 0.4s ease-in-out;
+        }
+
+        @keyframes bump {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.2) rotate(-12deg); }
+            50% { transform: scale(0.85) rotate(12deg); }
+            75% { transform: scale(1.1) rotate(-6deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Custom Horizontal Ribbon Scrollbar */
+        #code-ribbon::-webkit-scrollbar {
+            height: 6px;
+        }
+        #code-ribbon::-webkit-scrollbar-track {
+            background: #E0E7FF;
+            border-radius: 999px;
+        }
+        #code-ribbon::-webkit-scrollbar-thumb {
+            background: #818CF8;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-indigo-50 h-screen max-h-screen h-[100dvh] max-h-[100dvh] text-slate-800 flex flex-col justify-between select-none overflow-hidden font-fredoka">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b-4 border-indigo-200 px-3 py-1.5 shrink-0 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            
+            <!-- Logo & Brand Title -->
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-xl flex items-center justify-center text-white text-base sm:text-lg shadow-md transform -rotate-3">
+                    <i class="fa-solid fa-robot animate-gentle-bounce"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                        Bot Builder
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Header Quick Tools & Counters -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                
+                <!-- Level Indicator -->
+                <div class="bg-indigo-100 border-2 border-indigo-300 text-indigo-900 px-2.5 py-0.5 sm:py-1 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
+                    <span>Lvl</span>
+                    <span id="current-level-num" class="text-purple-700 font-extrabold">1</span>
+                </div>
+
+                <!-- Stars Collected Badge -->
+                <div class="bg-yellow-100 border-2 border-yellow-300 text-yellow-900 px-2.5 py-0.5 sm:py-1 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
+                    <i class="fa-solid fa-star text-yellow-500"></i>
+                    <span id="header-stars-count">0</span>
+                </div>
+
+                <!-- Trophy / Leaderboard Button -->
+                <button onclick="openLeaderboard()" class="w-8 h-8 sm:w-9 sm:h-9 bg-amber-100 border-2 border-amber-300 hover:bg-amber-200 text-amber-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Leaderboard">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                </button>
+
+                <!-- Sound Toggle -->
+                <button id="btn-sound-toggle" onclick="toggleSound()" class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-100 border-2 border-indigo-300 hover:bg-indigo-200 text-indigo-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Sound">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Parent Options -->
+                <button onclick="openParentModal()" class="w-8 h-8 sm:w-9 sm:h-9 bg-pink-100 border-2 border-pink-300 hover:bg-pink-200 text-pink-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Icon Legend Strip -->
+    <div class="bg-indigo-950 text-indigo-100 px-3 py-1 shrink-0 flex items-center justify-center gap-4 text-xs sm:text-sm font-semibold shadow-inner border-b border-indigo-800">
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-robot text-pink-400 text-base"></i><span>Bot</span></div>
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-house-chimney text-amber-300 text-base"></i><span>Goal</span></div>
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-star text-yellow-400 text-base"></i><span>Star</span></div>
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-mountain text-slate-400 text-base"></i><span>Rock</span></div>
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-water text-blue-300 text-base"></i><span>Water</span></div>
+    </div>
+
+    <!-- Main Dynamic Screen Layout -->
+    <main class="max-w-5xl w-full mx-auto p-2 sm:p-3 flex-1 min-h-0 flex flex-col lg:flex-row gap-2 sm:gap-3 overflow-hidden">
+        
+        <!-- Left: Solvable Procedural Grid -->
+        <div class="flex-1 min-h-0 bg-white border-4 border-indigo-200 rounded-2xl p-2 sm:p-3 shadow-md flex flex-col items-center justify-between relative overflow-hidden">
+            
+            <!-- Quick Interactive Audio Banner -->
+            <div class="w-full shrink-0 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-1.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <button onclick="speakCurrentPrompt()" class="w-7 h-7 bg-purple-600 text-white rounded-lg flex items-center justify-center shadow hover:bg-purple-700 transition-all active:scale-95 shrink-0">
+                        <i class="fa-solid fa-volume-low text-xs"></i>
+                    </button>
+                    <p id="level-instruction" class="text-xs sm:text-sm font-semibold text-indigo-950 truncate">
+                        Help Bot reach home!
+                    </p>
+                </div>
+                <div id="stars-tracker" class="flex gap-1 text-yellow-400 text-sm sm:text-base shrink-0 ml-2"></div>
+            </div>
+
+            <!-- Scaled Center Grid -->
+            <div class="flex-1 min-h-0 w-full flex items-center justify-center p-1 sm:p-2">
+                <div class="relative bg-indigo-900 rounded-2xl p-2 shadow-inner border-4 border-indigo-300 max-h-full max-w-full flex items-center justify-center">
+                    <div id="maze-grid" class="grid gap-1 sm:gap-1.5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Commands Ribbon & Execution Controls -->
+        <div class="w-full lg:w-[320px] shrink-0 flex flex-col gap-2 min-h-0">
+            
+            <!-- Icon-Only Command Palette -->
+            <div class="bg-white border-4 border-indigo-200 rounded-2xl p-2 shadow-md flex flex-col gap-1.5 shrink-0">
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="addCommand('FORWARD')" class="cmd-block bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Move Forward">
+                        <i class="fa-solid fa-arrow-up text-3xl sm:text-4xl"></i>
+                    </button>
+
+                    <button onclick="addCommand('TURN_LEFT')" class="cmd-block bg-blue-500 hover:bg-blue-600 text-white border-b-4 border-blue-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Turn Left">
+                        <i class="fa-solid fa-rotate-left text-3xl sm:text-4xl"></i>
+                    </button>
+
+                    <button onclick="addCommand('TURN_RIGHT')" class="cmd-block bg-purple-500 hover:bg-purple-600 text-white border-b-4 border-purple-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Turn Right">
+                        <i class="fa-solid fa-rotate-right text-3xl sm:text-4xl"></i>
+                    </button>
+
+                    <button onclick="addCommand('JUMP')" class="cmd-block bg-amber-500 hover:bg-amber-600 text-white border-b-4 border-amber-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Jump Over Hazard">
+                        <i class="fa-solid fa-bolt text-3xl sm:text-4xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Code Ribbon Bar & Playback Controls -->
+            <div class="flex-1 min-h-0 bg-white border-4 border-indigo-200 rounded-2xl p-2.5 shadow-md flex flex-col justify-between gap-2 overflow-hidden">
+                
+                <div class="flex items-center justify-between border-b border-indigo-100 pb-1">
+                    <span id="block-counter" class="text-xs font-bold text-indigo-900 bg-indigo-100 px-2.5 py-0.5 rounded-full">0 / 100</span>
+                    <button onclick="clearCodeSequence()" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded-lg border border-rose-200 transition-all flex items-center gap-1" title="Clear All">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
+                <!-- Command Sequence Strip -->
+                <div id="code-ribbon" class="flex-1 min-h-[50px] bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-xl p-2 flex items-center gap-2 overflow-x-auto">
+                    <div id="empty-ribbon-placeholder" class="w-full text-center text-slate-400 font-bold text-xs py-1">
+                        <i class="fa-solid fa-hand-pointer text-indigo-300 text-lg mb-0.5 block animate-bounce"></i>
+                        Tap buttons above!
+                    </div>
+                </div>
+
+                <!-- Playback Control Actions -->
+                <div class="flex items-center justify-center gap-2 shrink-0">
+                    <button id="btn-reset" onclick="resetRobotState()" class="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl border-b-4 border-slate-400 text-base transition-all active:scale-95" title="Reset Bot">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+
+                    <button id="btn-run" onclick="runProgram()" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-extrabold text-base sm:text-lg rounded-xl border-b-4 border-green-700 flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
+                        <i class="fa-solid fa-play"></i> RUN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Win Celebration Modal -->
+    <div id="celebration-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <canvas id="confetti-canvas" class="absolute inset-0 pointer-events-none"></canvas>
+        <div class="bg-white border-4 border-yellow-400 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl relative z-10">
+            <div class="w-16 h-16 bg-yellow-100 border-4 border-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 text-yellow-500 text-3xl shadow-inner">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-indigo-950 mb-1">Awesome!</h2>
+            <div class="flex justify-center gap-2 text-2xl text-yellow-400 mb-5">
+                <i class="fa-solid fa-star animate-bounce"></i>
+                <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.15s"></i>
+                <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.3s"></i>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="nextLevel()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl border-b-4 border-emerald-700 text-base shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+                    Next <i class="fa-solid fa-circle-arrow-right"></i>
+                </button>
+                <button onclick="replayCurrentLevel()" class="w-full py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold rounded-xl text-xs transition-all">
+                    Try Again <i class="fa-solid fa-rotate-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border-4 border-amber-300 rounded-3xl p-5 max-w-xs w-full shadow-2xl relative">
+            <button onclick="closeLeaderboard()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 bg-amber-100 border-2 border-amber-300 text-amber-500 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Star Board</h3>
+                </div>
+            </div>
+            <div class="bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 rounded-xl p-2.5 mb-3 flex items-center justify-between font-bold text-xs">
+                <span>Total Stars:</span>
+                <div class="flex items-center gap-1 text-base">
+                    <i class="fa-solid fa-star text-amber-100"></i>
+                    <span id="total-stars-count">0</span>
+                </div>
+            </div>
+            <div id="leaderboard-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+            <div class="mt-3">
+                <button onclick="closeLeaderboard()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Controls Modal -->
+    <div id="parent-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border-4 border-indigo-300 rounded-3xl p-5 max-w-xs w-full shadow-2xl relative">
+            <button onclick="closeParentModal()" class="absolute top-4 right-4 w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold text-xs">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-base font-bold text-slate-900 mb-3">Select Level</h3>
+            <div id="parent-level-buttons" class="grid grid-cols-3 gap-2 mb-3"></div>
+            <button onclick="loadLevel(currentLevelIdx); closeParentModal();" class="w-full p-2 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 text-purple-700 font-bold rounded-xl text-xs mb-2">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> New Random Maze
+            </button>
+            <button onclick="closeParentModal()" class="w-full py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs">Done</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* ==========================================================================
+           1. Web Audio Synthesizer Engine
+           ========================================================================== */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTone(freq, duration, type = 'sine', ramp = true) {
+                if (!this.enabled) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    if (ramp) {
+                        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                    } else {
+                        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    }
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            }
+
+            playStep() { this.playTone(320, 0.08, 'triangle'); }
+            playTurn() { this.playTone(450, 0.07, 'sine'); }
+            playStarCollect() { 
+                this.playTone(587, 0.08); 
+                setTimeout(() => this.playTone(880, 0.14), 80); 
+            }
+            playBump() { this.playTone(130, 0.22, 'sawtooth'); }
+            playFanfare() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 0.18, 'triangle'), idx * 110);
+                });
+            }
+
+            speak(text) {
+                if (!this.enabled || !('speechSynthesis' in window)) return;
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.rate = 0.95;
+                utter.pitch = 1.2;
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
+        const soundFx = new SoundEngine();
+
+        function toggleSound() {
+            soundFx.enabled = !soundFx.enabled;
+            const icon = document.getElementById('sound-icon');
+            icon.className = soundFx.enabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-rose-500';
+        }
+
+        /* ==========================================================================
+           2. Level Configurations & Setup
+           ========================================================================== */
+        const DIR_OFFSETS = [
+            { r: -1, c: 0, rot: 0 },   // NORTH
+            { r: 0, c: 1, rot: 90 },   // EAST
+            { r: 1, c: 0, rot: 180 },  // SOUTH
+            { r: 0, c: -1, rot: 270 }  // WEST
+        ];
+
+        // Hidden Difficulty Caps: Target maximum step limits hidden from the UI
+        const LEVEL_CONFIGS = [
+            { id: "1", instruction: "Help Bot reach home!", rows: 4, cols: 4, obstacles: 1, hazards: 0, stars: 1, maxSteps: 3 },
+            { id: "2", instruction: "Guide Bot around rocks!", rows: 4, cols: 4, obstacles: 2, hazards: 0, stars: 2, maxSteps: 6 },
+            { id: "3", instruction: "Use Jump ⚡ for water!", rows: 5, cols: 5, obstacles: 2, hazards: 1, stars: 2, maxSteps: 9 },
+            { id: "4", instruction: "Collect stars and find home!", rows: 5, cols: 5, obstacles: 3, hazards: 1, stars: 3, maxSteps: 12 },
+            { id: "5", instruction: "Jump and turn to win!", rows: 6, cols: 6, obstacles: 4, hazards: 2, stars: 3, maxSteps: 15 },
+            { id: "6", instruction: "Ultimate Code Master!", rows: 6, cols: 6, obstacles: 5, hazards: 2, stars: 4, maxSteps: 20 }
+        ];
+
+        let LEVELS = [];
+        let currentLevelIdx = 0;
+        let robotState = { r: 0, c: 0, dir: 1 };
+        let userProgram = [];
+        let collectedStars = new Set();
+        let isExecuting = false;
+
+        /* ==========================================================================
+           3. Stateful BFS Procedural Solvable Maze Generator
+           ========================================================================== */
+        function generateSolvableLevelForTier(tierIdx) {
+            const cfg = LEVEL_CONFIGS[tierIdx];
+            let level = null;
+            let attempts = 0;
+
+            while (!level && attempts < 500) {
+                attempts++;
+                const candidate = createRandomLayoutFromConfig(cfg);
+                const pathLength = getShortestCommandPathLength(candidate);
+                
+                // Regenerate until solvable and path length fits hidden maxSteps threshold
+                if (pathLength !== -1 && pathLength <= cfg.maxSteps) {
+                    level = candidate;
+                }
+            }
+            return level || createFallbackLevel(cfg);
+        }
+
+        function createRandomLayoutFromConfig(cfg) {
+            const start = { r: cfg.rows - 1, c: 0, dir: Math.floor(Math.random() * 2) };
+            const target = { r: 0, c: cfg.cols - 1 };
+            
+            const obstacles = [];
+            while (obstacles.length < cfg.obstacles) {
+                const r = Math.floor(Math.random() * cfg.rows);
+                const c = Math.floor(Math.random() * cfg.cols);
+                if ((r === start.r && c === start.c) || (r === target.r && c === target.c)) continue;
+                if (!obstacles.some(o => o.r === r && o.c === c)) {
+                    obstacles.push({ r, c });
+                }
+            }
+
+            const hazards = [];
+            while (hazards.length < cfg.hazards) {
+                const r = Math.floor(Math.random() * cfg.rows);
+                const c = Math.floor(Math.random() * cfg.cols);
+                if ((r === start.r && c === start.c) || (r === target.r && c === target.c)) continue;
+                if (!obstacles.some(o => o.r === r && o.c === c) && !hazards.some(h => h.r === r && h.c === c)) {
+                    hazards.push({ r, c });
+                }
+            }
+
+            const stars = [];
+            while (stars.length < cfg.stars) {
+                const r = Math.floor(Math.random() * cfg.rows);
+                const c = Math.floor(Math.random() * cfg.cols);
+                if ((r === start.r && c === start.c) || (r === target.r && c === target.c)) continue;
+                if (!obstacles.some(o => o.r === r && o.c === c) && 
+                    !hazards.some(h => h.r === r && h.c === c) && 
+                    !stars.some(s => s.r === r && s.c === c)) {
+                    stars.push({ r, c });
+                }
+            }
+
+            return {
+                id: cfg.id,
+                instruction: cfg.instruction,
+                rows: cfg.rows,
+                cols: cfg.cols,
+                start,
+                target,
+                stars,
+                obstacles,
+                hazards
+            };
+        }
+
+        function createFallbackLevel(cfg) {
+            return {
+                id: cfg.id,
+                instruction: cfg.instruction,
+                rows: cfg.rows,
+                cols: cfg.cols,
+                start: { r: cfg.rows - 1, c: 0, dir: 1 },
+                target: { r: 0, c: cfg.cols - 1 },
+                stars: [],
+                obstacles: [],
+                hazards: []
+            };
+        }
+
+        // BFS path solver tracking grid position, direction, and star collection state
+        function getShortestCommandPathLength(lvl) {
+            const totalStars = (lvl.stars || []).length;
+            const queue = [{
+                r: lvl.start.r,
+                c: lvl.start.c,
+                dir: lvl.start.dir,
+                collectedBitmask: 0,
+                steps: 0
+            }];
+
+            const visited = new Set();
+            visited.add(`${lvl.start.r},${lvl.start.c},${lvl.start.dir},0`);
+
+            while (queue.length > 0) {
+                const curr = queue.shift();
+
+                // Goal check: Reach goal and collect all stars
+                if (curr.r === lvl.target.r && curr.c === lvl.target.c && countBits(curr.collectedBitmask) === totalStars) {
+                    return curr.steps;
+                }
+
+                if (curr.steps > 25) continue; // Prune deep searches
+
+                const actions = ['FORWARD', 'TURN_LEFT', 'TURN_RIGHT', 'JUMP'];
+                for (let act of actions) {
+                    let nextR = curr.r;
+                    let nextC = curr.c;
+                    let nextDir = curr.dir;
+
+                    if (act === 'TURN_LEFT') {
+                        nextDir = (curr.dir + 3) % 4;
+                    } else if (act === 'TURN_RIGHT') {
+                        nextDir = (curr.dir + 1) % 4;
+                    } else if (act === 'FORWARD' || act === 'JUMP') {
+                        const stepDist = (act === 'JUMP') ? 2 : 1;
+                        const offset = DIR_OFFSETS[curr.dir];
+                        nextR = curr.r + (offset.r * stepDist);
+                        nextC = curr.c + (offset.c * stepDist);
+
+                        if (nextR < 0 || nextR >= lvl.rows || nextC < 0 || nextC >= lvl.cols) continue;
+                        if ((lvl.obstacles || []).some(o => o.r === nextR && o.c === nextC)) continue;
+
+                        const isHazard = (lvl.hazards || []).some(h => h.r === nextR && h.c === nextC);
+                        if (isHazard && act !== 'JUMP') continue;
+                    }
+
+                    let nextMask = curr.collectedBitmask;
+                    (lvl.stars || []).forEach((star, sIdx) => {
+                        if (star.r === nextR && star.c === nextC) {
+                            nextMask |= (1 << sIdx);
+                        }
+                    });
+
+                    const key = `${nextR},${nextC},${nextDir},${nextMask}`;
+                    if (!visited.has(key)) {
+                        visited.add(key);
+                        queue.push({
+                            r: nextR,
+                            c: nextC,
+                            dir: nextDir,
+                            collectedBitmask: nextMask,
+                            steps: curr.steps + 1
+                        });
+                    }
+                }
+            }
+            return -1;
+        }
+
+        function countBits(n) {
+            let count = 0;
+            while (n > 0) {
+                count += (n & 1);
+                n >>= 1;
+            }
+            return count;
+        }
+
+        /* ==========================================================================
+           4. Core Rendering Engine
+           ========================================================================== */
+        function loadLevel(idx) {
+            currentLevelIdx = idx;
+            LEVELS[idx] = generateSolvableLevelForTier(idx);
+            const lvl = LEVELS[idx];
+
+            document.getElementById('current-level-num').innerText = lvl.id;
+            document.getElementById('level-instruction').innerText = lvl.instruction;
+
+            robotState = { ...lvl.start };
+            userProgram = [];
+            collectedStars.clear();
+            isExecuting = false;
+
+            updateHeaderStarsCount();
+            renderStarsTracker();
+            renderMazeGrid();
+            renderCodeRibbon();
+            updateControlButtons();
+
+            setTimeout(() => soundFx.speak(lvl.instruction), 200);
+        }
+
+        function renderMazeGrid() {
+            const lvl = LEVELS[currentLevelIdx];
+            const gridEl = document.getElementById('maze-grid');
+            gridEl.style.gridTemplateColumns = `repeat(${lvl.cols}, minmax(0, 1fr))`;
+            gridEl.innerHTML = '';
+
+            for (let r = 0; r < lvl.rows; r++) {
+                for (let c = 0; c < lvl.cols; c++) {
+                    const tile = document.createElement('div');
+                    const isRobot = (robotState.r === r && robotState.c === c);
+                    const isTarget = (lvl.target.r === r && lvl.target.c === c);
+                    const isObstacle = (lvl.obstacles || []).some(o => o.r === r && o.c === c);
+                    const isHazard = (lvl.hazards || []).some(h => h.r === r && h.c === c);
+                    const isStar = (lvl.stars || []).some(s => s.r === r && s.c === c) && !collectedStars.has(`${r},${c}`);
+
+                    tile.className = "w-10 h-10 sm:w-14 sm:h-14 bg-indigo-800/80 border border-indigo-700/60 rounded-xl flex items-center justify-center relative overflow-hidden shadow-inner transition-all";
+
+                    if (isObstacle) {
+                        tile.classList.add('bg-slate-700');
+                        tile.innerHTML = `<i class="fa-solid fa-mountain text-slate-400 text-lg sm:text-2xl"></i>`;
+                    } else if (isHazard) {
+                        tile.classList.add('bg-blue-600/60');
+                        tile.innerHTML = `<i class="fa-solid fa-water text-blue-300 text-lg sm:text-2xl animate-pulse"></i>`;
+                    } else if (isTarget) {
+                        tile.classList.add('bg-amber-400/20');
+                        tile.innerHTML = `<i class="fa-solid fa-house-chimney text-amber-300 text-xl sm:text-3xl"></i>`;
+                    } else if (isStar) {
+                        tile.innerHTML = `<i class="fa-solid fa-star text-yellow-400 text-lg sm:text-2xl animate-bounce"></i>`;
+                    }
+
+                    if (isRobot) {
+                        const rot = DIR_OFFSETS[robotState.dir].rot;
+                        tile.innerHTML += `
+                            <div id="robot-avatar" class="absolute inset-0 flex items-center justify-center text-pink-400 text-2xl sm:text-3xl z-10" style="transform: rotate(${rot}deg)">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                        `;
+                    }
+
+                    gridEl.appendChild(tile);
+                }
+            }
+        }
+
+        function renderStarsTracker() {
+            const lvl = LEVELS[currentLevelIdx];
+            const tracker = document.getElementById('stars-tracker');
+            tracker.innerHTML = '';
+            const total = (lvl.stars || []).length;
+            for (let i = 0; i < total; i++) {
+                const icon = document.createElement('i');
+                icon.className = (i < collectedStars.size) ? "fa-solid fa-star" : "fa-regular fa-star opacity-40";
+                tracker.appendChild(icon);
+            }
+        }
+
+        function updateHeaderStarsCount() {
+            const raw = localStorage.getItem('bot_builder_scores');
+            const scores = raw ? JSON.parse(raw) : {};
+            let total = 0;
+            Object.values(scores).forEach(s => total += (s.stars || 0));
+            document.getElementById('header-stars-count').innerText = total;
+        }
+
+        function speakCurrentPrompt() {
+            soundFx.speak(LEVELS[currentLevelIdx].instruction);
+        }
+
+        /* ==========================================================================
+           5. Commands Ribbon (Up to 100 Blocks) & Palette
+           ========================================================================== */
+        function addCommand(cmd) {
+            if (isExecuting || userProgram.length >= 100) return;
+            userProgram.push(cmd);
+            soundFx.playStep();
+            renderCodeRibbon();
+            updateControlButtons();
+
+            // Auto-scroll ribbon to newest command block
+            const ribbon = document.getElementById('code-ribbon');
+            ribbon.scrollTo({ left: ribbon.scrollWidth, behavior: 'smooth' });
+        }
+
+        function removeCommand(idx) {
+            if (isExecuting) return;
+            userProgram.splice(idx, 1);
+            soundFx.playStep();
+            renderCodeRibbon();
+            updateControlButtons();
+        }
+
+        function clearCodeSequence() {
+            if (isExecuting) return;
+            userProgram = [];
+            soundFx.playStep();
+            renderCodeRibbon();
+            resetRobotState();
+        }
+
+        function renderCodeRibbon() {
+            const ribbon = document.getElementById('code-ribbon');
+            const counter = document.getElementById('block-counter');
+            counter.innerText = `${userProgram.length} / 100`;
+
+            if (userProgram.length === 0) {
+                ribbon.innerHTML = `
+                    <div id="empty-ribbon-placeholder" class="w-full text-center text-slate-400 font-bold text-xs py-1">
+                        <i class="fa-solid fa-hand-pointer text-indigo-300 text-lg mb-0.5 block animate-bounce"></i>
+                        Tap buttons above!
+                    </div>`;
+                return;
+            }
+
+            ribbon.innerHTML = '';
+            userProgram.forEach((cmd, idx) => {
+                const block = document.createElement('div');
+                block.id = `cmd-block-${idx}`;
+                
+                let bgColor = "bg-emerald-500 border-emerald-700";
+                let iconClass = "fa-arrow-up";
+
+                if (cmd === 'TURN_LEFT') {
+                    bgColor = "bg-blue-500 border-blue-700";
+                    iconClass = "fa-rotate-left";
+                } else if (cmd === 'TURN_RIGHT') {
+                    bgColor = "bg-purple-500 border-purple-700";
+                    iconClass = "fa-rotate-right";
+                } else if (cmd === 'JUMP') {
+                    bgColor = "bg-amber-500 border-amber-700";
+                    iconClass = "fa-bolt";
+                }
+
+                block.className = `cmd-block ${bgColor} text-white border-b-4 rounded-xl px-2.5 py-2 flex items-center gap-1 cursor-pointer shrink-0 transition-all transform hover:scale-105`;
+                block.onclick = () => removeCommand(idx);
+
+                block.innerHTML = `
+                    <i class="fa-solid ${iconClass} text-lg"></i>
+                    <i class="fa-solid fa-xmark text-[10px] opacity-60"></i>
+                `;
+
+                ribbon.appendChild(block);
+            });
+        }
+
+        function updateControlButtons() {
+            const btnRun = document.getElementById('btn-run');
+            btnRun.disabled = isExecuting || userProgram.length === 0;
+        }
+
+        /* ==========================================================================
+           6. Playback Execution Engine (Always Starts from Step 1)
+           ========================================================================== */
+        function resetRobotState() {
+            const lvl = LEVELS[currentLevelIdx];
+            robotState = { ...lvl.start };
+            collectedStars.clear();
+            isExecuting = false;
+            
+            document.querySelectorAll('.active-execution').forEach(el => el.classList.remove('active-execution'));
+
+            renderStarsTracker();
+            renderMazeGrid();
+            updateControlButtons();
+        }
+
+        async function runProgram() {
+            if (userProgram.length === 0 || isExecuting) return;
+
+            // Always teleports robot to starting cell/direction and resets stars before running step 1
+            resetRobotState();
+
+            isExecuting = true;
+            updateControlButtons();
+
+            for (let i = 0; i < userProgram.length; i++) {
+                const stepSuccess = await executeStepAtIndex(i);
+                if (!stepSuccess) {
+                    isExecuting = false;
+                    updateControlButtons();
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 450));
+            }
+
+            checkWinCondition();
+            isExecuting = false;
+            updateControlButtons();
+        }
+
+        function executeStepAtIndex(idx) {
+            return new Promise((resolve) => {
+                const cmd = userProgram[idx];
+                const lvl = LEVELS[currentLevelIdx];
+
+                document.querySelectorAll('.active-execution').forEach(el => el.classList.remove('active-execution'));
+                const currentBlockEl = document.getElementById(`cmd-block-${idx}`);
+                if (currentBlockEl) {
+                    currentBlockEl.classList.add('active-execution');
+                    currentBlockEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+
+                if (cmd === 'TURN_LEFT') {
+                    robotState.dir = (robotState.dir + 3) % 4;
+                    soundFx.playTurn();
+                    renderMazeGrid();
+                    resolve(true);
+                } else if (cmd === 'TURN_RIGHT') {
+                    robotState.dir = (robotState.dir + 1) % 4;
+                    soundFx.playTurn();
+                    renderMazeGrid();
+                    resolve(true);
+                } else if (cmd === 'FORWARD' || cmd === 'JUMP') {
+                    const stepDistance = (cmd === 'JUMP') ? 2 : 1;
+                    const offset = DIR_OFFSETS[robotState.dir];
+                    const targetR = robotState.r + (offset.r * stepDistance);
+                    const targetC = robotState.c + (offset.c * stepDistance);
+
+                    if (targetR < 0 || targetR >= lvl.rows || targetC < 0 || targetC >= lvl.cols) {
+                        triggerBumpAnimation();
+                        resolve(false);
+                        return;
+                    }
+
+                    const isObstacle = (lvl.obstacles || []).some(o => o.r === targetR && o.c === targetC);
+                    if (isObstacle) {
+                        triggerBumpAnimation();
+                        resolve(false);
+                        return;
+                    }
+
+                    const isHazard = (lvl.hazards || []).some(h => h.r === targetR && h.c === targetC);
+                    if (isHazard && cmd !== 'JUMP') {
+                        triggerBumpAnimation();
+                        soundFx.speak("Jump!");
+                        resolve(false);
+                        return;
+                    }
+
+                    robotState.r = targetR;
+                    robotState.c = targetC;
+                    soundFx.playStep();
+
+                    const starIdx = (lvl.stars || []).findIndex(s => s.r === targetR && s.c === targetC);
+                    if (starIdx !== -1 && !collectedStars.has(`${targetR},${targetC}`)) {
+                        collectedStars.add(`${targetR},${targetC}`);
+                        soundFx.playStarCollect();
+                        renderStarsTracker();
+                        updateHeaderStarsCount();
+                    }
+
+                    renderMazeGrid();
+                    resolve(true);
+                }
+            });
+        }
+
+        function triggerBumpAnimation() {
+            soundFx.playBump();
+            const robotEl = document.getElementById('robot-avatar');
+            if (robotEl) {
+                robotEl.classList.add('bump-animation');
+                setTimeout(() => robotEl.classList.remove('bump-animation'), 400);
+            }
+        }
+
+        function checkWinCondition() {
+            const lvl = LEVELS[currentLevelIdx];
+            const isAtHome = (robotState.r === lvl.target.r && robotState.c === lvl.target.c);
+            const totalStars = (lvl.stars || []).length;
+            const collectedAllStars = (collectedStars.size >= totalStars);
+
+            if (isAtHome && collectedAllStars) {
+                saveLevelScore(lvl.id, collectedStars.size, userProgram.length);
+                setTimeout(() => {
+                    soundFx.playFanfare();
+                    soundFx.speak("Yay!");
+                    showCelebrationModal();
+                }, 300);
+            } else if (isAtHome && !collectedAllStars) {
+                soundFx.speak("Get stars!");
+            }
+        }
+
+        /* ==========================================================================
+           7. Confetti Fireworks & Leaderboard Persistence
+           ========================================================================== */
+        let confettiParticles = [];
+        let confettiAnimationId = null;
+
+        function showCelebrationModal() {
+            document.getElementById('celebration-modal').classList.remove('hidden');
+            startConfetti();
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#EC4899', '#7C3AED', '#3B82F6', '#10B981', '#F59E0B'];
+            confettiParticles = [];
+
+            for (let i = 0; i < 70; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 8 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotSpeed: Math.random() * 4 - 2
+                });
+            }
+
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confettiParticles.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += p.rotSpeed;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+
+                    if (p.y > canvas.height) {
+                        p.y = -10;
+                        p.x = Math.random() * canvas.width;
+                    }
+                });
+                confettiAnimationId = requestAnimationFrame(update);
+            }
+
+            update();
+        }
+
+        function stopConfetti() {
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+        }
+
+        function nextLevel() {
+            stopConfetti();
+            document.getElementById('celebration-modal').classList.add('hidden');
+            if (currentLevelIdx < LEVEL_CONFIGS.length - 1) {
+                loadLevel(currentLevelIdx + 1);
+            } else {
+                soundFx.speak("All done!");
+                loadLevel(0);
+            }
+        }
+
+        function replayCurrentLevel() {
+            stopConfetti();
+            document.getElementById('celebration-modal').classList.add('hidden');
+            loadLevel(currentLevelIdx);
+        }
+
+        function saveLevelScore(lvlId, stars, blocksCount) {
+            const raw = localStorage.getItem('bot_builder_scores');
+            let scores = raw ? JSON.parse(raw) : {};
+            if (!scores[lvlId] || stars > scores[lvlId].stars || (stars === scores[lvlId].stars && blocksCount < scores[lvlId].blocks)) {
+                scores[lvlId] = { stars, blocks: blocksCount };
+                localStorage.setItem('bot_builder_scores', JSON.stringify(scores));
+                updateHeaderStarsCount();
+            }
+        }
+
+        function openLeaderboard() {
+            const raw = localStorage.getItem('bot_builder_scores');
+            const scores = raw ? JSON.parse(raw) : {};
+            let totalStars = 0;
+            const listEl = document.getElementById('leaderboard-list');
+            listEl.innerHTML = '';
+
+            LEVEL_CONFIGS.forEach(cfg => {
+                const s = scores[cfg.id] || { stars: 0, blocks: 0 };
+                totalStars += s.stars;
+
+                const row = document.createElement('div');
+                row.className = "bg-slate-50 border border-slate-200 rounded-xl p-2 flex items-center justify-between text-xs font-semibold";
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center">${cfg.id}</span>
+                        <span class="text-slate-700">Level ${cfg.id}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-yellow-500 font-bold flex items-center gap-1"><i class="fa-solid fa-star"></i> ${s.stars}</span>
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+
+            document.getElementById('total-stars-count').innerText = totalStars;
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+        }
+
+        function openParentModal() {
+            const container = document.getElementById('parent-level-buttons');
+            container.innerHTML = '';
+            LEVEL_CONFIGS.forEach((lvl, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `p-2 font-bold rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
+                    idx === currentLevelIdx ? 'bg-purple-600 text-white border-purple-700' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                }`;
+                btn.innerHTML = `<span class="text-[10px]">Lvl</span><span class="text-base">${lvl.id}</span>`;
+                btn.onclick = () => {
+                    loadLevel(idx);
+                    closeParentModal();
+                };
+                container.appendChild(btn);
+            });
+            document.getElementById('parent-modal').classList.remove('hidden');
+        }
+
+        function closeParentModal() {
+            document.getElementById('parent-modal').classList.add('hidden');
+        }
+
+        /* On Load Setup */
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLevel(0);
+        });
+    </script>
+</body>
+</html>
