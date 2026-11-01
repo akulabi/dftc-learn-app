@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>升小預備：香港小學習字大挑戰 | Warm HK Primary Handwriting App</title>
+    <title>升小預備：香港小學習字大挑戰 | HK Primary Handwriting App</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons CDN -->
@@ -95,7 +95,7 @@
             🌈 香港教育局習字表標準筆順 (900字庫)
           </span>
           <h2 class="text-xl sm:text-3xl font-black text-slate-800 mb-1">請選擇難度級別</h2>
-          <p class="text-slate-600 text-xs sm:text-sm font-medium">在九宮格字貼上筆畫練習，培養正確筆順與端正字形</p>
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">在九宮格字帖上筆畫練習，培養正確筆順與端正字形</p>
         </div>
 
         <!-- 難度選擇卡片 (3 DIFFICULTY CARDS) -->
@@ -187,7 +187,7 @@
         <div id="cards-container" class="flex-grow w-full max-w-3xl flex flex-row flex-nowrap items-center justify-center gap-2 sm:gap-4 min-h-0 py-1 overflow-hidden">
           
           <!-- 第一字卡片 -->
-          <div id="card-char-1" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square h-full max-h-[62vh] max-w-[45%] overflow-hidden group shrink-0">
+          <div id="card-char-1" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square max-w-[42vw] max-h-[38vh] min-w-[130px] min-h-[130px] overflow-hidden group shrink-0">
             <div id="char1-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖一</div>
             
             <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
@@ -201,7 +201,7 @@
           </div>
 
           <!-- 第二字卡片 -->
-          <div id="card-char-2" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square h-full max-h-[62vh] max-w-[45%] overflow-hidden group shrink-0">
+          <div id="card-char-2" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square max-w-[42vw] max-h-[38vh] min-w-[130px] min-h-[130px] overflow-hidden group shrink-0">
             <div id="char2-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖二</div>
             
             <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
@@ -216,25 +216,27 @@
 
         </div>
 
-        <!-- 筆劃粗細、顏色選擇與提交評分列 -->
-        <div class="flex items-center justify-between w-full max-w-2xl bg-white border border-amber-200 rounded-xl px-3 py-1.5 gap-2 shadow-sm shrink-0">
-          <div class="flex items-center gap-1.5">
-            <span class="text-[10px] font-bold text-slate-500 hidden sm:inline">筆畫:</span>
-            <button onclick="setPenSize(4)" id="pen-4" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">細</button>
-            <button onclick="setPenSize(8)" id="pen-8" class="pen-btn bg-warm-orange text-white text-[11px] px-2 py-1 rounded-lg font-bold border border-orange-400 shadow-sm">中</button>
-            <button onclick="setPenSize(14)" id="pen-14" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">粗</button>
-            
-            <input type="color" id="pen-color-picker" value="#1E3A8A" onchange="setPenColor(this.value)" class="w-6 h-6 rounded border border-slate-200 cursor-pointer p-0 bg-transparent ml-1" title="選擇墨水顏色">
-          </div>
-
-          <div class="flex items-center gap-3">
-            <div id="score-result" class="text-right">
-              <span class="text-[9px] font-bold text-slate-400 block leading-tight">貼合度評分</span>
-              <span id="score-text" class="text-base sm:text-lg font-black text-warm-coral">---</span>
+        <!-- 筆劃粗細、顏色選擇與提交評分列 (FIXED TO BOTTOM VIEWPORT) -->
+        <div class="shrink-0 w-full z-30 pb-1">
+          <div class="flex items-center justify-between w-full max-w-2xl mx-auto bg-white border border-amber-200 rounded-xl px-3 py-1.5 gap-2 shadow-sm">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold text-slate-500 hidden sm:inline">筆畫:</span>
+              <button onclick="setPenSize(4)" id="pen-4" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">細</button>
+              <button onclick="setPenSize(8)" id="pen-8" class="pen-btn bg-warm-orange text-white text-[11px] px-2 py-1 rounded-lg font-bold border border-orange-400 shadow-sm">中</button>
+              <button onclick="setPenSize(14)" id="pen-14" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">粗</button>
+              
+              <input type="color" id="pen-color-picker" value="#1E3A8A" onchange="setPenColor(this.value)" class="w-6 h-6 rounded border border-slate-200 cursor-pointer p-0 bg-transparent ml-1" title="選擇墨水顏色">
             </div>
-            <button onclick="submitAndScore()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-sm px-4 py-1.5 rounded-xl transition shadow-md active:scale-95 flex items-center gap-1 shrink-0">
-              <span>✨ 提交 / 下一題</span>
-            </button>
+
+            <div class="flex items-center gap-3">
+              <div id="score-result" class="text-right">
+                <span class="text-[9px] font-bold text-slate-400 block leading-tight">貼合度評分</span>
+                <span id="score-text" class="text-base sm:text-lg font-black text-warm-coral">---</span>
+              </div>
+              <button onclick="submitAndScore()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-sm px-4 py-1.5 rounded-xl transition shadow-md active:scale-95 flex items-center gap-1 shrink-0">
+                <span>✨ 提交 / 下一題</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -317,7 +319,6 @@
 
       // 香港教育局標準字庫 (精確對應 900 字庫：簡單 100字 / 中等 300字 / 困難 500字)
       const WORD_SETS = {
-        // 簡單 (Easy): 50個雙字詞語 = 100 字
         easy: [
           '天地', '日月', '山水', '木火', '風雨', '手足', '口耳', '目光', '男孩', '女孩',
           '大小', '多少', '長短', '高矮', '早晚', '上下', '左右', '出入', '開關', '來去',
@@ -325,7 +326,6 @@
           '白黑', '春夏', '秋冬', '東西', '南北', '一二', '三四', '五六', '七八', '九十',
           '百千', '人生', '父母', '兄弟', '姐妹', '頭腳', '心手', '門窗', '石頭', '米飯'
         ],
-        // 中等 (Medium): 150個雙字詞語 = 300 字
         medium: [
           '爸爸', '媽媽', '學校', '老師', '同學', '朋友', '太陽', '月亮', '白雲', '彩虹',
           '雨水', '風箏', '小鳥', '蝴蝶', '貓咪', '小狗', '金魚', '大象', '老虎', '兔子',
@@ -343,7 +343,6 @@
           '開心', '歡喜', '傷心', '生氣', '害怕', '擔心', '緊張', '放鬆', '滿意', '自豪',
           '關心', '愛護', '幫助', '分享', '禮讓', '合作', '勤力', '專心', '認真', '整潔'
         ],
-        // 困難 (Hard): 250個雙字詞語 = 500 字
         hard: [
           '警察', '學習', '禮貌', '警惕', '豐富', '歡樂', '聰明', '嚴格', '繁榮', '藝術',
           '探索', '創造', '智慧', '勇氣', '夢想', '習慣', '照顧', '閱讀', '觀察', '討論',
@@ -536,7 +535,6 @@
         }
         if (!AppState.writerInstances || AppState.writerInstances.length === 0) return;
 
-        // 停止先前正在進行的動畫
         AppState.writerInstances.forEach(writer => {
           if (writer) try { writer.cancelAnimation(); } catch(e){}
         });
@@ -593,7 +591,7 @@
           ctx.stroke();
 
         } else if (AppState.gridStyleIndex === 1) {
-          // 十字格 / 田字格 (Cross / Tianzi)
+          // 十字格 / 田字格
           ctx.beginPath();
           ctx.setLineDash([5, 5]);
           ctx.moveTo(0, h / 2);
@@ -778,7 +776,7 @@
         });
       }
 
-      // 雙向 JACCARD 評分引擎 (+6PX BUFFER & HIGH-DISCRIMINATION CALIBRATION)
+      // 雙向 JACCARD 評分引擎 (+6PX BUFFER)
       function calculateCanvasScore(c, canvasIdx) {
         if (!c) return 0;
         
@@ -788,7 +786,7 @@
         const w = c.width;
         const h = c.height;
 
-        // 1. 生成學生的離線手寫 Canvas (~20px 標準線寬)
+        // 1. 生成離線手寫 Canvas (~24px 線寬)
         const userCanvas = document.createElement('canvas');
         userCanvas.width = w;
         userCanvas.height = h;
@@ -798,7 +796,7 @@
           if (stroke.length === 0) return;
           uCtx.beginPath();
           uCtx.strokeStyle = '#000000';
-          uCtx.lineWidth = 20;
+          uCtx.lineWidth = 24;
           uCtx.lineCap = 'round';
           uCtx.lineJoin = 'round';
           uCtx.moveTo(stroke[0].x, stroke[0].y);
@@ -821,7 +819,7 @@
         rawCtx.fillStyle = '#000000';
         rawCtx.fillText(char, w / 2, h / 2 + 8);
 
-        // 3. 微擴充遮罩 (+6px Buffer，適度容忍幼童手部震顫)
+        // 3. 微擴充遮罩 (+6px Buffer)
         const dilatedRefCanvas = document.createElement('canvas');
         dilatedRefCanvas.width = w;
         dilatedRefCanvas.height = h;
@@ -864,28 +862,20 @@
           }
         }
 
-        // 零重疊嚴格 0 分防塗鴉
+        // 零重疊嚴格 0 分
         if (userPixelCount === 0 || overlapCount === 0 || targetPixelCount === 0) {
           return 0;
         }
 
-        // 貼合度 (Precision): 寫得有多準
         const precision = overlapCount / userPixelCount;
-        // 完備率 (Recall): 標準字骨架填補完成度 (防止漏劃)
         const recall = overlapCount / targetPixelCount;
-
-        // Jaccard 綜合相似度
         const jaccard = overlapCount / (userPixelCount + targetPixelCount - overlapCount);
 
-        // 溢出扣分 (Out-of-bounds Penalty)
         const oobRatio = outOfBoundsCount / userPixelCount;
         const penalty = Math.min(25, oobRatio * 35);
 
-        // 綜合加權分數計算
-        let composite = (jaccard * 0.55 + precision * 0.25 + Math.min(1.0, recall) * 0.20) * 100 - penalty;
-        
-        // 映射與校準：88-93 分為良好，95-100 需要非常精準
-        let finalScore = Math.round(Math.max(0, Math.min(100, composite * 1.15)));
+        let composite = (jaccard * 0.50 + precision * 0.25 + Math.min(1.0, recall) * 0.25) * 100 - penalty;
+        let finalScore = Math.round(Math.max(0, Math.min(100, composite * 1.12)));
         return finalScore;
       }
 
