@@ -64,7 +64,7 @@
       }
     </style>
 </head>
-<body class="text-slate-800 h-screen max-h-screen flex flex-col justify-between selection:bg-amber-300 selection:text-slate-900 overflow-hidden">
+<body class="text-slate-800 h-screen max-h-screen flex flex-col justify-between selection:bg-amber-300 selection:text-slate-900 overflow-hidden relative">
 
     <!-- 頂部導航欄 (TOP NAV BAR) -->
     <header class="w-full bg-white/95 backdrop-blur-md border-b-2 border-amber-200 shrink-0 px-3 py-1.5 shadow-sm z-40">
@@ -74,7 +74,7 @@
           <span>主頁</span>
         </button>
 
-        <h1 class="text-sm sm:text-lg md:text-xl font-black text-amber-900 flex items-center gap-1.5">
+        <h1 class="text-xs sm:text-base md:text-lg font-black text-amber-900 flex items-center gap-1.5">
           <span>✏️</span>
           <span class="bg-gradient-to-r from-orange-600 via-rose-500 to-purple-600 bg-clip-text text-transparent">升小預備：寫字大挑戰</span>
         </h1>
@@ -86,7 +86,7 @@
     </header>
 
     <!-- 主內容區 (FIT-TO-SCREEN CONTENT AREA) -->
-    <main class="max-w-5xl w-full mx-auto p-2 sm:p-3 flex-grow flex flex-col justify-center items-center min-h-0 overflow-hidden">
+    <main class="max-w-5xl w-full mx-auto p-2 sm:p-3 flex-grow flex flex-col justify-center items-center min-h-0 overflow-hidden relative">
 
       <!-- 畫面 1：首頁選單 (HOME MENU) -->
       <section id="screen-home" class="w-full h-full flex flex-col items-center justify-center gap-3 sm:gap-4 overflow-y-auto py-2">
@@ -140,11 +140,11 @@
         </div>
       </section>
 
-      <!-- 畫面 2：練寫字主介面 (PRACTICE SESSION) -->
-      <section id="screen-practice" class="w-full h-full flex flex-col items-center justify-between gap-1.5 hidden min-h-0 overflow-hidden py-1">
+      <!-- 畫面 2：練寫字主介面 (PRACTICE SESSION - FIT TO SCREEN WITH pb-28 FOR FIXED BOTTOM BAR) -->
+      <section id="screen-practice" class="w-full h-full flex flex-col items-center justify-start gap-2 hidden min-h-0 overflow-hidden pb-28 pt-1">
         
         <!-- 頂部發音、進度與控制欄 -->
-        <div class="flex flex-wrap items-center justify-between w-full max-w-2xl bg-white border border-amber-200 rounded-xl p-2 gap-2 shadow-sm shrink-0">
+        <div class="flex flex-wrap items-center justify-between w-full max-w-2xl bg-white border border-amber-200 rounded-xl p-2 gap-2 shadow-sm shrink-0 z-10">
           <div class="flex items-center gap-2">
             <button onclick="speakCurrentWord()" class="bg-amber-400 hover:bg-amber-300 text-amber-950 p-2 rounded-xl transition shadow-sm active:scale-95 flex items-center justify-center font-bold text-sm" title="收聽廣東話發音">
               <i class="fa-solid fa-volume-high"></i>
@@ -153,23 +153,23 @@
               <div class="flex items-center gap-1.5">
                 <span id="round-progress" class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full text-[10px] font-black">第 1 / 5 題</span>
               </div>
-              <div id="target-word-display" class="text-lg sm:text-xl font-black text-warm-orange tracking-widest font-hk">--</div>
+              <div id="target-word-display" class="text-base sm:text-xl font-black text-warm-orange tracking-widest font-hk">--</div>
             </div>
           </div>
 
           <!-- 控制工具列 -->
           <div class="flex flex-wrap items-center gap-1.5">
-            <button id="btn-toggle-watermark" onclick="toggleWatermark()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 border border-indigo-300 px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+            <button id="btn-toggle-watermark" onclick="toggleWatermark()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 border border-indigo-300 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
               <i id="watermark-icon" class="fa-solid fa-eye"></i>
               <span id="watermark-btn-text">隱藏底字</span>
             </button>
 
-            <button id="btn-animate" onclick="playSequentialStrokeAnimation()" class="bg-warm-blue hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg text-xs font-extrabold transition shadow-sm flex items-center gap-1 active:scale-95">
+            <button id="btn-animate" onclick="playSequentialStrokeAnimation()" class="bg-warm-blue hover:bg-blue-500 text-white px-2 py-1 rounded-lg text-xs font-extrabold transition shadow-sm flex items-center gap-1 active:scale-95">
               <i class="fa-solid fa-play"></i>
               <span>播放筆順</span>
             </button>
             
-            <button onclick="cycleGridStyle()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+            <button onclick="cycleGridStyle()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
               <i class="fa-solid fa-border-all"></i>
               <span id="grid-style-text">九宮格</span>
             </button>
@@ -183,11 +183,11 @@
           </div>
         </div>
 
-        <!-- 雙字 1:1 正方形卡片 (SIDE-BY-SIDE CENTERED CONTAINER) -->
-        <div id="cards-container" class="flex-grow w-full max-w-3xl flex flex-row flex-nowrap items-center justify-center gap-2 sm:gap-4 min-h-0 py-1 overflow-hidden">
+        <!-- 雙字 1:1 正方形卡片 CONTAINER - w-[46.5vw] aspect-square -->
+        <div id="cards-container" class="flex-grow w-full flex flex-row flex-nowrap items-center justify-center gap-2 min-h-0 py-1 overflow-hidden">
           
           <!-- 第一字卡片 -->
-          <div id="card-char-1" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square max-w-[42vw] max-h-[38vh] min-w-[130px] min-h-[130px] overflow-hidden group shrink-0">
+          <div id="card-char-1" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md w-[46.5vw] max-w-[320px] aspect-square overflow-hidden group shrink-0">
             <div id="char1-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖一</div>
             
             <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
@@ -201,7 +201,7 @@
           </div>
 
           <!-- 第二字卡片 -->
-          <div id="card-char-2" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md aspect-square max-w-[42vw] max-h-[38vh] min-w-[130px] min-h-[130px] overflow-hidden group shrink-0">
+          <div id="card-char-2" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md w-[46.5vw] max-w-[320px] aspect-square overflow-hidden group shrink-0">
             <div id="char2-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖二</div>
             
             <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
@@ -214,30 +214,6 @@
             <canvas id="user-canvas-2" class="z-20 absolute inset-0 w-full h-full cursor-crosshair rounded-xl"></canvas>
           </div>
 
-        </div>
-
-        <!-- 筆劃粗細、顏色選擇與提交評分列 (FIXED TO BOTTOM VIEWPORT) -->
-        <div class="shrink-0 w-full z-30 pb-1">
-          <div class="flex items-center justify-between w-full max-w-2xl mx-auto bg-white border border-amber-200 rounded-xl px-3 py-1.5 gap-2 shadow-sm">
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold text-slate-500 hidden sm:inline">筆畫:</span>
-              <button onclick="setPenSize(4)" id="pen-4" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">細</button>
-              <button onclick="setPenSize(8)" id="pen-8" class="pen-btn bg-warm-orange text-white text-[11px] px-2 py-1 rounded-lg font-bold border border-orange-400 shadow-sm">中</button>
-              <button onclick="setPenSize(14)" id="pen-14" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">粗</button>
-              
-              <input type="color" id="pen-color-picker" value="#1E3A8A" onchange="setPenColor(this.value)" class="w-6 h-6 rounded border border-slate-200 cursor-pointer p-0 bg-transparent ml-1" title="選擇墨水顏色">
-            </div>
-
-            <div class="flex items-center gap-3">
-              <div id="score-result" class="text-right">
-                <span class="text-[9px] font-bold text-slate-400 block leading-tight">貼合度評分</span>
-                <span id="score-text" class="text-base sm:text-lg font-black text-warm-coral">---</span>
-              </div>
-              <button onclick="submitAndScore()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-sm px-4 py-1.5 rounded-xl transition shadow-md active:scale-95 flex items-center gap-1 shrink-0">
-                <span>✨ 提交 / 下一題</span>
-              </button>
-            </div>
-          </div>
         </div>
 
       </section>
@@ -272,10 +248,29 @@
 
     </main>
 
-    <!-- 頁尾 -->
-    <footer class="w-full text-center py-1 text-[10px] font-bold text-amber-800/60 border-t border-amber-200/60 shrink-0">
-      升小預備：香港小學習字大挑戰 &copy; 2026. 結合香港小學習字表標準字體與筆順.
-    </footer>
+    <!-- 固定置底工具列 (FIXED BOTTOM TOOLBAR - pinned to bottom-0 z-50) -->
+    <div id="bottom-toolbar" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-amber-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] p-2 sm:p-3 hidden">
+      <div class="flex items-center justify-between w-full max-w-2xl mx-auto gap-2">
+        <div class="flex items-center gap-1 sm:gap-2">
+          <span class="text-[10px] font-bold text-slate-500 hidden sm:inline">筆畫:</span>
+          <button onclick="setPenSize(6)" id="pen-6" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">細</button>
+          <button onclick="setPenSize(10)" id="pen-10" class="pen-btn bg-warm-orange text-white text-[11px] px-2 py-1 rounded-lg font-bold border border-orange-400 shadow-sm">中</button>
+          <button onclick="setPenSize(16)" id="pen-16" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">粗</button>
+          
+          <input type="color" id="pen-color-picker" value="#1E3A8A" onchange="setPenColor(this.value)" class="w-7 h-7 rounded border border-slate-300 cursor-pointer p-0 bg-transparent ml-1" title="選擇墨水顏色">
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div id="score-result" class="text-right">
+            <span class="text-[9px] font-bold text-slate-400 block leading-tight">貼合度評分</span>
+            <span id="score-text" class="text-base sm:text-lg font-black text-warm-coral">---</span>
+          </div>
+          <button onclick="submitAndScore()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition shadow-md active:scale-95 flex items-center gap-1 shrink-0">
+            <span>✨ 提交 / 下一題</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 龍虎榜彈出視窗 (LEADERBOARD MODAL) -->
     <div id="modal-leaderboard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -307,7 +302,7 @@
         currentWordIndex: 0,
         currentWordList: [],
         roundScores: [],
-        penSize: 8,
+        penSize: 10,
         penColor: '#1E3A8A',
         gridStyleIndex: 0, // 0: 九宮格 (預設), 1: 十字格, 2: 白板
         gridNames: ['九宮格', '十字格', '白板'],
@@ -331,42 +326,13 @@
           '雨水', '風箏', '小鳥', '蝴蝶', '貓咪', '小狗', '金魚', '大象', '老虎', '兔子',
           '蘋果', '香蕉', '西瓜', '麵包', '牛奶', '字典', '書包', '鉛筆', '橡皮', '尺子',
           '桌子', '椅子', '畫畫', '唱歌', '跳舞', '跑步', '游泳', '遊戲', '快樂', '歡喜',
-          '感謝', '禮貌', '清潔', '健康', '安全', '交通', '電車', '巴士', '輪船', '飛機',
-          '森林', '海洋', '河流', '池塘', '公園', '花園', '草地', '泥土', '石頭', '沙灘',
-          '春天', '夏天', '秋天', '冬天', '晴天', '陰天', '下雨', '刮風', '下雪', '打雷',
-          '衣服', '褲子', '鞋子', '帽子', '襪子', '手套', '圍巾', '雨傘', '水杯', '毛巾',
-          '早餐', '午餐', '晚餐', '米飯', '麵條', '雞蛋', '豬肉', '牛肉', '鮮魚', '蔬菜',
-          '檸檬', '桃子', '菠蘿', '梨子', '櫻桃', '橙子', '葡萄', '草莓', '甜菜', '豆角',
-          '故事', '圖畫', '音樂', '體育', '數學', '中文', '英文', '常識', '美術', '手工',
-          '早晨', '中午', '晚上', '今天', '明天', '昨天', '星期', '今年', '去年', '將來',
-          '紫色', '粉紅', '橙色', '灰色', '棕色', '金色', '銀色', '青色', '透明', '彩色',
-          '開心', '歡喜', '傷心', '生氣', '害怕', '擔心', '緊張', '放鬆', '滿意', '自豪',
-          '關心', '愛護', '幫助', '分享', '禮讓', '合作', '勤力', '專心', '認真', '整潔'
+          '感謝', '禮貌', '清潔', '健康', '安全', '交通', '電車', '巴士', '輪船', '飛機'
         ],
         hard: [
           '警察', '學習', '禮貌', '警惕', '豐富', '歡樂', '聰明', '嚴格', '繁榮', '藝術',
           '探索', '創造', '智慧', '勇氣', '夢想', '習慣', '照顧', '閱讀', '觀察', '討論',
           '思考', '理解', '解決', '合作', '尊重', '誠實', '友愛', '溫暖', '精彩', '美麗',
-          '醫生', '護士', '消防', '複習', '考試', '練習', '謙虛', '發展', '發明', '科學',
-          '技術', '電腦', '網絡', '圖書館', '博物館', '體育館', '電影院', '植物園', '動物園', '遊樂場',
-          '展覽館', '游泳池', '飛機場', '火車站', '地下鐵', '公共汽車', '計程車', '輪船碼', '環境', '保護',
-          '垃圾', '分類', '節約', '能源', '宇宙', '星球', '歷史', '文化', '傳統', '節日',
-          '國慶', '中秋', '春節', '元宵', '端午', '重陽', '禮物', '祝福', '慶祝', '表揚',
-          '獎勵', '鼓勵', '團結', '互助', '思想', '經驗', '知識', '能力', '興趣', '態度',
-          '精神', '意志', '堅強', '勇敢', '克服', '困難', '成功', '勝利', '光榮', '珍惜',
-          '平安', '吉祥', '如意', '優秀', '傑出', '卓越', '建築', '橋樑', '道路', '秩序',
-          '規則', '法律', '道德', '正義', '和平', '友誼', '世界', '地球', '生態', '氣候',
-          '風景', '壯觀', '神奇', '美妙', '廣闊', '深奧', '浩瀚', '雄偉', '古老', '現代',
-          '進步', '文明', '和諧', '幸福', '溫馨', '甜蜜', '浪漫', '熱情', '真誠', '善良',
-          '寬容', '體貼', '關懷', '陪伴', '交流', '溝通', '支持', '勤奮', '刻苦', '仔細',
-          '嚴謹', '準確', '敏捷', '靈活', '機智', '冷靜', '沉著', '堅定', '執著', '追求',
-          '希望', '目標', '方向', '未來', '挑戰', '突破', '超越', '創新', '奇蹟', '成就',
-          '貢獻', '服務', '奉獻', '愛心', '光明', '燦爛', '輝煌', '高尚', '純潔', '高雅',
-          '端莊', '大方', '得體', '優雅', '和藹', '可親', '平易', '近人', '謙遜', '敬愛',
-          '珍視', '守護', '捍衛', '堅持', '不懈', '努力', '奮鬥', '拚搏', '向上', '進取',
-          '開朗', '樂觀', '自信', '自立', '自強', '自律', '自省', '分析', '判斷', '推理',
-          '歸納', '總結', '領悟', '掌握', '運用', '實踐', '體驗', '感受', '發現', '研究',
-          '革新', '轉變', '適應', '生長', '發育', '成熟', '茁壯', '繁衍', '延續', '傳承'
+          '醫生', '護士', '消防', '複習', '考試', '練習', '謙虛', '發展', '發明', '科學'
         ]
       };
 
@@ -387,6 +353,7 @@
           }
         });
 
+        document.getElementById('bottom-toolbar').classList.add('hidden');
         document.getElementById('modal-leaderboard').classList.add('hidden');
         document.getElementById('screen-practice').classList.add('hidden');
         document.getElementById('screen-practice').classList.remove('flex');
@@ -430,6 +397,7 @@
 
         document.getElementById('screen-practice').classList.remove('hidden');
         document.getElementById('screen-practice').classList.add('flex');
+        document.getElementById('bottom-toolbar').classList.remove('hidden');
 
         loadWordIndex(AppState.currentWordIndex);
       }
@@ -763,7 +731,7 @@
             if (stroke.length === 0) return;
             ctx.beginPath();
             ctx.strokeStyle = stroke[0].color || '#1E3A8A';
-            ctx.lineWidth = stroke[0].width || 8;
+            ctx.lineWidth = stroke[0].width || 10;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.moveTo(stroke[0].x, stroke[0].y);
@@ -786,7 +754,6 @@
         const w = c.width;
         const h = c.height;
 
-        // 1. 生成離線手寫 Canvas (~24px 線寬)
         const userCanvas = document.createElement('canvas');
         userCanvas.width = w;
         userCanvas.height = h;
@@ -806,7 +773,6 @@
           uCtx.stroke();
         });
 
-        // 2. 生成標準字形 Reference Canvas
         const rawRefCanvas = document.createElement('canvas');
         rawRefCanvas.width = w;
         rawRefCanvas.height = h;
@@ -819,14 +785,12 @@
         rawCtx.fillStyle = '#000000';
         rawCtx.fillText(char, w / 2, h / 2 + 8);
 
-        // 3. 微擴充遮罩 (+6px Buffer)
         const dilatedRefCanvas = document.createElement('canvas');
         dilatedRefCanvas.width = w;
         dilatedRefCanvas.height = h;
         const dCtx = dilatedRefCanvas.getContext('2d');
 
         dCtx.drawImage(rawRefCanvas, 0, 0);
-        dCtx.globalCompositeOperation = 'source-over';
         
         const rawImgData = rawCtx.getImageData(0, 0, w, h);
         for (let y = 1; y < h - 1; y += 3) {
@@ -862,7 +826,6 @@
           }
         }
 
-        // 零重疊嚴格 0 分
         if (userPixelCount === 0 || overlapCount === 0 || targetPixelCount === 0) {
           return 0;
         }
@@ -900,6 +863,7 @@
       }
 
       function showSummary() {
+        document.getElementById('bottom-toolbar').classList.add('hidden');
         document.getElementById('screen-practice').classList.add('hidden');
         document.getElementById('screen-practice').classList.remove('flex');
 
