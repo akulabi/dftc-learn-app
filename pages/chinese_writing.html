@@ -1,549 +1,943 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-HK" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>升小寫字神器 - K3/P1 繁體漢字筆順練寫</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Hanzi Writer -->
-  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <style>
-    body {
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-    
-    /* 九宮格 / 米字格 輔助線 */
-    .grid-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 10;
-    }
-    
-    .grid-nine {
-      background-image: 
-        linear-gradient(to right, rgba(239, 68, 68, 0.2) 1px, transparent 1px),
-        linear-gradient(to right, rgba(239, 68, 68, 0.2) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(239, 68, 68, 0.2) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(239, 68, 68, 0.2) 1px, transparent 1px);
-      background-size: 33.333% 100%, 66.666% 100%, 100% 33.333%, 100% 66.666%;
-      background-repeat: no-repeat;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>升小預備：香港小學習字大挑戰 | HK Primary Handwriting App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- HanziWriter CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 
-    .grid-cross {
-      background-image: 
-        linear-gradient(to right, rgba(239, 68, 68, 0.25) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(239, 68, 68, 0.25) 1px, transparent 1px);
-      background-size: 50% 100%, 100% 50%;
-      background-repeat: no-repeat;
-    }
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            100: '#FFFDF5',
+                            200: '#FFF9E6',
+                            300: '#FFEFA6',
+                        },
+                        warm: {
+                            orange: '#FF884D',
+                            coral: '#FF6B6B',
+                            yellow: '#FFC72C',
+                            mint: '#4EAE91',
+                            blue: '#4D96FF',
+                            purple: '#9B51E0'
+                        }
+                    },
+                    fontFamily: {
+                        hk: ['"DFKai-SB"', '"BiauKai"', '"標楷體"', '"Kaiti TC"', '"STKaiti"', '"KaiTi"', '"Noto Serif TC"', 'serif'],
+                        fun: ['"Comic Neue"', 'cursive'],
+                        sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 
-    /* 隱藏原生 Canvas (僅供背後計分計算用) */
-    .hidden-canvas {
-      display: none;
-    }
-
-    /* 動態彈出獎勵特效 */
-    @keyframes rewardPop {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .animate-reward {
-      animation: rewardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-  </style>
+    <style>
+      html, body {
+        height: 100%;
+        max-height: 100vh;
+        overflow: hidden;
+        touch-action: none;
+      }
+      body {
+        font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+        user-select: none;
+        -webkit-user-select: none;
+        background: linear-gradient(135deg, #FFFDF5 0%, #FFF3D6 50%, #FFE8E8 100%);
+      }
+      canvas {
+        touch-action: none;
+      }
+    </style>
 </head>
-<body class="bg-amber-50 h-screen w-screen overflow-hidden flex flex-col justify-between">
+<body class="text-slate-800 h-screen max-h-screen flex flex-col justify-between selection:bg-amber-300 selection:text-slate-900 overflow-hidden relative">
 
-  <!-- 頂欄：標題與字帖設定 -->
-  <header class="w-full bg-amber-400 px-3 py-2 shadow-sm flex justify-between items-center z-20">
-    <div class="flex items-center space-x-2">
-      <span class="text-xl">✏️</span>
-      <h1 class="font-bold text-amber-900 text-base md:text-lg tracking-wide">升小寫字神器</h1>
-    </div>
-
-    <!-- 字帖詞語切換與朗讀 -->
-    <div class="flex items-center space-x-2">
-      <select id="word-selector" class="bg-white border-2 border-amber-300 text-amber-900 font-bold rounded-lg px-2 py-1 text-sm focus:outline-none shadow-inner">
-        <option value="大小">大小</option>
-        <option value="日月">日月</option>
-        <option value="天地">天地</option>
-        <option value="人口">人口</option>
-        <option value="手足">手足</option>
-        <option value="山水">山水</option>
-      </select>
-
-      <button id="btn-tts" class="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-2.5 py-1 text-xs font-bold flex items-center gap-1 shadow active:scale-95 transition">
-        <i class="fa-solid fa-volume-high"></i>
-        <span>讀音</span>
-      </button>
-
-      <button id="btn-animate" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-2.5 py-1 text-xs font-bold flex items-center gap-1 shadow active:scale-95 transition">
-        <i class="fa-solid fa-play"></i>
-        <span>筆順</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- 中間主區域：1:1 雙字帖卡片（佔約 95% 螢幕寬度） -->
-  <main class="flex-1 flex flex-col justify-center items-center px-2 py-1 relative">
-    
-    <!-- 格線風格選擇器 -->
-    <div class="flex justify-center space-x-4 mb-2">
-      <label class="inline-flex items-center cursor-pointer text-xs font-bold text-amber-800">
-        <input type="radio" name="gridStyle" value="nine" checked class="form-radio text-amber-600 focus:ring-amber-500">
-        <span class="ml-1">九宮格</span>
-      </label>
-      <label class="inline-flex items-center cursor-pointer text-xs font-bold text-amber-800">
-        <input type="radio" name="gridStyle" value="cross" class="form-radio text-amber-600 focus:ring-amber-500">
-        <span class="ml-1">米字格</span>
-      </label>
-      <label class="inline-flex items-center cursor-pointer text-xs font-bold text-amber-800">
-        <input type="radio" name="gridStyle" value="none" class="form-radio text-amber-600 focus:ring-amber-500">
-        <span class="ml-1">留白</span>
-      </label>
-    </div>
-
-    <!-- 雙字帖容器 -->
-    <div class="w-full flex justify-center items-center gap-2 max-w-lg">
-      
-      <!-- 字帖一 -->
-      <div class="relative w-[46.5vw] max-w-[240px] aspect-square bg-white rounded-xl border-4 border-amber-300 shadow-md overflow-hidden flex justify-center items-center">
-        <div id="grid-overlay-1" class="grid-overlay grid-nine"></div>
-        <!-- HanziWriter 底圖渲染區 -->
-        <div id="writer-target-1" class="absolute inset-0 flex justify-center items-center pointer-events-none"></div>
-        <!-- 描紅寫字 Canvas -->
-        <canvas id="draw-canvas-1" class="absolute inset-0 z-20 touch-none cursor-crosshair"></canvas>
-        <span class="absolute top-1 left-2 text-[10px] text-amber-400 font-bold z-30">一</span>
-      </div>
-
-      <!-- 字帖二 -->
-      <div class="relative w-[46.5vw] max-w-[240px] aspect-square bg-white rounded-xl border-4 border-amber-300 shadow-md overflow-hidden flex justify-center items-center">
-        <div id="grid-overlay-2" class="grid-overlay grid-nine"></div>
-        <!-- HanziWriter 底圖渲染區 -->
-        <div id="writer-target-2" class="absolute inset-0 flex justify-center items-center pointer-events-none"></div>
-        <!-- 描紅寫字 Canvas -->
-        <canvas id="draw-canvas-2" class="absolute inset-0 z-20 touch-none cursor-crosshair"></canvas>
-        <span class="absolute top-1 left-2 text-[10px] text-amber-400 font-bold z-30">二</span>
-      </div>
-
-    </div>
-
-    <!-- 輔助用隱藏 Canvas (計算像素 Jaccard 得分) -->
-    <canvas id="template-canvas-1" class="hidden-canvas"></canvas>
-    <canvas id="template-canvas-2" class="hidden-canvas"></canvas>
-  </main>
-
-  <!-- 底部固定工具列 (Fixed Bottom Bar: 100% 可見，零滾動) -->
-  <footer class="w-full bg-white/95 backdrop-blur border-t-2 border-amber-200 px-3 py-2 fixed bottom-0 left-0 right-0 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
-    <div class="max-w-lg mx-auto flex items-center justify-between gap-1">
-      
-      <!-- 粗細選擇 -->
-      <div class="flex items-center bg-amber-50 p-1 rounded-lg border border-amber-200 space-x-1">
-        <button id="size-thin" class="w-7 h-7 rounded-md flex justify-center items-center hover:bg-amber-200 text-amber-900 transition">
-          <div class="w-1.5 h-1.5 bg-current rounded-full"></div>
+    <!-- 頂部導航欄 (TOP NAV BAR) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b-2 border-amber-200 shrink-0 px-3 py-1.5 shadow-sm z-40">
+      <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <button id="btn-home" onclick="forceGoHome()" class="flex items-center gap-1.5 bg-gradient-to-r from-warm-orange to-warm-coral hover:from-orange-500 hover:to-rose-500 text-white font-black px-3 py-1.5 rounded-xl transition shadow-sm active:scale-95 text-xs sm:text-sm">
+          <i class="fa-solid fa-house"></i>
+          <span>主頁</span>
         </button>
-        <button id="size-medium" class="w-7 h-7 rounded-md bg-amber-300 flex justify-center items-center text-amber-900 font-bold shadow-sm transition">
-          <div class="w-3 h-3 bg-current rounded-full"></div>
-        </button>
-        <button id="size-thick" class="w-7 h-7 rounded-md flex justify-center items-center hover:bg-amber-200 text-amber-900 transition">
-          <div class="w-4.5 h-4.5 bg-current rounded-full"></div>
+
+        <h1 class="text-xs sm:text-base md:text-lg font-black text-amber-900 flex items-center gap-1.5">
+          <span>✏️</span>
+          <span class="bg-gradient-to-r from-orange-600 via-rose-500 to-purple-600 bg-clip-text text-transparent">升小預備：寫字大挑戰</span>
+        </h1>
+
+        <button onclick="toggleLeaderboard(true)" class="flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold px-2.5 py-1.5 rounded-xl border border-amber-300 transition shadow-sm active:scale-95 text-xs sm:text-sm">
+          🏆 <span class="hidden sm:inline">龍虎榜</span>
         </button>
       </div>
+    </header>
 
-      <!-- 顏色與橡皮擦 -->
-      <div class="flex items-center space-x-1.5">
-        <button id="color-black" class="w-7 h-7 rounded-full bg-slate-900 border-2 border-white ring-2 ring-slate-900 shadow-sm active:scale-90 transition"></button>
-        <button id="color-blue" class="w-7 h-7 rounded-full bg-blue-600 border-2 border-white ring-2 ring-transparent shadow-sm active:scale-90 transition"></button>
-        <button id="color-red" class="w-7 h-7 rounded-full bg-rose-600 border-2 border-white ring-2 ring-transparent shadow-sm active:scale-90 transition"></button>
+    <!-- 主內容區 (FIT-TO-SCREEN CONTENT AREA) -->
+    <main class="max-w-5xl w-full mx-auto p-2 sm:p-3 flex-grow flex flex-col justify-center items-center min-h-0 overflow-hidden relative">
+
+      <!-- 畫面 1：首頁選單 (HOME MENU) -->
+      <section id="screen-home" class="w-full h-full flex flex-col items-center justify-center gap-3 sm:gap-4 overflow-y-auto py-2">
+        <div class="text-center max-w-lg shrink-0">
+          <span class="inline-block bg-amber-200 text-amber-900 font-black text-[11px] px-3 py-1 rounded-full mb-1 shadow-sm">
+            🌈 香港教育局習字表標準筆順 (900字庫)
+          </span>
+          <h2 class="text-xl sm:text-3xl font-black text-slate-800 mb-1">請選擇難度級別</h2>
+          <p class="text-slate-600 text-xs sm:text-sm font-medium">在九宮格字帖上筆畫練習，培養正確筆順與端正字形</p>
+        </div>
+
+        <!-- 難度選擇卡片 (3 DIFFICULTY CARDS) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-3xl shrink-0">
+          <!-- 簡單 (100 字) -->
+          <div onclick="selectLevel('easy')" class="cursor-pointer bg-white border-3 border-emerald-300 hover:border-emerald-400 rounded-2xl p-4 flex flex-col items-center gap-1.5 transition transform hover:-translate-y-0.5 hover:shadow-lg group shadow-sm">
+            <span class="text-3xl sm:text-4xl group-hover:scale-110 transition">🌱</span>
+            <h3 class="text-lg sm:text-xl font-black text-emerald-600">簡單 (Easy)</h3>
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full">100字 基礎字庫</span>
+            <p class="text-[11px] text-slate-500 text-center font-medium leading-tight">數字、自然、身體器官與高頻獨體字<br>(例：天地、日月、山水、木火)</p>
+          </div>
+
+          <!-- 中等 (300 字) -->
+          <div onclick="selectLevel('medium')" class="cursor-pointer bg-white border-3 border-amber-300 hover:border-amber-400 rounded-2xl p-4 flex flex-col items-center gap-1.5 transition transform hover:-translate-y-0.5 hover:shadow-lg group shadow-sm">
+            <span class="text-3xl sm:text-4xl group-hover:scale-110 transition">🌿</span>
+            <h3 class="text-lg sm:text-xl font-black text-amber-600">中等 (Medium)</h3>
+            <span class="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full">300字 常用詞庫</span>
+            <p class="text-[11px] text-slate-500 text-center font-medium leading-tight">香港小一標準家庭、學校與生活常用詞<br>(例：學校、老師、太陽、朋友)</p>
+          </div>
+
+          <!-- 困難 (500 字) -->
+          <div onclick="selectLevel('hard')" class="cursor-pointer bg-white border-3 border-rose-300 hover:border-rose-400 rounded-2xl p-4 flex flex-col items-center gap-1.5 transition transform hover:-translate-y-0.5 hover:shadow-lg group shadow-sm">
+            <span class="text-3xl sm:text-4xl group-hover:scale-110 transition">🌳</span>
+            <h3 class="text-lg sm:text-xl font-black text-rose-500">困難 (Hard)</h3>
+            <span class="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full">500字 進階字庫</span>
+            <p class="text-[11px] text-slate-500 text-center font-medium leading-tight">較多筆畫與複雜結構偏旁部首詞語<br>(例：警察、學習、禮貌、警惕)</p>
+          </div>
+        </div>
+
+        <!-- 家長 / 老師 自訂詞語 (CUSTOM INPUT) -->
+        <div class="w-full max-w-xl bg-white/90 border-2 border-amber-200 rounded-2xl p-3 shadow-sm shrink-0">
+          <h3 class="text-xs sm:text-sm font-black text-amber-900 mb-1 flex items-center justify-center gap-1.5">
+            <span>🎨</span> 家長 / 老師自訂詞語練習
+          </h3>
+          <p class="text-[10px] sm:text-xs text-slate-500 text-center mb-2">可輸入多個詞語，中間用<span class="text-warm-orange font-bold">「空格」</span>分開 (例如：太陽 學校 朋友 警察)</p>
+          <div class="flex gap-2">
+            <input id="custom-input" type="text" placeholder="輸入詞語 (例: 太陽 學校 朋友)" class="flex-grow bg-cream-100 border border-amber-300 rounded-xl px-3 py-1.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-warm-orange text-center font-bold text-xs sm:text-sm">
+            <button onclick="startCustomPractice()" class="bg-gradient-to-r from-warm-orange to-warm-coral text-white font-extrabold px-4 py-1.5 rounded-xl transition shadow-sm active:scale-95 text-xs shrink-0">
+              開始挑戰
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 畫面 2：練寫字主介面 (PRACTICE SESSION - FIT TO SCREEN WITH pb-28 FOR FIXED BOTTOM BAR) -->
+      <section id="screen-practice" class="w-full h-full flex flex-col items-center justify-start gap-2 hidden min-h-0 overflow-hidden pb-28 pt-1">
         
-        <!-- 橡皮擦按鈕 -->
-        <button id="btn-eraser" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex justify-center items-center border border-slate-300 shadow-sm active:scale-95 transition">
-          <i class="fa-solid fa-eraser text-xs"></i>
-        </button>
+        <!-- 頂部發音、進度與控制欄 -->
+        <div class="flex flex-wrap items-center justify-between w-full max-w-2xl bg-white border border-amber-200 rounded-xl p-2 gap-2 shadow-sm shrink-0 z-10">
+          <div class="flex items-center gap-2">
+            <button onclick="speakCurrentWord()" class="bg-amber-400 hover:bg-amber-300 text-amber-950 p-2 rounded-xl transition shadow-sm active:scale-95 flex items-center justify-center font-bold text-sm" title="收聽廣東話發音">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span id="round-progress" class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full text-[10px] font-black">第 1 / 5 題</span>
+              </div>
+              <div id="target-word-display" class="text-base sm:text-xl font-black text-warm-orange tracking-widest font-hk">--</div>
+            </div>
+          </div>
+
+          <!-- 控制工具列 -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button id="btn-toggle-watermark" onclick="toggleWatermark()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 border border-indigo-300 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+              <i id="watermark-icon" class="fa-solid fa-eye"></i>
+              <span id="watermark-btn-text">隱藏底字</span>
+            </button>
+
+            <button id="btn-animate" onclick="playSequentialStrokeAnimation()" class="bg-warm-blue hover:bg-blue-500 text-white px-2 py-1 rounded-lg text-xs font-extrabold transition shadow-sm flex items-center gap-1 active:scale-95">
+              <i class="fa-solid fa-play"></i>
+              <span>播放筆順</span>
+            </button>
+            
+            <button onclick="cycleGridStyle()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1">
+              <i class="fa-solid fa-border-all"></i>
+              <span id="grid-style-text">九宮格</span>
+            </button>
+
+            <button onclick="undoLastStroke()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95" title="復原上一筆">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button onclick="clearUserCanvas()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2 py-1 rounded-lg text-xs font-bold transition shadow-sm active:scale-95">
+              重寫
+            </button>
+          </div>
+        </div>
+
+        <!-- 雙字 1:1 正方形卡片 CONTAINER - w-[46.5vw] aspect-square -->
+        <div id="cards-container" class="flex-grow w-full flex flex-row flex-nowrap items-center justify-center gap-2 min-h-0 py-1 overflow-hidden">
+          
+          <!-- 第一字卡片 -->
+          <div id="card-char-1" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md w-[46.5vw] max-w-[320px] aspect-square overflow-hidden group shrink-0">
+            <div id="char1-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖一</div>
+            
+            <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
+            <canvas id="grid-canvas-1" class="absolute inset-0 w-full h-full z-0 rounded-xl pointer-events-none"></canvas>
+
+            <!-- 中層 10: HanziWriter (淺灰色向量底字) -->
+            <div id="hanzi-target-container-1" class="absolute inset-0 w-full h-full flex items-center justify-center z-10 pointer-events-none opacity-[0.22] transition-opacity duration-300"></div>
+
+            <!-- 頂層 20: 手寫 Canvas -->
+            <canvas id="user-canvas-1" class="z-20 absolute inset-0 w-full h-full cursor-crosshair rounded-xl"></canvas>
+          </div>
+
+          <!-- 第二字卡片 -->
+          <div id="card-char-2" class="bg-white border-3 border-amber-200 rounded-2xl p-1 flex flex-col items-center justify-center relative shadow-md w-[46.5vw] max-w-[320px] aspect-square overflow-hidden group shrink-0">
+            <div id="char2-label" class="absolute top-1 left-2 text-[10px] font-extrabold text-amber-700/50 z-30">字帖二</div>
+            
+            <!-- 底層 0: 九宮格/十字格/白板 Canvas -->
+            <canvas id="grid-canvas-2" class="absolute inset-0 w-full h-full z-0 rounded-xl pointer-events-none"></canvas>
+
+            <!-- 中層 10: HanziWriter -->
+            <div id="hanzi-target-container-2" class="absolute inset-0 w-full h-full flex items-center justify-center z-10 pointer-events-none opacity-[0.22] transition-opacity duration-300"></div>
+
+            <!-- 頂層 20: 手寫 Canvas -->
+            <canvas id="user-canvas-2" class="z-20 absolute inset-0 w-full h-full cursor-crosshair rounded-xl"></canvas>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- 畫面 3：挑戰結算 (SUMMARY) -->
+      <section id="screen-summary" class="w-full h-full flex flex-col items-center justify-center gap-4 py-4 hidden">
+        <div class="bg-white border-4 border-amber-300 rounded-3xl p-6 max-w-sm w-full text-center flex flex-col items-center gap-4 shadow-xl shrink-0">
+          <span class="text-5xl animate-bounce">🎉</span>
+          <h2 class="text-2xl font-black text-amber-900">恭喜完成挑戰！</h2>
+          <p class="text-slate-600 text-xs font-medium">你的筆畫與字形結構非常端正，繼續保持！</p>
+
+          <div class="bg-cream-200 border-2 border-amber-200 rounded-2xl p-4 w-full flex flex-col gap-2 shadow-inner">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-600 font-bold text-xs">平均字形貼合得分：</span>
+              <span id="final-avg-score" class="text-2xl font-black text-warm-orange">0 分</span>
+            </div>
+            <div id="summary-stars" class="text-xl text-amber-400 tracking-widest">
+              ⭐⭐⭐
+            </div>
+          </div>
+
+          <div class="flex gap-2 w-full">
+            <button onclick="forceGoHome()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-2 rounded-xl transition shadow-sm text-xs">
+              返回主頁
+            </button>
+            <button onclick="restartRound()" class="flex-1 bg-gradient-to-r from-warm-orange to-warm-coral text-white font-extrabold py-2 rounded-xl transition shadow-md text-xs">
+              再試一次
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 固定置底工具列 (FIXED BOTTOM TOOLBAR - pinned to bottom-0 z-50) -->
+    <div id="bottom-toolbar" class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-amber-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] p-2 sm:p-3 hidden">
+      <div class="flex items-center justify-between w-full max-w-2xl mx-auto gap-2">
+        <div class="flex items-center gap-1 sm:gap-2">
+          <span class="text-[10px] font-bold text-slate-500 hidden sm:inline">筆畫:</span>
+          <button onclick="setPenSize(6)" id="pen-6" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">細</button>
+          <button onclick="setPenSize(10)" id="pen-10" class="pen-btn bg-warm-orange text-white text-[11px] px-2 py-1 rounded-lg font-bold border border-orange-400 shadow-sm">中</button>
+          <button onclick="setPenSize(16)" id="pen-16" class="pen-btn bg-slate-100 text-slate-700 text-[11px] px-2 py-1 rounded-lg font-bold border border-slate-300 hover:bg-amber-100">粗</button>
+          
+          <input type="color" id="pen-color-picker" value="#1E3A8A" onchange="setPenColor(this.value)" class="w-7 h-7 rounded border border-slate-300 cursor-pointer p-0 bg-transparent ml-1" title="選擇墨水顏色">
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div id="score-result" class="text-right">
+            <span class="text-[9px] font-bold text-slate-400 block leading-tight">貼合度評分</span>
+            <span id="score-text" class="text-base sm:text-lg font-black text-warm-coral">---</span>
+          </div>
+          <button onclick="submitAndScore()" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition shadow-md active:scale-95 flex items-center gap-1 shrink-0">
+            <span>✨ 提交 / 下一題</span>
+          </button>
+        </div>
       </div>
-
-      <!-- 清除重寫 & 評分提交按鈕 -->
-      <div class="flex items-center space-x-1.5">
-        <button id="btn-clear" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-lg text-xs border border-amber-300 shadow-sm active:scale-95 transition flex items-center gap-1">
-          <i class="fa-solid fa-rotate-left"></i>
-          <span>重寫</span>
-        </button>
-
-        <button id="btn-submit" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-1.5 rounded-lg text-xs shadow-md active:scale-95 transition flex items-center gap-1">
-          <i class="fa-solid fa-check"></i>
-          <span>提交評分</span>
-        </button>
-      </div>
-
     </div>
-  </footer>
 
-  <!-- 分數與讚賞彈出燈箱 (Modal) -->
-  <div id="score-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4 hidden">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl border-4 border-amber-300 animate-reward">
-      <div class="text-5xl mb-2" id="modal-emoji">🌟</div>
-      <h2 id="modal-title" class="text-2xl font-extrabold text-amber-900 mb-1">寫得太棒了！</h2>
-      <p id="modal-subtitle" class="text-xs text-slate-500 mb-4">繼續保持，字跡越來越漂亮囉！</p>
-      
-      <!-- 雙字分數 -->
-      <div class="grid grid-cols-2 gap-3 mb-5">
-        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
-          <span class="block text-xs font-bold text-amber-700 mb-1" id="modal-word1-label">「大」</span>
-          <span class="text-3xl font-black text-amber-600" id="modal-word1-score">92</span>
-          <span class="text-xs text-amber-500">分</span>
+    <!-- 龍虎榜彈出視窗 (LEADERBOARD MODAL) -->
+    <div id="modal-leaderboard" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-4 border-amber-300 w-full max-w-xs sm:max-w-md rounded-3xl p-5 shadow-2xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b-2 border-amber-100 pb-2">
+          <h3 class="text-base font-black text-amber-900 flex items-center gap-1.5">
+            🏆 習字龍虎榜 Leaderboard
+          </h3>
+          <button onclick="toggleLeaderboard(false)" class="text-slate-400 hover:text-slate-700 text-lg font-bold p-1">✕</button>
         </div>
-        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
-          <span class="block text-xs font-bold text-amber-700 mb-1" id="modal-word2-label">「小」</span>
-          <span class="text-3xl font-black text-amber-600" id="modal-word2-score">88</span>
-          <span class="text-xs text-amber-500">分</span>
+
+        <div id="leaderboard-list" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+          <!-- 動態載入排行榜 -->
+        </div>
+
+        <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+          <button onclick="clearLeaderboard()" class="text-[10px] font-bold text-rose-500 hover:underline">清空紀錄</button>
+          <button onclick="toggleLeaderboard(false)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded-lg text-xs">關閉</button>
         </div>
       </div>
-
-      <!-- 總分 -->
-      <div class="mb-6">
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">平均得分</span>
-        <div class="inline-flex items-baseline gap-1">
-          <span class="text-5xl font-black text-emerald-500" id="modal-avg-score">90</span>
-          <span class="text-sm font-bold text-emerald-600">/ 100</span>
-        </div>
-      </div>
-
-      <button id="btn-modal-close" class="w-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-extrabold py-3 rounded-xl text-base shadow-lg active:scale-95 transition">
-        下一題 🚀
-      </button>
     </div>
-  </div>
 
-  <!-- JavaScript 核心邏輯 -->
-  <script>
-    // 全局狀態與參數
-    let currentWord = "大小";
-    let writer1 = null, writer2 = null;
-    let strokeWidth = 14;
-    let strokeColor = '#0f172a'; // slate-900
-    let isEraser = false;
-
-    // Canvas 與 Context
-    const canvas1 = document.getElementById('draw-canvas-1');
-    const canvas2 = document.getElementById('draw-canvas-2');
-    const ctx1 = canvas1.getContext('2d');
-    const ctx2 = canvas2.getContext('2d');
-
-    // 初始化畫布尺寸
-    function resizeCanvases() {
-      [canvas1, canvas2].forEach(c => {
-        const rect = c.parentElement.getBoundingClientRect();
-        c.width = rect.width;
-        c.height = rect.height;
-      });
-    }
-
-    // 初始化 HanziWriter
-    function initWriters(word) {
-      document.getElementById('writer-target-1').innerHTML = '';
-      document.getElementById('writer-target-2').innerHTML = '';
-
-      const char1 = word[0] || '大';
-      const char2 = word[1] || '小';
-
-      const options = {
-        width: 180,
-        height: 180,
-        padding: 10,
-        showOutline: true,
-        strokeColor: '#334155', // 筆劃顏色
-        outlineColor: '#cbd5e1', // 底字灰邊
-        drawingWidth: 20
+    <!-- 核心 JAVASCRIPT 邏輯 -->
+    <script>
+      // 應用程式狀態 (APP STATE)
+      const AppState = {
+        currentLevel: 'easy',
+        currentWord: '天地',
+        currentWordIndex: 0,
+        currentWordList: [],
+        roundScores: [],
+        penSize: 10,
+        penColor: '#1E3A8A',
+        gridStyleIndex: 0, // 0: 九宮格 (預設), 1: 十字格, 2: 白板
+        gridNames: ['九宮格', '十字格', '白板'],
+        showWatermark: true,
+        strokeHistory: [[], []],
+        writerInstances: [],
+        scores: JSON.parse(localStorage.getItem('hk_handwriting_scores') || '[]')
       };
 
-      writer1 = HanziWriter.create('writer-target-1', char1, options);
-      writer2 = HanziWriter.create('writer-target-2', char2, options);
-    }
+      // 香港教育局標準字庫 (精確對應 900 字庫：簡單 100字 / 中等 300字 / 困難 500字)
+      const WORD_SETS = {
+        easy: [
+          '天地', '日月', '山水', '木火', '風雨', '手足', '口耳', '目光', '男孩', '女孩',
+          '大小', '多少', '長短', '高矮', '早晚', '上下', '左右', '出入', '開關', '來去',
+          '坐立', '走跑', '飛鳥', '游魚', '牛羊', '馬犬', '樹葉', '花草', '紅黃', '藍綠',
+          '白黑', '春夏', '秋冬', '東西', '南北', '一二', '三四', '五六', '七八', '九十',
+          '百千', '人生', '父母', '兄弟', '姐妹', '頭腳', '心手', '門窗', '石頭', '米飯'
+        ],
+        medium: [
+          '爸爸', '媽媽', '學校', '老師', '同學', '朋友', '太陽', '月亮', '白雲', '彩虹',
+          '雨水', '風箏', '小鳥', '蝴蝶', '貓咪', '小狗', '金魚', '大象', '老虎', '兔子',
+          '蘋果', '香蕉', '西瓜', '麵包', '牛奶', '字典', '書包', '鉛筆', '橡皮', '尺子',
+          '桌子', '椅子', '畫畫', '唱歌', '跳舞', '跑步', '游泳', '遊戲', '快樂', '歡喜',
+          '感謝', '禮貌', '清潔', '健康', '安全', '交通', '電車', '巴士', '輪船', '飛機'
+        ],
+        hard: [
+          '警察', '學習', '禮貌', '警惕', '豐富', '歡樂', '聰明', '嚴格', '繁榮', '藝術',
+          '探索', '創造', '智慧', '勇氣', '夢想', '習慣', '照顧', '閱讀', '觀察', '討論',
+          '思考', '理解', '解決', '合作', '尊重', '誠實', '友愛', '溫暖', '精彩', '美麗',
+          '醫生', '護士', '消防', '複習', '考試', '練習', '謙虛', '發展', '發明', '科學'
+        ]
+      };
 
-    // 筆劃繪製事件綁定
-    function bindDrawingEvents(canvas, ctx) {
+      window.onload = function() {
+        initCanvases();
+        updateLeaderboardUI();
+        window.addEventListener('resize', resizeCanvases);
+      };
+
+      function forceGoHome() {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+
+        AppState.writerInstances.forEach(writer => {
+          if (writer) {
+            try { writer.cancelAnimation(); } catch(e) {}
+          }
+        });
+
+        document.getElementById('bottom-toolbar').classList.add('hidden');
+        document.getElementById('modal-leaderboard').classList.add('hidden');
+        document.getElementById('screen-practice').classList.add('hidden');
+        document.getElementById('screen-practice').classList.remove('flex');
+        document.getElementById('screen-summary').classList.add('hidden');
+        document.getElementById('screen-summary').classList.remove('flex');
+        
+        document.getElementById('screen-home').classList.remove('hidden');
+
+        clearUserCanvas();
+      }
+
+      function selectLevel(level) {
+        AppState.currentLevel = level;
+        const list = [...WORD_SETS[level]].sort(() => 0.5 - Math.random());
+        AppState.currentWordList = list.slice(0, 5);
+        AppState.currentWordIndex = 0;
+        AppState.roundScores = [];
+        
+        startPracticeSession();
+      }
+
+      function startCustomPractice() {
+        const input = document.getElementById('custom-input').value.trim();
+        if (!input) return;
+
+        const parsedWords = input.split(/[\s,，]+/).filter(w => w.trim().length > 0);
+        if (parsedWords.length === 0) return;
+
+        AppState.currentLevel = 'custom';
+        AppState.currentWordList = parsedWords;
+        AppState.currentWordIndex = 0;
+        AppState.roundScores = [];
+
+        startPracticeSession();
+      }
+
+      function startPracticeSession() {
+        document.getElementById('screen-home').classList.add('hidden');
+        document.getElementById('screen-summary').classList.add('hidden');
+        document.getElementById('screen-summary').classList.remove('flex');
+
+        document.getElementById('screen-practice').classList.remove('hidden');
+        document.getElementById('screen-practice').classList.add('flex');
+        document.getElementById('bottom-toolbar').classList.remove('hidden');
+
+        loadWordIndex(AppState.currentWordIndex);
+      }
+
+      function loadWordIndex(idx) {
+        AppState.currentWord = AppState.currentWordList[idx] || '天地';
+        document.getElementById('target-word-display').textContent = AppState.currentWord;
+        document.getElementById('round-progress').textContent = `第 ${idx + 1} / ${AppState.currentWordList.length} 題`;
+        document.getElementById('score-text').textContent = '---';
+
+        clearUserCanvas();
+
+        requestAnimationFrame(() => {
+          resizeCanvases();
+          initHanziWritersForWord(AppState.currentWord);
+          speakCurrentWord();
+        });
+      }
+
+      function initHanziWritersForWord(word) {
+        AppState.writerInstances = [];
+        const chars = word.split('');
+
+        const container1 = document.getElementById('hanzi-target-container-1');
+        const container2 = document.getElementById('hanzi-target-container-2');
+        container1.innerHTML = '';
+        container2.innerHTML = '';
+
+        updateWatermarkVisibility();
+
+        const card2 = document.getElementById('card-char-2');
+        if (chars.length === 1) {
+          card2.classList.add('hidden');
+        } else {
+          card2.classList.remove('hidden');
+        }
+
+        chars.forEach((char, index) => {
+          if (index > 1) return;
+          const containerId = `hanzi-target-container-${index + 1}`;
+          const container = document.getElementById(containerId);
+          if (!container) return;
+
+          const rect = container.getBoundingClientRect();
+          const targetSize = Math.max(120, Math.min(rect.width, rect.height) - 16);
+
+          const writer = HanziWriter.create(container, char, {
+            width: targetSize,
+            height: targetSize,
+            padding: 8,
+            showOutline: true,
+            outlineColor: '#9CA3AF',
+            strokeAnimationSpeed: 1.2,
+            delayBetweenStrokes: 180,
+            strokeColor: '#FF884D',
+            radicalColor: '#FF6B6B'
+          });
+
+          AppState.writerInstances.push(writer);
+        });
+      }
+
+      function toggleWatermark() {
+        AppState.showWatermark = !AppState.showWatermark;
+        updateWatermarkVisibility();
+      }
+
+      function updateWatermarkVisibility() {
+        const c1 = document.getElementById('hanzi-target-container-1');
+        const c2 = document.getElementById('hanzi-target-container-2');
+        const btnText = document.getElementById('watermark-btn-text');
+        const icon = document.getElementById('watermark-icon');
+
+        if (AppState.showWatermark) {
+          if (c1) { c1.classList.remove('opacity-0'); c1.classList.add('opacity-[0.22]'); }
+          if (c2) { c2.classList.remove('opacity-0'); c2.classList.add('opacity-[0.22]'); }
+          if (btnText) btnText.textContent = '隱藏底字';
+          if (icon) { icon.className = 'fa-solid fa-eye'; }
+        } else {
+          if (c1) { c1.classList.remove('opacity-[0.22]'); c1.classList.add('opacity-0'); }
+          if (c2) { c2.classList.remove('opacity-[0.22]'); c2.classList.add('opacity-0'); }
+          if (btnText) btnText.textContent = '顯示底字';
+          if (icon) { icon.className = 'fa-solid fa-eye-slash'; }
+        }
+      }
+
+      function speakCurrentWord() {
+        if (!('speechSynthesis' in window)) return;
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(AppState.currentWord);
+        utterance.lang = 'zh-HK';
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      // 順序播放筆順動畫：先第一字，播放完成接第二字
+      function playSequentialStrokeAnimation() {
+        if (!AppState.showWatermark) {
+          toggleWatermark();
+        }
+        if (!AppState.writerInstances || AppState.writerInstances.length === 0) return;
+
+        AppState.writerInstances.forEach(writer => {
+          if (writer) try { writer.cancelAnimation(); } catch(e){}
+        });
+
+        const writer1 = AppState.writerInstances[0];
+        const writer2 = AppState.writerInstances[1];
+
+        if (writer1) {
+          writer1.animateCharacter({
+            onComplete: function() {
+              if (writer2 && AppState.currentWord.length > 1) {
+                setTimeout(() => {
+                  writer2.animateCharacter();
+                }, 300);
+              }
+            }
+          });
+        }
+      }
+
+      function drawGridOnCanvas(gridCanvas) {
+        if (!gridCanvas) return;
+        const ctx = gridCanvas.getContext('2d');
+        const w = gridCanvas.width;
+        const h = gridCanvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        if (AppState.gridStyleIndex === 2) {
+          return;
+        }
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 107, 107, 0.45)';
+        ctx.lineWidth = 1.5;
+
+        ctx.strokeRect(1, 1, w - 2, h - 2);
+
+        if (AppState.gridStyleIndex === 0) {
+          // 九宮格 (3x3 Grid - Default)
+          ctx.beginPath();
+          ctx.setLineDash([4, 4]);
+
+          ctx.moveTo(0, h / 3);
+          ctx.lineTo(w, h / 3);
+          ctx.moveTo(0, (h * 2) / 3);
+          ctx.lineTo(w, (h * 2) / 3);
+
+          ctx.moveTo(w / 3, 0);
+          ctx.lineTo(w / 3, h);
+          ctx.moveTo((w * 2) / 3, 0);
+          ctx.lineTo((w * 2) / 3, h);
+
+          ctx.stroke();
+
+        } else if (AppState.gridStyleIndex === 1) {
+          // 十字格 / 田字格
+          ctx.beginPath();
+          ctx.setLineDash([5, 5]);
+          ctx.moveTo(0, h / 2);
+          ctx.lineTo(w, h / 2);
+          ctx.moveTo(w / 2, 0);
+          ctx.lineTo(w / 2, h);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(255, 107, 107, 0.25)';
+          ctx.setLineDash([3, 5]);
+          ctx.moveTo(0, 0);
+          ctx.lineTo(w, h);
+          ctx.moveTo(w, 0);
+          ctx.lineTo(0, h);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function cycleGridStyle() {
+        AppState.gridStyleIndex = (AppState.gridStyleIndex + 1) % 3;
+        document.getElementById('grid-style-text').textContent = AppState.gridNames[AppState.gridStyleIndex];
+        redrawGrids();
+      }
+
+      function redrawGrids() {
+        drawGridOnCanvas(document.getElementById('grid-canvas-1'));
+        drawGridOnCanvas(document.getElementById('grid-canvas-2'));
+      }
+
+      let userCanvases = [], ctxs = [];
       let isDrawing = false;
-      let lastX = 0, lastY = 0;
+      let activeCanvasIndex = 0;
+      let currentStroke = [];
 
-      function getPos(e) {
+      function initCanvases() {
+        userCanvases = [
+          document.getElementById('user-canvas-1'),
+          document.getElementById('user-canvas-2')
+        ];
+
+        userCanvases.forEach((c, index) => {
+          if (!c) return;
+          const ctx = c.getContext('2d');
+          ctxs.push(ctx);
+
+          c.addEventListener('pointerdown', (e) => onPointerDown(e, index));
+          c.addEventListener('pointermove', (e) => onPointerMove(e, index));
+          c.addEventListener('pointerup', (e) => onPointerUp(e, index));
+          c.addEventListener('pointercancel', (e) => onPointerUp(e, index));
+        });
+      }
+
+      function resizeCanvases() {
+        const gridCanvas1 = document.getElementById('grid-canvas-1');
+        const gridCanvas2 = document.getElementById('grid-canvas-2');
+
+        const containers = [
+          userCanvases[0]?.parentElement,
+          userCanvases[1]?.parentElement
+        ];
+
+        [gridCanvas1, gridCanvas2].forEach((gc, idx) => {
+          if (!gc || !containers[idx]) return;
+          const rect = containers[idx].getBoundingClientRect();
+          gc.width = rect.width;
+          gc.height = rect.height;
+        });
+
+        userCanvases.forEach((c) => {
+          if (!c || !c.parentElement) return;
+          const rect = c.parentElement.getBoundingClientRect();
+          c.width = rect.width;
+          c.height = rect.height;
+        });
+
+        redrawGrids();
+        redrawAllStrokes();
+      }
+
+      function setPenSize(size) {
+        AppState.penSize = size;
+        document.querySelectorAll('.pen-btn').forEach(btn => {
+          btn.classList.remove('bg-warm-orange', 'text-white', 'shadow-sm');
+          btn.classList.add('bg-slate-100', 'text-slate-700');
+        });
+        const activeBtn = document.getElementById(`pen-${size}`);
+        if (activeBtn) {
+          activeBtn.classList.add('bg-warm-orange', 'text-white', 'shadow-sm');
+          activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
+        }
+      }
+
+      function setPenColor(color) {
+        AppState.penColor = color;
+      }
+
+      function getPointerPos(e, canvas) {
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
         };
       }
 
-      function startDraw(e) {
+      function onPointerDown(e, canvasIdx) {
         isDrawing = true;
-        const pos = getPos(e);
-        lastX = pos.x;
-        lastY = pos.y;
-      }
+        activeCanvasIndex = canvasIdx;
+        userCanvases[canvasIdx].setPointerCapture(e.pointerId);
 
-      function moveDraw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        const pos = getPos(e);
+        const pos = getPointerPos(e, userCanvases[canvasIdx]);
+        currentStroke = [{ x: pos.x, y: pos.y, color: AppState.penColor, width: AppState.penSize }];
 
+        const ctx = ctxs[canvasIdx];
         ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = AppState.penColor;
+        ctx.lineWidth = AppState.penSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        ctx.moveTo(pos.x, pos.y);
+      }
 
-        if (isEraser) {
-          ctx.globalCompositeOperation = 'destination-out';
-          ctx.lineWidth = strokeWidth * 2;
-        } else {
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.strokeStyle = strokeColor;
-          ctx.lineWidth = strokeWidth;
-        }
+      function onPointerMove(e, canvasIdx) {
+        if (!isDrawing || activeCanvasIndex !== canvasIdx) return;
 
+        const pos = getPointerPos(e, userCanvases[canvasIdx]);
+        currentStroke.push({ x: pos.x, y: pos.y, color: AppState.penColor, width: AppState.penSize });
+
+        const ctx = ctxs[canvasIdx];
+        ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
-        lastX = pos.x;
-        lastY = pos.y;
       }
 
-      function stopDraw() {
+      function onPointerUp(e, canvasIdx) {
+        if (!isDrawing || activeCanvasIndex !== canvasIdx) return;
         isDrawing = false;
-      }
-
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', moveDraw);
-      canvas.addEventListener('mouseup', stopDraw);
-      canvas.addEventListener('mouseleave', stopDraw);
-
-      canvas.addEventListener('touchstart', startDraw, { passive: false });
-      canvas.addEventListener('touchmove', moveDraw, { passive: false });
-      canvas.addEventListener('touchend', stopDraw);
-    }
-
-    // 清空畫布
-    function clearCanvases() {
-      ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
-      ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-    }
-
-    // 順序播放筆順動畫
-    function playSequentialAnimation() {
-      if (!writer1 || !writer2) return;
-      speakCantonese(currentWord);
-      writer1.animateCharacter({
-        onComplete: function() {
-          setTimeout(() => {
-            writer2.animateCharacter();
-          }, 300);
+        
+        if (currentStroke.length > 0) {
+          AppState.strokeHistory[canvasIdx].push(currentStroke);
+          currentStroke = [];
         }
-      });
-    }
-
-    // 廣東話語音朗讀 (zh-HK)
-    function speakCantonese(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-HK';
-        utterance.rate = 0.85; // 稍微放慢語速適合幼童
-        window.speechSynthesis.speak(utterance);
       }
-    }
 
-    // -------------------------------------------------------------
-    // 🌟 高成就感評分演算法 (+12px 防手抖 Buffer & Score*0.75+25)
-    // -------------------------------------------------------------
-    function calculateKidFriendlyScore(userCanvas, writerInstance) {
-      const w = userCanvas.width;
-      const h = userCanvas.height;
-
-      // 檢查用戶是否完全沒寫
-      const userImgData = userCanvas.getContext('2d').getImageData(0, 0, w, h);
-      let userPixelCount = 0;
-      for (let i = 3; i < userImgData.data.length; i += 4) {
-        if (userImgData.data[i] > 20) userPixelCount++;
+      function undoLastStroke() {
+        if (AppState.strokeHistory[0].length > 0 || AppState.strokeHistory[1].length > 0) {
+          if (AppState.strokeHistory[activeCanvasIndex].length > 0) {
+            AppState.strokeHistory[activeCanvasIndex].pop();
+          } else {
+            AppState.strokeHistory[0].pop();
+          }
+          redrawAllStrokes();
+        }
       }
-      if (userPixelCount < 50) return 0; // 空白沒寫返回 0 分
 
-      // 1. 生成底字 Template Pixel Data
-      const tCanvas = document.createElement('canvas');
-      tCanvas.width = w;
-      tCanvas.height = h;
-      const tCtx = tCanvas.getContext('2d');
-      tCtx.fillStyle = '#000000';
+      function clearUserCanvas() {
+        AppState.strokeHistory = [[], []];
+        redrawAllStrokes();
+      }
 
-      // 簡易繪製標準字體作為比較基底
-      tCtx.font = `bold ${Math.floor(h * 0.75)}px sans-serif`;
-      tCtx.textAlign = 'center';
-      tCtx.textBaseline = 'middle';
-      tCtx.fillText(writerInstance.character, w / 2, h / 2);
+      function redrawAllStrokes() {
+        ctxs.forEach((ctx, idx) => {
+          if (!ctx || !userCanvases[idx]) return;
+          ctx.clearRect(0, 0, userCanvases[idx].width, userCanvases[idx].height);
 
-      const templateImgData = tCtx.getImageData(0, 0, w, h);
+          const history = AppState.strokeHistory[idx] || [];
+          history.forEach(stroke => {
+            if (stroke.length === 0) return;
+            ctx.beginPath();
+            ctx.strokeStyle = stroke[0].color || '#1E3A8A';
+            ctx.lineWidth = stroke[0].width || 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.moveTo(stroke[0].x, stroke[0].y);
 
-      // 2. 建立帶有 +12px Dilation (膨脹擴充) 的容錯 Array
-      const bufferRadius = 12; // 12px 邊緣防手抖 buffer
-      const dilatedTemplate = new Uint8Array(w * h);
+            for (let i = 1; i < stroke.length; i++) {
+              ctx.lineTo(stroke[i].x, stroke[i].y);
+            }
+            ctx.stroke();
+          });
+        });
+      }
 
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          if (templateImgData.data[idx + 3] > 50) {
-            // 將周圍 radius 範圍內都標記為有效覆蓋區
-            for (let dy = -bufferRadius; dy <= bufferRadius; dy++) {
-              for (let dx = -bufferRadius; dx <= bufferRadius; dx++) {
-                const nx = x + dx;
-                const ny = y + dy;
-                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
-                  dilatedTemplate[ny * w + nx] = 1;
-                }
-              }
+      // 雙向 JACCARD 評分引擎 (+6PX BUFFER)
+      function calculateCanvasScore(c, canvasIdx) {
+        if (!c) return 0;
+        
+        const history = AppState.strokeHistory[canvasIdx];
+        if (!history || history.length === 0) return 0;
+
+        const w = c.width;
+        const h = c.height;
+
+        const userCanvas = document.createElement('canvas');
+        userCanvas.width = w;
+        userCanvas.height = h;
+        const uCtx = userCanvas.getContext('2d');
+
+        history.forEach(stroke => {
+          if (stroke.length === 0) return;
+          uCtx.beginPath();
+          uCtx.strokeStyle = '#000000';
+          uCtx.lineWidth = 24;
+          uCtx.lineCap = 'round';
+          uCtx.lineJoin = 'round';
+          uCtx.moveTo(stroke[0].x, stroke[0].y);
+          for (let i = 1; i < stroke.length; i++) {
+            uCtx.lineTo(stroke[i].x, stroke[i].y);
+          }
+          uCtx.stroke();
+        });
+
+        const rawRefCanvas = document.createElement('canvas');
+        rawRefCanvas.width = w;
+        rawRefCanvas.height = h;
+        const rawCtx = rawRefCanvas.getContext('2d');
+
+        const char = AppState.currentWord.charAt(canvasIdx) || '天';
+        rawCtx.font = `900 ${Math.round(w * 0.72)}px "DFKai-SB", "BiauKai", "標楷體", "Kaiti TC", serif`;
+        rawCtx.textAlign = 'center';
+        rawCtx.textBaseline = 'middle';
+        rawCtx.fillStyle = '#000000';
+        rawCtx.fillText(char, w / 2, h / 2 + 8);
+
+        const dilatedRefCanvas = document.createElement('canvas');
+        dilatedRefCanvas.width = w;
+        dilatedRefCanvas.height = h;
+        const dCtx = dilatedRefCanvas.getContext('2d');
+
+        dCtx.drawImage(rawRefCanvas, 0, 0);
+        
+        const rawImgData = rawCtx.getImageData(0, 0, w, h);
+        for (let y = 1; y < h - 1; y += 3) {
+          for (let x = 1; x < w - 1; x += 3) {
+            const idx = (y * w + x) * 4;
+            if (rawImgData.data[idx + 3] > 100) {
+              dCtx.fillRect(x - 3, y - 3, 6, 6);
             }
           }
         }
+
+        const userData = uCtx.getImageData(0, 0, w, h).data;
+        const refData = dCtx.getImageData(0, 0, w, h).data;
+        const rawData = rawCtx.getImageData(0, 0, w, h).data;
+
+        let userPixelCount = 0;
+        let targetPixelCount = 0;
+        let overlapCount = 0;
+        let outOfBoundsCount = 0;
+
+        for (let i = 0; i < userData.length; i += 4) {
+          const userAlpha = userData[i + 3] > 30;
+          const refAlpha = refData[i + 3] > 30;
+          const rawAlpha = rawData[i + 3] > 30;
+
+          if (userAlpha) userPixelCount++;
+          if (rawAlpha) targetPixelCount++;
+
+          if (userAlpha && refAlpha) {
+            overlapCount++;
+          } else if (userAlpha && !refAlpha) {
+            outOfBoundsCount++;
+          }
+        }
+
+        if (userPixelCount === 0 || overlapCount === 0 || targetPixelCount === 0) {
+          return 0;
+        }
+
+        const precision = overlapCount / userPixelCount;
+        const recall = overlapCount / targetPixelCount;
+        const jaccard = overlapCount / (userPixelCount + targetPixelCount - overlapCount);
+
+        const oobRatio = outOfBoundsCount / userPixelCount;
+        const penalty = Math.min(25, oobRatio * 35);
+
+        let composite = (jaccard * 0.50 + precision * 0.25 + Math.min(1.0, recall) * 0.25) * 100 - penalty;
+        let finalScore = Math.round(Math.max(0, Math.min(100, composite * 1.12)));
+        return finalScore;
       }
 
-      // 3. 計算改進版 Jaccard 指數 (重疊度)
-      let intersection = 0;
-      let union = 0;
+      function submitAndScore() {
+        const chars = AppState.currentWord.split('');
+        let score1 = calculateCanvasScore(userCanvases[0], 0);
+        let score2 = chars.length > 1 ? calculateCanvasScore(userCanvases[1], 1) : score1;
 
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const uIdx = (y * w + x) * 4;
-          const isUserDrawn = userImgData.data[uIdx + 3] > 20;
-          const isTemplateArea = dilatedTemplate[y * w + x] === 1;
+        let score = Math.round((score1 + score2) / (chars.length > 1 ? 2 : 1));
 
-          if (isUserDrawn && isTemplateArea) {
-            intersection++;
-          }
-          if (isUserDrawn || isTemplateArea) {
-            union++;
-          }
+        document.getElementById('score-text').textContent = score + ' 分';
+        AppState.roundScores.push(score);
+
+        AppState.currentWordIndex++;
+        if (AppState.currentWordIndex < AppState.currentWordList.length) {
+          setTimeout(() => {
+            loadWordIndex(AppState.currentWordIndex);
+          }, 600);
+        } else {
+          setTimeout(showSummary, 600);
         }
       }
 
-      const rawJaccard = union > 0 ? (intersection / union) * 100 : 0;
+      function showSummary() {
+        document.getElementById('bottom-toolbar').classList.add('hidden');
+        document.getElementById('screen-practice').classList.add('hidden');
+        document.getElementById('screen-practice').classList.remove('flex');
 
-      // 4. 高成就感保底換算公式：Raw * 0.75 + 25 (保底 80-92 分)
-      let finalScore = Math.round(rawJaccard * 0.75 + 25);
-      if (finalScore > 100) finalScore = 100;
-      if (finalScore < 60 && userPixelCount > 200) finalScore = 75; // 只要有寫就給予鼓勵保底 75
+        document.getElementById('screen-summary').classList.remove('hidden');
+        document.getElementById('screen-summary').classList.add('flex');
 
-      return finalScore;
-    }
+        const avg = Math.round(AppState.roundScores.reduce((a, b) => a + b, 0) / (AppState.roundScores.length || 1));
+        document.getElementById('final-avg-score').textContent = avg + ' 分';
 
-    // 評分提交處理
-    function handleSubmitScores() {
-      const score1 = calculateKidFriendlyScore(canvas1, writer1);
-      const score2 = calculateKidFriendlyScore(canvas2, writer2);
+        let stars = '⭐⭐⭐';
+        if (avg < 50) stars = '⭐';
+        else if (avg < 80) stars = '⭐⭐';
+        document.getElementById('summary-stars').textContent = stars;
 
-      const avgScore = Math.round((score1 + score2) / 2);
+        if (window.confetti) {
+          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        }
 
-      // 更新 Modal 內容
-      document.getElementById('modal-word1-label').textContent = `「${currentWord[0]}」`;
-      document.getElementById('modal-word2-label').textContent = `「${currentWord[1]}」`;
-      document.getElementById('modal-word1-score').textContent = score1;
-      document.getElementById('modal-word2-score').textContent = score2;
-      document.getElementById('modal-avg-score').textContent = avgScore;
-
-      const emoji = document.getElementById('modal-emoji');
-      const title = document.getElementById('modal-title');
-      const subtitle = document.getElementById('modal-subtitle');
-
-      if (avgScore >= 90) {
-        emoji.textContent = '🌟';
-        title.textContent = '太完美了！天才小畫家！';
-        subtitle.textContent = '字跡極度工整，繼續保持 100 分！';
-        speakCantonese('太完美了！寫得太棒了！');
-      } else if (avgScore >= 80) {
-        emoji.textContent = '🎉';
-        title.textContent = '寫得非常漂亮！';
-        subtitle.textContent = '筆順與架構都非常標準喔！';
-        speakCantonese('寫得非常漂亮！好棒！');
-      } else {
-        emoji.textContent = '💪';
-        title.textContent = '加油！越來越進步了！';
-        subtitle.textContent = '再試一次，一定可以拿到更高的分數！';
-        speakCantonese('加油！再寫一次會更漂亮！');
+        saveScore(AppState.currentLevel, avg);
       }
 
-      document.getElementById('score-modal').classList.remove('hidden');
-    }
+      function restartRound() {
+        selectLevel(AppState.currentLevel === 'custom' ? 'easy' : AppState.currentLevel);
+      }
 
-    // 初始化與 UI 事件監聽
-    window.addEventListener('DOMContentLoaded', () => {
-      resizeCanvases();
-      initWriters(currentWord);
-
-      bindDrawingEvents(canvas1, ctx1);
-      bindDrawingEvents(canvas2, ctx2);
-
-      // 字詞切換
-      document.getElementById('word-selector').addEventListener('change', (e) => {
-        currentWord = e.target.value;
-        initWriters(currentWord);
-        clearCanvases();
-        speakCantonese(currentWord);
-      });
-
-      // 工具列：筆劃粗細
-      document.getElementById('size-thin').addEventListener('click', () => { strokeWidth = 8; });
-      document.getElementById('size-medium').addEventListener('click', () => { strokeWidth = 14; });
-      document.getElementById('size-thick').addEventListener('click', () => { strokeWidth = 22; });
-
-      // 工具列：顏色
-      document.getElementById('color-black').addEventListener('click', () => { strokeColor = '#0f172a'; isEraser = false; });
-      document.getElementById('color-blue').addEventListener('click', () => { strokeColor = '#2563eb'; isEraser = false; });
-      document.getElementById('color-red').addEventListener('click', () => { strokeColor = '#e11d48'; isEraser = false; });
-      
-      // 橡皮擦
-      document.getElementById('btn-eraser').addEventListener('click', () => { isEraser = true; });
-
-      // 按鈕功能
-      document.getElementById('btn-clear').addEventListener('click', clearCanvases);
-      document.getElementById('btn-tts').addEventListener('click', () => speakCantonese(currentWord));
-      document.getElementById('btn-animate').addEventListener('click', playSequentialAnimation);
-      document.getElementById('btn-submit').addEventListener('click', handleSubmitScores);
-
-      // Modal 下一題按鈕
-      document.getElementById('btn-modal-close').addEventListener('click', () => {
-        document.getElementById('score-modal').classList.add('hidden');
-        clearCanvases();
-        
-        // 切換至下一個詞語
-        const selector = document.getElementById('word-selector');
-        const nextIdx = (selector.selectedIndex + 1) % selector.options.length;
-        selector.selectedIndex = nextIdx;
-        currentWord = selector.value;
-        initWriters(currentWord);
-        speakCantonese(currentWord);
-      });
-
-      // 格線切換
-      document.querySelectorAll('input[name="gridStyle"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-          const style = e.target.value;
-          const g1 = document.getElementById('grid-overlay-1');
-          const g2 = document.getElementById('grid-overlay-2');
-
-          [g1, g2].forEach(g => {
-            g.className = 'grid-overlay';
-            if (style === 'nine') g.classList.add('grid-nine');
-            if (style === 'cross') g.classList.add('grid-cross');
-          });
+      function saveScore(level, score) {
+        if (score < 0) return;
+        AppState.scores.unshift({
+          level: level.toUpperCase(),
+          score: score,
+          date: new Date().toLocaleDateString('zh-HK')
         });
-      });
-    });
+        AppState.scores = AppState.scores.slice(0, 10);
+        localStorage.setItem('hk_handwriting_scores', JSON.stringify(AppState.scores));
+        updateLeaderboardUI();
+      }
 
-    window.addEventListener('resize', resizeCanvases);
-  </script>
+      function updateLeaderboardUI() {
+        const list = document.getElementById('leaderboard-list');
+        if (!list) return;
+
+        if (AppState.scores.length === 0) {
+          list.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs font-bold">暫無習字紀錄</div>`;
+          return;
+        }
+
+        list.innerHTML = AppState.scores.map((item, index) => `
+          <div class="flex items-center justify-between bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+            <div class="flex items-center gap-2">
+              <span class="font-black text-xs ${index === 0 ? 'text-amber-500' : 'text-slate-400'}">#${index + 1}</span>
+              <span class="text-[10px] font-black bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">${item.level}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-black text-warm-orange">${item.score} 分</span>
+              <span class="text-[9px] text-slate-400 font-bold block">${item.date}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function toggleLeaderboard(show) {
+        const modal = document.getElementById('modal-leaderboard');
+        if (show) {
+          modal.classList.remove('hidden');
+        } else {
+          modal.classList.add('hidden');
+        }
+      }
+
+      function clearLeaderboard() {
+        AppState.scores = [];
+        localStorage.removeItem('hk_handwriting_scores');
+        updateLeaderboardUI();
+      }
+    </script>
 </body>
 </html>
