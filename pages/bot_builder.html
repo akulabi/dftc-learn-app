@@ -31,18 +31,23 @@
         }
     </script>
     <style>
-        body {
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
             font-family: 'Fredoka', sans-serif;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-            overflow: hidden;
         }
 
         /* Interactive Animations */
         @keyframes gentle-bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+            50% { transform: translateY(-3px); }
         }
 
         .animate-gentle-bounce {
@@ -61,7 +66,7 @@
         }
 
         .active-execution {
-            transform: scale(1.15) translateY(-4px) !important;
+            transform: scale(1.15) translateY(-3px) !important;
             box-shadow: 0 0 0 4px #F59E0B, 0 8px 16px rgba(245, 158, 11, 0.4) !important;
             z-index: 20;
         }
@@ -84,7 +89,7 @@
 
         /* Custom Horizontal Ribbon Scrollbar */
         #code-ribbon::-webkit-scrollbar {
-            height: 6px;
+            height: 5px;
         }
         #code-ribbon::-webkit-scrollbar-track {
             background: #E0E7FF;
@@ -96,19 +101,19 @@
         }
     </style>
 </head>
-<body class="bg-indigo-50 h-screen max-h-screen h-[100dvh] max-h-[100dvh] text-slate-800 flex flex-col justify-between select-none overflow-hidden font-fredoka">
+<body class="bg-indigo-50 h-[100dvh] max-h-[100dvh] text-slate-800 flex flex-col justify-between select-none overflow-hidden font-fredoka p-0 m-0">
 
     <!-- Top Navigation Header -->
-    <header class="bg-white border-b-4 border-indigo-200 px-3 py-1.5 shrink-0 shadow-sm">
+    <header class="bg-white border-b-2 sm:border-b-4 border-indigo-200 px-3 py-1 sm:py-1.5 shrink-0 shadow-sm">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             
             <!-- Logo & Brand Title -->
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-xl flex items-center justify-center text-white text-base sm:text-lg shadow-md transform -rotate-3">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-xl flex items-center justify-center text-white text-sm sm:text-lg shadow-md transform -rotate-3">
                     <i class="fa-solid fa-robot animate-gentle-bounce"></i>
                 </div>
                 <div>
-                    <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                    <h1 class="text-sm sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent leading-none">
                         Bot Builder
                     </h1>
                 </div>
@@ -118,29 +123,29 @@
             <div class="flex items-center gap-1.5 sm:gap-2">
                 
                 <!-- Level Indicator -->
-                <div class="bg-indigo-100 border-2 border-indigo-300 text-indigo-900 px-2.5 py-0.5 sm:py-1 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
+                <div class="bg-indigo-100 border-2 border-indigo-300 text-indigo-900 px-2 sm:px-2.5 py-0.5 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
                     <span>Lvl</span>
                     <span id="current-level-num" class="text-purple-700 font-extrabold">1</span>
                 </div>
 
                 <!-- Stars Collected Badge -->
-                <div class="bg-yellow-100 border-2 border-yellow-300 text-yellow-900 px-2.5 py-0.5 sm:py-1 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
+                <div class="bg-yellow-100 border-2 border-yellow-300 text-yellow-900 px-2 sm:px-2.5 py-0.5 rounded-full flex items-center gap-1 font-bold text-xs sm:text-sm">
                     <i class="fa-solid fa-star text-yellow-500"></i>
                     <span id="header-stars-count">0</span>
                 </div>
 
                 <!-- Trophy / Leaderboard Button -->
-                <button onclick="openLeaderboard()" class="w-8 h-8 sm:w-9 sm:h-9 bg-amber-100 border-2 border-amber-300 hover:bg-amber-200 text-amber-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Leaderboard">
+                <button onclick="openLeaderboard()" class="w-7 h-7 sm:w-9 sm:h-9 bg-amber-100 border-2 border-amber-300 hover:bg-amber-200 text-amber-700 rounded-xl flex items-center justify-center text-xs sm:text-sm transition-all active:scale-95 shadow-sm" title="Leaderboard">
                     <i class="fa-solid fa-trophy text-amber-500"></i>
                 </button>
 
                 <!-- Sound Toggle -->
-                <button id="btn-sound-toggle" onclick="toggleSound()" class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-100 border-2 border-indigo-300 hover:bg-indigo-200 text-indigo-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Sound">
+                <button id="btn-sound-toggle" onclick="toggleSound()" class="w-7 h-7 sm:w-9 sm:h-9 bg-indigo-100 border-2 border-indigo-300 hover:bg-indigo-200 text-indigo-700 rounded-xl flex items-center justify-center text-xs sm:text-sm transition-all active:scale-95 shadow-sm" title="Sound">
                     <i id="sound-icon" class="fa-solid fa-volume-high"></i>
                 </button>
 
                 <!-- Parent Options -->
-                <button onclick="openParentModal()" class="w-8 h-8 sm:w-9 sm:h-9 bg-pink-100 border-2 border-pink-300 hover:bg-pink-200 text-pink-700 rounded-xl flex items-center justify-center text-sm transition-all active:scale-95 shadow-sm" title="Settings">
+                <button onclick="openParentModal()" class="w-7 h-7 sm:w-9 sm:h-9 bg-pink-100 border-2 border-pink-300 hover:bg-pink-200 text-pink-700 rounded-xl flex items-center justify-center text-xs sm:text-sm transition-all active:scale-95 shadow-sm" title="Settings">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
@@ -148,90 +153,90 @@
     </header>
 
     <!-- Icon Legend Strip -->
-    <div class="bg-indigo-950 text-indigo-100 px-3 py-1 shrink-0 flex items-center justify-center gap-4 text-xs sm:text-sm font-semibold shadow-inner border-b border-indigo-800">
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-robot text-pink-400 text-base"></i><span>Bot</span></div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-house-chimney text-amber-300 text-base"></i><span>Goal</span></div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-star text-yellow-400 text-base"></i><span>Star</span></div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-mountain text-slate-400 text-base"></i><span>Rock</span></div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-water text-blue-300 text-base"></i><span>Water</span></div>
+    <div class="bg-indigo-950 text-indigo-100 px-2 py-0.5 shrink-0 flex items-center justify-center gap-3 sm:gap-4 text-xs font-semibold shadow-inner border-b border-indigo-800">
+        <div class="flex items-center gap-1"><i class="fa-solid fa-robot text-pink-400 text-xs sm:text-sm"></i><span>Bot</span></div>
+        <div class="flex items-center gap-1"><i class="fa-solid fa-house-chimney text-amber-300 text-xs sm:text-sm"></i><span>Goal</span></div>
+        <div class="flex items-center gap-1"><i class="fa-solid fa-star text-yellow-400 text-xs sm:text-sm"></i><span>Star</span></div>
+        <div class="flex items-center gap-1"><i class="fa-solid fa-mountain text-slate-400 text-xs sm:text-sm"></i><span>Rock</span></div>
+        <div class="flex items-center gap-1"><i class="fa-solid fa-water text-blue-300 text-xs sm:text-sm"></i><span>Water</span></div>
     </div>
 
     <!-- Main Dynamic Screen Layout -->
-    <main class="max-w-5xl w-full mx-auto p-2 sm:p-3 flex-1 min-h-0 flex flex-col lg:flex-row gap-2 sm:gap-3 overflow-hidden">
+    <main class="max-w-5xl w-full mx-auto p-1.5 sm:p-2 flex-1 min-h-0 flex flex-col lg:flex-row gap-1.5 sm:gap-2 overflow-hidden">
         
         <!-- Left: Solvable Procedural Grid -->
-        <div class="flex-1 min-h-0 bg-white border-4 border-indigo-200 rounded-2xl p-2 sm:p-3 shadow-md flex flex-col items-center justify-between relative overflow-hidden">
+        <div class="flex-1 min-h-0 bg-white border-2 sm:border-4 border-indigo-200 rounded-2xl p-1.5 sm:p-2 shadow-md flex flex-col items-center justify-between relative overflow-hidden">
             
             <!-- Quick Interactive Audio Banner -->
-            <div class="w-full shrink-0 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-1.5 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <button onclick="speakCurrentPrompt()" class="w-7 h-7 bg-purple-600 text-white rounded-lg flex items-center justify-center shadow hover:bg-purple-700 transition-all active:scale-95 shrink-0">
-                        <i class="fa-solid fa-volume-low text-xs"></i>
+            <div class="w-full shrink-0 bg-indigo-50 border border-indigo-100 rounded-xl p-1 flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                    <button onclick="speakCurrentPrompt()" class="w-6 h-6 bg-purple-600 text-white rounded-lg flex items-center justify-center shadow hover:bg-purple-700 transition-all active:scale-95 shrink-0">
+                        <i class="fa-solid fa-volume-low text-[10px]"></i>
                     </button>
-                    <p id="level-instruction" class="text-xs sm:text-sm font-semibold text-indigo-950 truncate">
+                    <p id="level-instruction" class="text-xs font-semibold text-indigo-950 truncate">
                         Help Bot reach home!
                     </p>
                 </div>
-                <div id="stars-tracker" class="flex gap-1 text-yellow-400 text-sm sm:text-base shrink-0 ml-2"></div>
+                <div id="stars-tracker" class="flex gap-1 text-yellow-400 text-xs sm:text-sm shrink-0 ml-2"></div>
             </div>
 
             <!-- Scaled Center Grid -->
-            <div class="flex-1 min-h-0 w-full flex items-center justify-center p-1 sm:p-2">
-                <div class="relative bg-indigo-900 rounded-2xl p-2 shadow-inner border-4 border-indigo-300 max-h-full max-w-full flex items-center justify-center">
-                    <div id="maze-grid" class="grid gap-1 sm:gap-1.5"></div>
+            <div class="flex-1 min-h-0 w-full flex items-center justify-center p-0.5 sm:p-1 overflow-hidden">
+                <div class="relative bg-indigo-900 rounded-2xl p-1.5 shadow-inner border-2 sm:border-4 border-indigo-300 max-h-full max-w-full flex items-center justify-center overflow-hidden">
+                    <div id="maze-grid" class="grid gap-1"></div>
                 </div>
             </div>
         </div>
 
         <!-- Right Panel: Commands Ribbon & Execution Controls -->
-        <div class="w-full lg:w-[320px] shrink-0 flex flex-col gap-2 min-h-0">
+        <div class="w-full lg:w-[310px] shrink-0 flex flex-col gap-1.5 sm:gap-2 min-h-0">
             
             <!-- Icon-Only Command Palette -->
-            <div class="bg-white border-4 border-indigo-200 rounded-2xl p-2 shadow-md flex flex-col gap-1.5 shrink-0">
-                <div class="grid grid-cols-4 gap-2">
-                    <button onclick="addCommand('FORWARD')" class="cmd-block bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Move Forward">
-                        <i class="fa-solid fa-arrow-up text-3xl sm:text-4xl"></i>
+            <div class="bg-white border-2 sm:border-4 border-indigo-200 rounded-2xl p-1.5 shadow-md flex flex-col gap-1 shrink-0">
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="addCommand('FORWARD')" class="cmd-block bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 rounded-xl py-2 sm:py-2.5 flex items-center justify-center transition-all" title="Move Forward">
+                        <i class="fa-solid fa-arrow-up text-2xl sm:text-3xl"></i>
                     </button>
 
-                    <button onclick="addCommand('TURN_LEFT')" class="cmd-block bg-blue-500 hover:bg-blue-600 text-white border-b-4 border-blue-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Turn Left">
-                        <i class="fa-solid fa-rotate-left text-3xl sm:text-4xl"></i>
+                    <button onclick="addCommand('TURN_LEFT')" class="cmd-block bg-blue-500 hover:bg-blue-600 text-white border-b-4 border-blue-700 rounded-xl py-2 sm:py-2.5 flex items-center justify-center transition-all" title="Turn Left">
+                        <i class="fa-solid fa-rotate-left text-2xl sm:text-3xl"></i>
                     </button>
 
-                    <button onclick="addCommand('TURN_RIGHT')" class="cmd-block bg-purple-500 hover:bg-purple-600 text-white border-b-4 border-purple-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Turn Right">
-                        <i class="fa-solid fa-rotate-right text-3xl sm:text-4xl"></i>
+                    <button onclick="addCommand('TURN_RIGHT')" class="cmd-block bg-purple-500 hover:bg-purple-600 text-white border-b-4 border-purple-700 rounded-xl py-2 sm:py-2.5 flex items-center justify-center transition-all" title="Turn Right">
+                        <i class="fa-solid fa-rotate-right text-2xl sm:text-3xl"></i>
                     </button>
 
-                    <button onclick="addCommand('JUMP')" class="cmd-block bg-amber-500 hover:bg-amber-600 text-white border-b-4 border-amber-700 rounded-2xl py-3 flex items-center justify-center transition-all" title="Jump Over Hazard">
-                        <i class="fa-solid fa-bolt text-3xl sm:text-4xl"></i>
+                    <button onclick="addCommand('JUMP')" class="cmd-block bg-amber-500 hover:bg-amber-600 text-white border-b-4 border-amber-700 rounded-xl py-2 sm:py-2.5 flex items-center justify-center transition-all" title="Jump Over Hazard">
+                        <i class="fa-solid fa-bolt text-2xl sm:text-3xl"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Code Ribbon Bar & Playback Controls -->
-            <div class="flex-1 min-h-0 bg-white border-4 border-indigo-200 rounded-2xl p-2.5 shadow-md flex flex-col justify-between gap-2 overflow-hidden">
+            <div class="flex-1 min-h-0 bg-white border-2 sm:border-4 border-indigo-200 rounded-2xl p-2 shadow-md flex flex-col justify-between gap-1.5 overflow-hidden">
                 
-                <div class="flex items-center justify-between border-b border-indigo-100 pb-1">
-                    <span id="block-counter" class="text-xs font-bold text-indigo-900 bg-indigo-100 px-2.5 py-0.5 rounded-full">0 / 100</span>
-                    <button onclick="clearCodeSequence()" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded-lg border border-rose-200 transition-all flex items-center gap-1" title="Clear All">
+                <div class="flex items-center justify-between border-b border-indigo-100 pb-1 shrink-0">
+                    <span id="block-counter" class="text-[11px] font-bold text-indigo-900 bg-indigo-100 px-2 py-0.5 rounded-full">0 / 100</span>
+                    <button onclick="clearCodeSequence()" class="text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded-lg border border-rose-200 transition-all flex items-center gap-1" title="Clear All">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
 
                 <!-- Command Sequence Strip -->
-                <div id="code-ribbon" class="flex-1 min-h-[50px] bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-xl p-2 flex items-center gap-2 overflow-x-auto">
+                <div id="code-ribbon" class="flex-1 min-h-[45px] bg-indigo-50/70 border-2 border-dashed border-indigo-300 rounded-xl p-1.5 flex items-center gap-1.5 overflow-x-auto">
                     <div id="empty-ribbon-placeholder" class="w-full text-center text-slate-400 font-bold text-xs py-1">
-                        <i class="fa-solid fa-hand-pointer text-indigo-300 text-lg mb-0.5 block animate-bounce"></i>
+                        <i class="fa-solid fa-hand-pointer text-indigo-300 text-base mb-0.5 block animate-bounce"></i>
                         Tap buttons above!
                     </div>
                 </div>
 
                 <!-- Playback Control Actions -->
-                <div class="flex items-center justify-center gap-2 shrink-0">
-                    <button id="btn-reset" onclick="resetRobotState()" class="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl border-b-4 border-slate-400 text-base transition-all active:scale-95" title="Reset Bot">
+                <div class="flex items-center justify-center gap-1.5 shrink-0">
+                    <button id="btn-reset" onclick="resetRobotState()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl border-b-4 border-slate-400 text-sm transition-all active:scale-95" title="Reset Bot">
                         <i class="fa-solid fa-rotate-left"></i>
                     </button>
 
-                    <button id="btn-run" onclick="runProgram()" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-extrabold text-base sm:text-lg rounded-xl border-b-4 border-green-700 flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
+                    <button id="btn-run" onclick="runProgram()" class="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-extrabold text-sm sm:text-base rounded-xl border-b-4 border-green-700 flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95">
                         <i class="fa-solid fa-play"></i> RUN
                     </button>
                 </div>
@@ -606,25 +611,26 @@
                     const isHazard = (lvl.hazards || []).some(h => h.r === r && h.c === c);
                     const isStar = (lvl.stars || []).some(s => s.r === r && s.c === c) && !collectedStars.has(`${r},${c}`);
 
-                    tile.className = "w-10 h-10 sm:w-14 sm:h-14 bg-indigo-800/80 border border-indigo-700/60 rounded-xl flex items-center justify-center relative overflow-hidden shadow-inner transition-all";
+                    // Fluid cell dimension scaling based on grid column count and screen bounds
+                    tile.className = "w-[11vw] max-w-[56px] aspect-square bg-indigo-800/80 border border-indigo-700/60 rounded-xl flex items-center justify-center relative overflow-hidden shadow-inner transition-all";
 
                     if (isObstacle) {
                         tile.classList.add('bg-slate-700');
-                        tile.innerHTML = `<i class="fa-solid fa-mountain text-slate-400 text-lg sm:text-2xl"></i>`;
+                        tile.innerHTML = `<i class="fa-solid fa-mountain text-slate-400 text-base sm:text-xl"></i>`;
                     } else if (isHazard) {
                         tile.classList.add('bg-blue-600/60');
-                        tile.innerHTML = `<i class="fa-solid fa-water text-blue-300 text-lg sm:text-2xl animate-pulse"></i>`;
+                        tile.innerHTML = `<i class="fa-solid fa-water text-blue-300 text-base sm:text-xl animate-pulse"></i>`;
                     } else if (isTarget) {
                         tile.classList.add('bg-amber-400/20');
-                        tile.innerHTML = `<i class="fa-solid fa-house-chimney text-amber-300 text-xl sm:text-3xl"></i>`;
+                        tile.innerHTML = `<i class="fa-solid fa-house-chimney text-amber-300 text-lg sm:text-2xl"></i>`;
                     } else if (isStar) {
-                        tile.innerHTML = `<i class="fa-solid fa-star text-yellow-400 text-lg sm:text-2xl animate-bounce"></i>`;
+                        tile.innerHTML = `<i class="fa-solid fa-star text-yellow-400 text-base sm:text-xl animate-bounce"></i>`;
                     }
 
                     if (isRobot) {
                         const rot = DIR_OFFSETS[robotState.dir].rot;
                         tile.innerHTML += `
-                            <div id="robot-avatar" class="absolute inset-0 flex items-center justify-center text-pink-400 text-2xl sm:text-3xl z-10" style="transform: rotate(${rot}deg)">
+                            <div id="robot-avatar" class="absolute inset-0 flex items-center justify-center text-pink-400 text-xl sm:text-2xl z-10" style="transform: rotate(${rot}deg)">
                                 <i class="fa-solid fa-robot"></i>
                             </div>
                         `;
