@@ -656,6 +656,7 @@
 
         function endGame() {
             gameActive = false;
+            isLockBoard = true;
             clearInterval(timerInterval);
 
             document.getElementById('finalScore').innerText = score;
