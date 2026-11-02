@@ -197,7 +197,7 @@
         <!-- Memory Preview Notice with Animated Countdown -->
         <div id="previewNotice" class="hidden absolute top-1 z-20 bg-amber-400/95 text-slate-900 font-black px-4 py-1 rounded-full shadow-lg border-2 border-white animate-pulse text-xs flex items-center gap-1.5">
             <span>👀 記住卡牌：</span>
-            <span id="previewCountdown" class="text-rose-700 text-xs sm:text-sm font-extrabold underline">3 秒!</span>
+            <span id="previewCountdown" class="text-rose-700 text-xs sm:text-sm font-extrabold underline">5 秒!</span>
         </div>
 
         <!-- Dynamic Card Grid Container -->
@@ -562,14 +562,14 @@
             const notice = document.getElementById('previewNotice');
             const previewCountdownEl = document.getElementById('previewCountdown');
             
-            let previewSecondsLeft = 3;
+            let previewSecondsLeft = 5;
             previewCountdownEl.innerText = `${previewSecondsLeft} 秒!`;
             notice.classList.remove('hidden');
 
             const allCardEls = document.querySelectorAll('.card');
             allCardEls.forEach(c => c.classList.add('flipped'));
 
-            // 3-second memory preview timer interval
+            // 5-second memory preview timer interval
             const previewTimer = setInterval(() => {
                 previewSecondsLeft--;
                 if (previewSecondsLeft > 0) {
@@ -583,13 +583,18 @@
                 clearInterval(previewTimer);
                 allCardEls.forEach(c => c.classList.remove('flipped'));
                 notice.classList.add('hidden');
-                isLockBoard = false;
+                
+                // Only unlock board if game is still active
+                if (gameActive) {
+                    isLockBoard = false;
+                }
                 isPreviewing = false;
-            }, 3000);
+            }, 5000);
         }
 
         function handleCardClick(cardEl, card) {
-            if (isLockBoard || isPreviewing) return;
+            // Strict check: Freeze card clicks if game is inactive or locked
+            if (!gameActive || isLockBoard || isPreviewing) return;
             if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
 
             cardEl.classList.add('flipped');
