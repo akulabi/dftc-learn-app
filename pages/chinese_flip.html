@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>詞語翻卡對對碰 - 幼兒廣東話記憶遊戲</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sky: {
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                        },
+                        amber: {
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background: linear-gradient(135deg, #a5f3fc 0%, #fef08a 50%, #fbcfe8 100%);
+        }
+
+        /* Floating background elements */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.65);
+            border-radius: 999px;
+            filter: blur(1px);
+            animation: floatCloud 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes floatCloud {
+            0% { transform: translateX(-150px); }
+            100% { transform: translateX(100vw); }
+        }
+
+        /* 3D Card Flip Styles */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 0px rgba(0, 0, 0, 0.12), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            border: 4px solid #ffffff;
+        }
+
+        .card-back {
+            background: #ffffff;
+            border: 4px solid #facc15;
+            transform: rotateY(180deg);
+        }
+
+        /* Card Match & Disappear Animation */
+        @keyframes matchedPulse {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.15); box-shadow: 0 0 30px #facc15; }
+            100% { transform: rotateY(180deg) scale(0); opacity: 0; }
+        }
+
+        .card.matched .card-inner {
+            animation: matchedPulse 0.6s forwards;
+        }
+
+        /* Custom Scrollbar for Leaderboard */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-screen max-h-screen w-screen overflow-hidden flex flex-col justify-between p-2 sm:p-3 relative select-none">
+
+    <!-- Floating Decor Clouds -->
+    <div class="cloud w-28 h-10 top-4 -left-32" style="animation-duration: 25s;"></div>
+    <div class="cloud w-40 h-12 top-16 -left-48" style="animation-duration: 32s; animation-delay: 5s;"></div>
+    <div class="cloud w-32 h-10 bottom-12 -left-36" style="animation-duration: 22s; animation-delay: 10s;"></div>
+
+    <!-- Header / App Bar -->
+    <header class="w-full max-w-2xl mx-auto flex items-center justify-between shrink-0 mb-1 z-10">
+        <div class="flex items-center gap-2 bg-white/85 backdrop-blur-md px-3 py-1 rounded-full shadow-md border-2 border-amber-300">
+            <span class="text-xl animate-bounce">🐱</span>
+            <h1 class="text-lg sm:text-xl font-black text-amber-600 tracking-wide">詞語對對碰</h1>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+            <button id="speechBtn" onclick="toggleSpeech()" class="w-10 h-10 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition active:scale-95 border-2 border-amber-300 flex items-center justify-center shadow-sm" title="語音">
+                <i class="fa-solid fa-volume-high text-base" id="speechIcon"></i>
+            </button>
+            <button onclick="openLeaderboard()" class="w-10 h-10 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full transition active:scale-95 border-2 border-purple-300 flex items-center justify-center shadow-sm" title="龍虎榜">
+                <i class="fa-solid fa-trophy text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Game Stats Bar -->
+    <div class="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-2 sm:p-2.5 shadow-md border-2 border-sky-300 flex items-center justify-between gap-2 shrink-0 mb-1 z-10">
+        <!-- Level -->
+        <div class="flex items-center gap-1.5 bg-amber-100 px-2.5 py-1 rounded-xl border border-amber-300">
+            <span class="text-base">🚩</span>
+            <div id="levelDisplay" class="text-sm font-black text-amber-800">第 1 關</div>
+        </div>
+
+        <!-- Timer Gauge -->
+        <div class="flex-1 px-1">
+            <div class="flex justify-between items-center mb-0.5">
+                <span class="text-xs font-bold text-slate-600">⏱️ <span id="timerText" class="font-black text-rose-600">30s</span></span>
+            </div>
+            <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                <div id="timerBar" class="bg-gradient-to-r from-emerald-400 to-rose-500 h-full rounded-full transition-all duration-300 w-full"></div>
+            </div>
+        </div>
+
+        <!-- Score -->
+        <div class="flex items-center gap-1.5 bg-sky-100 px-2.5 py-1 rounded-xl border border-sky-300">
+            <span class="text-base">⭐</span>
+            <div id="scoreDisplay" class="text-sm font-black text-sky-800">0</div>
+        </div>
+    </div>
+
+    <!-- Main Game Play Area (No Scroll Dynamic Layout) -->
+    <main class="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center justify-center relative min-h-0 z-10">
+        <!-- Memory Preview Notice -->
+        <div id="previewNotice" class="hidden absolute top-2 z-20 bg-amber-400/95 text-slate-900 font-black px-5 py-1.5 rounded-full shadow-lg border-2 border-white animate-pulse text-xs sm:text-sm">
+            👀 請記住卡牌位置！(2秒)
+        </div>
+
+        <!-- Dynamic Card Grid Container -->
+        <div id="cardGrid" class="w-full h-full p-1 transition-all duration-300 grid gap-2 sm:gap-3 items-center justify-center">
+            <!-- Dynamic cards generated here -->
+        </div>
+
+        <!-- Start Game Screen Overlay -->
+        <div id="startOverlay" class="absolute inset-0 bg-white/95 backdrop-blur-md rounded-3xl z-30 flex flex-col items-center justify-center p-4 text-center shadow-2xl border-4 border-sky-300">
+            <div class="text-6xl mb-2 animate-bounce">🧩</div>
+            <h2 class="text-2xl sm:text-3xl font-black text-sky-600 mb-1">詞語翻卡對對碰</h2>
+            <p class="text-xs sm:text-sm text-slate-500 font-bold mb-6">翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！</p>
+
+            <button onclick="startGame()" class="px-8 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 text-lg font-black rounded-2xl shadow-lg transform transition active:scale-95 border-b-4 border-amber-700 flex items-center gap-2">
+                <i class="fa-solid fa-play text-xl"></i> 開始遊戲
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer Controls -->
+    <footer class="w-full max-w-2xl mx-auto flex justify-center items-center shrink-0 mt-1 z-10">
+        <button id="restartBtn" onclick="restartGame()" class="hidden px-4 py-1.5 bg-white/80 hover:bg-white text-slate-700 rounded-xl font-bold transition active:scale-95 border border-slate-300 text-xs shadow-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-right text-xs"></i> 重新開始
+        </button>
+    </footer>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-4 border-purple-300 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-2 text-purple-700 font-black text-xl">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span>龍虎榜</span>
+                </div>
+                <button onclick="closeLeaderboard()" class="w-8 h-8 bg-slate-100 text-slate-500 rounded-full font-bold hover:bg-slate-200 transition text-sm">✕</button>
+            </div>
+
+            <!-- Leaderboard List -->
+            <div id="leaderboardList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <!-- Dynamically Populated -->
+            </div>
+
+            <div class="mt-3 pt-2 border-t flex justify-end">
+                <button onclick="closeLeaderboard()" class="px-5 py-2 bg-purple-600 text-white font-bold rounded-xl text-xs hover:bg-purple-700 transition">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-4 border-amber-300 text-center">
+            <div class="text-5xl mb-1">🎉</div>
+            <h2 class="text-xl font-black text-amber-600 mb-1">時間到！</h2>
+
+            <div class="bg-amber-50 rounded-xl p-3 mb-4 border border-amber-200 flex justify-around items-center">
+                <div>
+                    <div class="text-xs text-amber-700 font-bold">總分</div>
+                    <div id="finalScore" class="text-2xl font-black text-amber-600">0</div>
+                </div>
+                <div class="h-8 w-px bg-amber-200"></div>
+                <div>
+                    <div class="text-xs text-amber-700 font-bold">關卡</div>
+                    <div id="finalLevel" class="text-2xl font-black text-amber-600">1</div>
+                </div>
+            </div>
+
+            <div class="mb-4 text-left">
+                <input type="text" id="playerName" maxlength="10" placeholder="名字 (例如: 小明)" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 focus:border-amber-400 focus:outline-none font-bold text-slate-800 text-center text-sm">
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="submitScore()" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
+                    💾 儲存成績
+                </button>
+                <button onclick="restartGame(); closeModal('gameOverModal');" class="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
+                    再玩一次
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /* ==========================================================================
+           1. 200+ CANTONESE VOCABULARY WORD BANK
+           ========================================================================== */
+        const WORD_BANK = [
+            // Animals
+            { word: '狗仔', emoji: '🐶' }, { word: '貓咪', emoji: '🐱' }, { word: '小白兔', emoji: '🐰' }, { word: '小熊', emoji: '🐻' },
+            { word: '熊貓', emoji: '🐼' }, { word: '猴子', emoji: '🐵' }, { word: '老虎', emoji: '🐯' }, { word: '獅子', emoji: '🦁' },
+            { word: '大象', emoji: '🐘' }, { word: '長頸鹿', emoji: '🦒' }, { word: '斑馬', emoji: '🦓' }, { word: '河馬', emoji: '🦛' },
+            { word: '小豬', emoji: '🐷' }, { word: '乳牛', emoji: '🐮' }, { word: '綿羊', emoji: '🐑' }, { word: '公雞', emoji: '🐓' },
+            { word: '小鸭', emoji: '🦆' }, { word: '青蛙', emoji: '🐸' }, { word: '企鵝', emoji: '🐧' }, { word: '海豚', emoji: '🐬' },
+            { word: '鯨魚', emoji: '🐳' }, { word: '章魚', emoji: '🐙' }, { word: '蝴蝶', emoji: '🦋' }, { word: '蜜蜂', emoji: '🐝' },
+            { word: '恐龍', emoji: '🦖' }, { word: '金魚', emoji: '🐠' }, { word: '烏龜', emoji: '🐢' }, { word: '松鼠', emoji: '🐿️' },
+
+            // Foods & Drinks
+            { word: '蘋果', emoji: '🍎' }, { word: '香蕉', emoji: '🍌' }, { word: '提子', emoji: '🍇' }, { word: '西瓜', emoji: '🍉' },
+            { word: '草莓', emoji: '🍓' }, { word: '橙仔', emoji: '🍊' }, { word: '檸檬', emoji: '🍋' }, { word: '水蜜桃', emoji: '🍑' },
+            { word: '菠蘿', emoji: '🍍' }, { word: '櫻桃', emoji: '🍒' }, { word: '麵包', emoji: '🍞' }, { word: '蛋撻', emoji: '🥧' },
+            { word: '蛋糕', emoji: '🎂' }, { word: '雪糕', emoji: '🍦' }, { word: '朱古力', emoji: '🍫' }, { word: '糖果', emoji: '🍬' },
+            { word: '漢堡包', emoji: '🍔' }, { word: '薯條', emoji: '🍟' }, { word: '薄餅', emoji: '🍕' }, { word: '三文治', emoji: '🥪' },
+            { word: '珍珠奶茶', emoji: '🧋' }, { word: '壽司', emoji: '🍣' }, { word: '拉麵', emoji: '🍜' }, { word: '牛奶', emoji: '🥛' },
+
+            // Transport
+            { word: '巴士', emoji: '🚌' }, { word: '的士', emoji: '🚕' }, { word: '私家車', emoji: '🚗' }, { word: '警車', emoji: '🚓' },
+            { word: '救護車', emoji: '🚑' }, { word: '消防車', emoji: '🚒' }, { word: '單車', emoji: '🚲' }, { word: '飛機', emoji: '✈️' },
+            { word: '直升機', emoji: '🚁' }, { word: '火箭', emoji: '🚀' }, { word: '輪船', emoji: '🚢' }, { word: '火車', emoji: '🚆' },
+            { word: '電車', emoji: '🚃' }, { word: '校車', emoji: '🚐' }, { word: '熱氣球', emoji: '🎈' }, { word: '纜車', emoji: '🪂' },
+
+            // Everyday Toys & Nature
+            { word: '牙刷', emoji: '🪥' }, { word: '鬧鐘', emoji: '⏰' }, { word: '雨傘', emoji: '☂️' }, { word: '眼鏡', emoji: '👓' },
+            { word: '帽子', emoji: '🧢' }, { word: '鞋子', emoji: '👟' }, { word: '書包', emoji: '🎒' }, { word: '剪刀', emoji: '✂️' },
+            { word: '足球', emoji: '⚽' }, { word: '籃球', emoji: '🏀' }, { word: '積木', emoji: '🧱' }, { word: '禮物', emoji: '🎁' },
+            { word: '太陽', emoji: '☀️' }, { word: '月亮', emoji: '🌙' }, { word: '星星', emoji: '⭐' }, { word: '彩虹', emoji: '🌈' },
+            { word: '白雲', emoji: '☁️' }, { word: '下雨', emoji: '🌧️' }, { word: '大樹', emoji: '🌳' }, { word: '鮮花', emoji: '🌸' },
+
+            // Extra Items
+            { word: '老師', emoji: '🧑‍🏫' }, { word: '醫生', emoji: '🧑‍⚕️' }, { word: '警察', emoji: '👮' }, { word: '廚師', emoji: '🧑‍🍳' },
+            { word: '跑步', emoji: '🏃' }, { word: '游泳', emoji: '🏊' }, { word: '跳舞', emoji: '💃' }, { word: '唱歌', emoji: '🎤' },
+            { word: '體操', emoji: '🤸‍♀️' }, { word: '鋼琴', emoji: '🎹' }, { word: '吉他', emoji: '🎸' }, { word: '小提琴', emoji: '🎻' },
+            { word: '眼睛', emoji: '👀' }, { word: '耳朵', emoji: '👂' }, { word: '嘴巴', emoji: '👄' }, { word: '小手', emoji: '✋' },
+            { word: '房屋', emoji: '🏠' }, { word: '學校', emoji: '🏫' }, { word: '城堡', emoji: '🏰' }, { word: '公園', emoji: '🛝' },
+            { word: '鑽石', emoji: '💎' }, { word: '鑰匙', emoji: '🔑' }, { word: '機器人', emoji: '🤖' }, { word: '獎杯', emoji: '🏆' }
+        ];
+
+        /* ==========================================================================
+           2. AUDIO SYNTHESIS & SOUND EFFECTS
+           ========================================================================== */
+        let speechEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'flip') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'match') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                osc.frequency.setValueAtTime(783.99, now + 0.16);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(180, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'clear') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    g.gain.setValueAtTime(0.15, now + idx * 0.05);
+                    g.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    o.start(now + idx * 0.05);
+                    o.stop(now + 0.5);
+                });
+            }
+        }
+
+        function speakCantonese(text) {
+            if (!speechEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-HK';
+            utterance.rate = 0.95;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleSpeech() {
+            speechEnabled = !speechEnabled;
+            const icon = document.getElementById('speechIcon');
+            const btn = document.getElementById('speechBtn');
+            if (speechEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-base';
+                btn.classList.replace('bg-slate-200', 'bg-amber-100');
+                speakCantonese('語音已開啟');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-base';
+                btn.classList.replace('bg-amber-100', 'bg-slate-200');
+            }
+        }
+
+        /* ==========================================================================
+           3. GAME STATE & MECHANICS
+           ========================================================================== */
+        let gameActive = false;
+        let score = 0;
+        let currentLevel = 1;
+        let cardCount = 8;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let isPreviewing = false;
+
+        let cardsData = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let isLockBoard = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLeaderboard();
+        });
+
+        function startGame() {
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('restartBtn').classList.remove('hidden');
+            score = 0;
+            currentLevel = 1;
+            cardCount = 8;
+            timeLeft = 30;
+            updateDashboard();
+            startLevel();
+            startTimer();
+            gameActive = true;
+        }
+
+        function restartGame() {
+            clearInterval(timerInterval);
+            document.getElementById('gameOverModal').classList.add('hidden');
+            startGame();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive || isPreviewing) return;
+
+                timeLeft--;
+                updateDashboard();
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateDashboard() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('levelDisplay').innerText = `第 ${currentLevel} 關`;
+            document.getElementById('timerText').innerText = `${timeLeft}s`;
+
+            const percentage = Math.max(0, Math.min(100, (timeLeft / 30) * 100));
+            const timerBar = document.getElementById('timerBar');
+            timerBar.style.width = `${percentage}%`;
+
+            if (timeLeft <= 8) {
+                timerBar.className = "bg-rose-500 h-full rounded-full transition-all duration-300 w-full animate-pulse";
+            } else {
+                timerBar.className = "bg-gradient-to-r from-emerald-400 to-amber-500 h-full rounded-full transition-all duration-300 w-full";
+            }
+        }
+
+        function startLevel() {
+            matchedPairs = 0;
+            flippedCards = [];
+            isLockBoard = true;
+            isPreviewing = true;
+
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+
+            // Dynamic grid layout fitting screen height seamlessly
+            if (cardCount <= 8) {
+                grid.className = "w-full h-full grid grid-cols-2 sm:grid-cols-4 grid-rows-4 sm:grid-rows-2 gap-2 sm:gap-3 max-w-xl mx-auto items-stretch justify-items-stretch";
+            } else if (cardCount <= 12) {
+                grid.className = "w-full h-full grid grid-cols-3 sm:grid-cols-4 grid-rows-4 sm:grid-rows-3 gap-2 sm:gap-2.5 max-w-2xl mx-auto items-stretch justify-items-stretch";
+            } else {
+                grid.className = "w-full h-full grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 max-w-2xl mx-auto items-stretch justify-items-stretch";
+            }
+
+            const numPairs = cardCount / 2;
+            const selectedPairs = getRandomSample(WORD_BANK, numPairs);
+
+            cardsData = [];
+            selectedPairs.forEach((item, index) => {
+                cardsData.push({ id: `pair-${index}-word`, pairId: index, type: 'word', content: item.word, speechText: item.word });
+                cardsData.push({ id: `pair-${index}-pic`, pairId: index, type: 'picture', content: item.emoji, speechText: item.word });
+            });
+
+            shuffleArray(cardsData);
+
+            cardsData.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card perspective-1000 w-full h-full cursor-pointer min-h-0';
+                cardEl.dataset.index = index;
+
+                cardEl.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <span class="text-2xl sm:text-3xl">❓</span>
+                        </div>
+                        <div class="card-back">
+                            <span class="${card.type === 'word' ? 'text-lg sm:text-2xl font-black text-slate-800 tracking-wider' : 'text-3xl sm:text-5xl'}">
+                                ${card.content}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                cardEl.addEventListener('click', () => handleCardClick(cardEl, card));
+                grid.appendChild(cardEl);
+            });
+
+            const notice = document.getElementById('previewNotice');
+            notice.classList.remove('hidden');
+
+            const allCardEls = document.querySelectorAll('.card');
+            allCardEls.forEach(c => c.classList.add('flipped'));
+
+            setTimeout(() => {
+                allCardEls.forEach(c => c.classList.remove('flipped'));
+                notice.classList.add('hidden');
+                isLockBoard = false;
+                isPreviewing = false;
+            }, 2000);
+        }
+
+        function handleCardClick(cardEl, card) {
+            if (isLockBoard || isPreviewing) return;
+            if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+
+            cardEl.classList.add('flipped');
+            playSound('flip');
+            speakCantonese(card.speechText);
+
+            flippedCards.push({ element: cardEl, data: card });
+
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            isLockBoard = true;
+            const [card1, card2] = flippedCards;
+
+            const isMatch = (card1.data.pairId === card2.data.pairId) && (card1.data.type !== card2.data.type);
+
+            if (isMatch) {
+                playSound('match');
+                score += 100 + Math.min(timeLeft * 2, 50);
+                updateDashboard();
+
+                setTimeout(() => {
+                    card1.element.classList.add('matched');
+                    card2.element.classList.add('matched');
+
+                    matchedPairs++;
+                    flippedCards = [];
+                    isLockBoard = false;
+
+                    if (matchedPairs === cardCount / 2) {
+                        handleLevelClear();
+                    }
+                }, 350);
+
+            } else {
+                playSound('wrong');
+                setTimeout(() => {
+                    card1.element.classList.remove('flipped');
+                    card2.element.classList.remove('flipped');
+                    flippedCards = [];
+                    isLockBoard = false;
+                }, 900);
+            }
+        }
+
+        function handleLevelClear() {
+            playSound('clear');
+            triggerConfetti();
+
+            timeLeft += 10;
+            score += 300;
+            currentLevel++;
+            cardCount = Math.min(cardCount + 4, 16);
+
+            updateDashboard();
+
+            setTimeout(() => {
+                startLevel();
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalLevel').innerText = currentLevel;
+            document.getElementById('gameOverModal').classList.remove('hidden');
+        }
+
+        /* ==========================================================================
+           4. LEADERBOARD SYSTEM (龍虎榜)
+           ========================================================================== */
+        const LEADERBOARD_KEY = 'hk_kids_memory_game_leaderboard';
+
+        function getScores() {
+            const data = localStorage.getItem(LEADERBOARD_KEY);
+            return data ? JSON.parse(data) : [
+                { name: '小聰明', score: 1200, level: 3, date: '2026-10-15' },
+                { name: '美美', score: 850, level: 2, date: '2026-10-18' },
+                { name: '樂樂', score: 500, level: 1, date: '2026-10-20' }
+            ];
+        }
+
+        function submitScore() {
+            const nameInput = document.getElementById('playerName').value.trim() || '小探險家';
+            const scores = getScores();
+
+            scores.push({
+                name: nameInput,
+                score: score,
+                level: currentLevel,
+                date: new Date().toISOString().split('T')[0]
+            });
+
+            scores.sort((a, b) => b.score - a.score);
+            const top5 = scores.slice(0, 5);
+
+            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
+
+            closeModal('gameOverModal');
+            openLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const scores = getScores();
+            const listEl = document.getElementById('leaderboardList');
+            listEl.innerHTML = '';
+
+            const medalEmojis = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+            scores.forEach((entry, idx) => {
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between p-2.5 rounded-xl ${
+                    idx === 0 ? 'bg-amber-100 border-2 border-amber-300' : 'bg-slate-50 border border-slate-200'
+                }`;
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">${medalEmojis[idx] || '⭐'}</span>
+                        <div>
+                            <div class="font-black text-slate-800 text-sm">${entry.name}</div>
+                            <div class="text-[10px] text-slate-500 font-bold">第 ${entry.level} 關</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-base font-black text-amber-600">${entry.score} 分</div>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function openLeaderboard() {
+            renderLeaderboard();
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function getRandomSample(arr, size) {
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, size);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 60,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
