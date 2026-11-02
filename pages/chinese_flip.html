@@ -138,7 +138,7 @@
         }
     </style>
 </head>
-<body class="h-screen max-h-screen w-screen overflow-hidden flex flex-col justify-between p-2 sm:p-3 relative select-none">
+<body class="h-screen h-[100dvh] max-h-[100dvh] w-screen overflow-hidden flex flex-col justify-between p-2 relative select-none">
 
     <!-- Floating Decor Clouds -->
     <div class="cloud w-28 h-10 top-4 -left-32" style="animation-duration: 25s;"></div>
@@ -149,74 +149,97 @@
     <header class="w-full max-w-2xl mx-auto flex items-center justify-between shrink-0 mb-1 z-10">
         <div class="flex items-center gap-2 bg-white/85 backdrop-blur-md px-3 py-1 rounded-full shadow-md border-2 border-amber-300">
             <span class="text-xl animate-bounce">🐱</span>
-            <h1 class="text-lg sm:text-xl font-black text-amber-600 tracking-wide">詞語對對碰</h1>
+            <h1 class="text-base sm:text-lg font-black text-amber-600 tracking-wide">詞語對對碰</h1>
         </div>
 
         <div class="flex items-center gap-1.5">
-            <button id="speechBtn" onclick="toggleSpeech()" class="w-10 h-10 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition active:scale-95 border-2 border-amber-300 flex items-center justify-center shadow-sm" title="語音">
-                <i class="fa-solid fa-volume-high text-base" id="speechIcon"></i>
+            <!-- Home / Exit Button -->
+            <button id="homeBtn" onclick="confirmGoHome()" class="hidden px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-black rounded-full transition active:scale-95 border-2 border-rose-300 flex items-center gap-1 shadow-sm text-xs sm:text-sm" title="返回首頁">
+                <i class="fa-solid fa-house"></i>
+                <span>首頁</span>
             </button>
-            <button onclick="openLeaderboard()" class="w-10 h-10 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full transition active:scale-95 border-2 border-purple-300 flex items-center justify-center shadow-sm" title="龍虎榜">
-                <i class="fa-solid fa-trophy text-base"></i>
+            <button id="speechBtn" onclick="toggleSpeech()" class="w-9 h-9 sm:w-10 sm:h-10 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition active:scale-95 border-2 border-amber-300 flex items-center justify-center shadow-sm" title="語音">
+                <i class="fa-solid fa-volume-high text-sm sm:text-base" id="speechIcon"></i>
+            </button>
+            <button onclick="openLeaderboard()" class="w-9 h-9 sm:w-10 sm:h-10 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-full transition active:scale-95 border-2 border-purple-300 flex items-center justify-center shadow-sm" title="龍虎榜">
+                <i class="fa-solid fa-trophy text-sm sm:text-base"></i>
             </button>
         </div>
     </header>
 
     <!-- Game Stats Bar -->
-    <div class="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-2 sm:p-2.5 shadow-md border-2 border-sky-300 flex items-center justify-between gap-2 shrink-0 mb-1 z-10">
+    <div class="w-full max-w-2xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-1.5 sm:p-2 shadow-md border-2 border-sky-300 flex items-center justify-between gap-2 shrink-0 mb-1 z-10">
         <!-- Level -->
-        <div class="flex items-center gap-1.5 bg-amber-100 px-2.5 py-1 rounded-xl border border-amber-300">
-            <span class="text-base">🚩</span>
-            <div id="levelDisplay" class="text-sm font-black text-amber-800">第 1 關</div>
+        <div class="flex items-center gap-1 bg-amber-100 px-2 py-0.5 sm:py-1 rounded-xl border border-amber-300">
+            <span class="text-sm">🚩</span>
+            <div id="levelDisplay" class="text-xs sm:text-sm font-black text-amber-800">第 1 关</div>
         </div>
 
         <!-- Timer Gauge -->
         <div class="flex-1 px-1">
             <div class="flex justify-between items-center mb-0.5">
-                <span class="text-xs font-bold text-slate-600">⏱️ <span id="timerText" class="font-black text-rose-600">30s</span></span>
+                <span class="text-[11px] sm:text-xs font-bold text-slate-600">⏱️ <span id="timerText" class="font-black text-rose-600">30s</span></span>
             </div>
-            <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
+            <div class="w-full bg-slate-200 h-2.5 sm:h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
                 <div id="timerBar" class="bg-gradient-to-r from-emerald-400 to-rose-500 h-full rounded-full transition-all duration-300 w-full"></div>
             </div>
         </div>
 
         <!-- Score -->
-        <div class="flex items-center gap-1.5 bg-sky-100 px-2.5 py-1 rounded-xl border border-sky-300">
-            <span class="text-base">⭐</span>
-            <div id="scoreDisplay" class="text-sm font-black text-sky-800">0</div>
+        <div class="flex items-center gap-1 bg-sky-100 px-2 py-0.5 sm:py-1 rounded-xl border border-sky-300">
+            <span class="text-sm">⭐</span>
+            <div id="scoreDisplay" class="text-xs sm:text-sm font-black text-sky-800">0</div>
         </div>
     </div>
 
     <!-- Main Game Play Area (No Scroll Dynamic Layout) -->
-    <main class="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center justify-center relative min-h-0 z-10">
-        <!-- Memory Preview Notice -->
-        <div id="previewNotice" class="hidden absolute top-2 z-20 bg-amber-400/95 text-slate-900 font-black px-5 py-1.5 rounded-full shadow-lg border-2 border-white animate-pulse text-xs sm:text-sm">
-            👀 請記住卡牌位置！(2秒)
+    <main class="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center justify-center relative min-h-0 z-10 my-auto">
+        <!-- Memory Preview Notice with Animated Countdown -->
+        <div id="previewNotice" class="hidden absolute top-1 z-20 bg-amber-400/95 text-slate-900 font-black px-4 py-1 rounded-full shadow-lg border-2 border-white animate-pulse text-xs flex items-center gap-1.5">
+            <span>👀 記住卡牌：</span>
+            <span id="previewCountdown" class="text-rose-700 text-xs sm:text-sm font-extrabold underline">3 秒!</span>
         </div>
 
         <!-- Dynamic Card Grid Container -->
-        <div id="cardGrid" class="w-full h-full p-1 transition-all duration-300 grid gap-2 sm:gap-3 items-center justify-center">
+        <div id="cardGrid" class="w-full h-full p-1 transition-all duration-300 grid gap-1.5 sm:gap-2.5 items-stretch justify-center">
             <!-- Dynamic cards generated here -->
         </div>
 
         <!-- Start Game Screen Overlay -->
         <div id="startOverlay" class="absolute inset-0 bg-white/95 backdrop-blur-md rounded-3xl z-30 flex flex-col items-center justify-center p-4 text-center shadow-2xl border-4 border-sky-300">
-            <div class="text-6xl mb-2 animate-bounce">🧩</div>
+            <div class="text-5xl sm:text-6xl mb-2 animate-bounce">🧩</div>
             <h2 class="text-2xl sm:text-3xl font-black text-sky-600 mb-1">詞語翻卡對對碰</h2>
-            <p class="text-xs sm:text-sm text-slate-500 font-bold mb-6">翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！</p>
+            <p class="text-xs sm:text-sm text-slate-500 font-bold mb-5">翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！</p>
 
-            <button onclick="startGame()" class="px-8 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 text-lg font-black rounded-2xl shadow-lg transform transition active:scale-95 border-b-4 border-amber-700 flex items-center gap-2">
-                <i class="fa-solid fa-play text-xl"></i> 開始遊戲
+            <button onclick="startGame()" class="px-7 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 text-base sm:text-lg font-black rounded-2xl shadow-lg transform transition active:scale-95 border-b-4 border-amber-700 flex items-center gap-2">
+                <i class="fa-solid fa-play text-lg"></i> 開始遊戲
             </button>
         </div>
     </main>
 
     <!-- Footer Controls -->
-    <footer class="w-full max-w-2xl mx-auto flex justify-center items-center shrink-0 mt-1 z-10">
-        <button id="restartBtn" onclick="restartGame()" class="hidden px-4 py-1.5 bg-white/80 hover:bg-white text-slate-700 rounded-xl font-bold transition active:scale-95 border border-slate-300 text-xs shadow-sm flex items-center gap-1.5">
+    <footer class="w-full max-w-2xl mx-auto flex justify-center items-center shrink-0 py-0.5 z-10">
+        <button id="restartBtn" onclick="restartGame()" class="hidden px-3 py-1 bg-white/80 hover:bg-white text-slate-700 rounded-xl font-bold transition active:scale-95 border border-slate-300 text-xs shadow-sm flex items-center gap-1">
             <i class="fa-solid fa-rotate-right text-xs"></i> 重新開始
         </button>
     </footer>
+
+    <!-- Home Confirmation Modal -->
+    <div id="homeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl border-4 border-rose-300 text-center">
+            <div class="text-4xl mb-2">🏠</div>
+            <h3 class="text-lg font-black text-slate-800 mb-2">確定返回首頁？</h3>
+            <p class="text-xs text-slate-500 font-bold mb-4">當前關卡和分數會清除哦！</p>
+            <div class="flex gap-2">
+                <button onclick="goHome()" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
+                    確定返回
+                </button>
+                <button onclick="closeModal('homeModal')" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
+                    繼續遊戲
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Leaderboard Modal -->
     <div id="leaderboardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
@@ -423,6 +446,7 @@
         function startGame() {
             document.getElementById('startOverlay').classList.add('hidden');
             document.getElementById('restartBtn').classList.remove('hidden');
+            document.getElementById('homeBtn').classList.remove('hidden');
             score = 0;
             currentLevel = 1;
             cardCount = 8;
@@ -431,6 +455,21 @@
             startLevel();
             startTimer();
             gameActive = true;
+        }
+
+        function confirmGoHome() {
+            document.getElementById('homeModal').classList.remove('hidden');
+        }
+
+        function goHome() {
+            closeModal('homeModal');
+            gameActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('startOverlay').classList.remove('hidden');
+            document.getElementById('restartBtn').classList.add('hidden');
+            document.getElementById('homeBtn').classList.add('hidden');
+            document.getElementById('previewNotice').classList.add('hidden');
+            document.getElementById('cardGrid').innerHTML = '';
         }
 
         function restartGame() {
@@ -480,11 +519,11 @@
 
             // Dynamic grid layout fitting screen height seamlessly
             if (cardCount <= 8) {
-                grid.className = "w-full h-full grid grid-cols-2 sm:grid-cols-4 grid-rows-4 sm:grid-rows-2 gap-2 sm:gap-3 max-w-xl mx-auto items-stretch justify-items-stretch";
+                grid.className = "w-full h-full grid grid-cols-2 sm:grid-cols-4 grid-rows-4 sm:grid-rows-2 gap-1.5 sm:gap-2.5 max-w-xl mx-auto items-stretch justify-items-stretch";
             } else if (cardCount <= 12) {
-                grid.className = "w-full h-full grid grid-cols-3 sm:grid-cols-4 grid-rows-4 sm:grid-rows-3 gap-2 sm:gap-2.5 max-w-2xl mx-auto items-stretch justify-items-stretch";
+                grid.className = "w-full h-full grid grid-cols-3 sm:grid-cols-4 grid-rows-4 sm:grid-rows-3 gap-1.5 sm:gap-2 max-w-2xl mx-auto items-stretch justify-items-stretch";
             } else {
-                grid.className = "w-full h-full grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 max-w-2xl mx-auto items-stretch justify-items-stretch";
+                grid.className = "w-full h-full grid grid-cols-4 grid-rows-4 gap-1 sm:gap-1.5 max-w-2xl mx-auto items-stretch justify-items-stretch";
             }
 
             const numPairs = cardCount / 2;
@@ -521,17 +560,32 @@
             });
 
             const notice = document.getElementById('previewNotice');
+            const previewCountdownEl = document.getElementById('previewCountdown');
+            
+            let previewSecondsLeft = 3;
+            previewCountdownEl.innerText = `${previewSecondsLeft} 秒!`;
             notice.classList.remove('hidden');
 
             const allCardEls = document.querySelectorAll('.card');
             allCardEls.forEach(c => c.classList.add('flipped'));
 
+            // 3-second memory preview timer interval
+            const previewTimer = setInterval(() => {
+                previewSecondsLeft--;
+                if (previewSecondsLeft > 0) {
+                    previewCountdownEl.innerText = `${previewSecondsLeft} 秒!`;
+                } else {
+                    clearInterval(previewTimer);
+                }
+            }, 1000);
+
             setTimeout(() => {
+                clearInterval(previewTimer);
                 allCardEls.forEach(c => c.classList.remove('flipped'));
                 notice.classList.add('hidden');
                 isLockBoard = false;
                 isPreviewing = false;
-            }, 2000);
+            }, 3000);
         }
 
         function handleCardClick(cardEl, card) {
