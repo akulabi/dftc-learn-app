@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>記憶大挑戰 - 超強大腦考考你</title>
+    <title>記憶大挑戰 Memory Master</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
+    <!-- FontAwesome for UI Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Fredoka & Noto Sans TC -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         body {
             font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
             min-height: 100vh;
             user-select: none;
+            overflow-x: hidden;
         }
 
-        /* Perspective for 3D card flips */
+        /* 3D Card Flipping Styles */
         .perspective-1000 {
             perspective: 1000px;
         }
 
-        /* Card 3d transform container */
         .card-inner {
             position: relative;
             width: 100%;
             height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.5s ease-in-out;
             transform-style: preserve-3d;
         }
 
@@ -43,213 +45,223 @@
             height: 100%;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            border-radius: 1rem;
+            border-radius: 1.25rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Back side of card (patterned overlay when flipped) */
         .card-back {
             transform: rotateY(180deg);
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
             border: 4px solid #ffffff;
         }
 
-        /* Shaking animation for wrong answers */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
+        /* Card Shuffle Motion Keyframes */
+        @keyframes card-shuffle {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.08) translateY(-15px) rotate(-6deg); }
+            50% { transform: scale(0.95) translateY(10px) rotate(6deg); }
+            75% { transform: scale(1.05) translateY(-5px) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
-        .animate-shake {
-            animation: shake 0.5s ease-in-out;
+        .animate-shuffle {
+            animation: card-shuffle 0.6s ease-in-out;
         }
 
-        /* Pulse / Highlight for timer */
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.85; transform: scale(1.03); }
+        /* Shake animation for wrong answers */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-12px); }
+            40%, 80% { transform: translateX(12px); }
         }
-        .animate-pulse-glow {
+        .animate-shake {
+            animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        /* Pulse glow effect */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.9); }
+        }
+        .glow-active {
             animation: pulse-glow 1.5s infinite;
         }
 
         /* Glassmorphism panel */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 255, 255, 0.6);
         }
     </style>
 </head>
-<body class="text-slate-800 flex items-center justify-center p-3 sm:p-6">
+<body class="text-slate-800 flex items-center justify-center p-3 sm:p-6 min-h-screen">
 
-    <!-- Container -->
-    <div id="app" class="w-full max-w-4xl min-h-[620px] glass-panel rounded-3xl shadow-2xl p-4 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+    <!-- Main Container Card -->
+    <div id="app" class="w-full max-w-4xl min-h-[640px] glass-panel rounded-3xl shadow-2xl p-4 sm:p-8 flex flex-col justify-between relative overflow-hidden my-auto">
         
-        <!-- ==================== HOME SCREEN ==================== -->
-        <div id="screen-home" class="flex flex-col items-center justify-center flex-1 text-center py-6 space-y-6">
+        <!-- ==================== START SCREEN (Direct Landing) ==================== -->
+        <div id="screen-home" class="flex flex-col items-center justify-center flex-1 text-center py-8 space-y-8 my-auto">
+            
             <div class="relative">
-                <span class="text-6xl sm:text-8xl animate-bounce inline-block drop-shadow-md">🧠</span>
-                <span class="absolute -top-2 -right-4 bg-yellow-400 text-purple-900 text-xs sm:text-sm font-black px-3 py-1 rounded-full shadow-lg transform rotate-12 uppercase">
-                    極速大腦
+                <div class="w-28 h-28 sm:w-36 sm:h-36 bg-gradient-to-tr from-amber-300 via-pink-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl transform rotate-6 hover:rotate-0 transition-transform duration-300">
+                    <span class="text-6xl sm:text-7xl animate-bounce drop-shadow-md">🧠</span>
+                </div>
+                <span class="absolute -top-3 -right-4 bg-yellow-400 text-slate-900 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-full shadow-lg transform rotate-12 tracking-wide uppercase">
+                    PRO MEMORY
                 </span>
             </div>
-            
-            <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 tracking-wide">
-                記憶力大挑戰！
-            </h1>
-            
-            <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 sm:p-6 text-left max-w-md w-full space-y-3 shadow-inner">
-                <h3 class="font-bold text-purple-800 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-gamepad text-yellow-500"></i> 遊戲規則：
-                </h3>
-                <ul class="text-sm sm:text-base text-slate-600 space-y-2 list-disc list-inside font-medium">
-                    <li>全場共 <span class="font-bold text-purple-700">10 個回合</span>。</li>
-                    <li>每回合先記憶圖案 <span class="font-bold text-red-500">5 秒</span>，隨後卡片洗牌。</li>
-                    <li>翻開後有 <span class="font-bold text-red-500">1 個圖案消失</span>（變成❓）。</li>
-                    <li>選擇對應的<span class="font-bold text-purple-700">精簡詞語</span>。</li>
-                    <li>第 1-3 關 (3張)｜第 4-7 关 (4張)｜第 8-10 關 (5張)。</li>
-                    <li>首答對 <span class="font-bold text-green-600">+10分</span>，答錯補答對 <span class="font-bold text-orange-500">+5分</span>。</li>
-                </ul>
+
+            <div class="space-y-2 max-w-lg">
+                <h1 class="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight">
+                    記憶大挑戰
+                </h1>
+                <p class="text-slate-500 font-extrabold text-sm sm:text-lg tracking-widest uppercase">
+                    Memory Master Challenge
+                </p>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                <button onclick="startGame()" class="flex-1 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-extrabold text-xl py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md pt-4">
+                <button onclick="startGame()" class="flex-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-xl py-4 px-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-play text-2xl"></i> 開始挑戰
                 </button>
-                <button onclick="showLeaderboard()" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-900 font-extrabold text-xl py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-trophy text-2xl text-amber-900"></i> 龍虎榜
+                <button onclick="showLeaderboard()" class="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-900 font-black text-xl py-4 px-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-trophy text-2xl text-amber-950"></i> 龍虎榜
                 </button>
             </div>
         </div>
 
-        <!-- ==================== GAME SCREEN ==================== -->
+        <!-- ==================== GAMEPLAY SCREEN ==================== -->
         <div id="screen-game" class="hidden flex-col flex-1 justify-between space-y-4">
             
-            <!-- Top Status Bar -->
-            <div class="flex items-center justify-between bg-purple-100/80 rounded-2xl p-3 sm:p-4 shadow-sm border border-purple-200">
+            <!-- Header Bar -->
+            <div class="flex items-center justify-between bg-purple-50/90 rounded-2xl p-3 sm:p-4 border border-purple-100 shadow-sm">
+                <!-- Round & Stage Badge -->
                 <div class="flex items-center gap-2 sm:gap-3">
-                    <span class="bg-purple-600 text-white text-xs sm:text-base font-bold px-3 py-1.5 rounded-xl shadow">
+                    <span class="bg-indigo-600 text-white text-xs sm:text-sm font-black px-3 py-1.5 rounded-xl shadow-sm">
                         回合 <span id="ui-round">1</span> / 10
                     </span>
-                    <span id="ui-difficulty-badge" class="bg-pink-500 text-white text-xs sm:text-sm font-bold px-2.5 py-1 rounded-lg">
-                        3 個圖卡
+                    <span id="ui-difficulty-badge" class="bg-pink-500 text-white text-xs sm:text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                        3 張卡片
+                    </span>
+                    <span id="ui-streak-badge" class="hidden bg-amber-400 text-amber-950 text-xs font-black px-2 py-1 rounded-lg">
+                        🔥 連勝 x<span id="ui-streak-count">0</span>
                     </span>
                 </div>
                 
+                <!-- Score & Menu -->
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <span class="text-xs text-slate-500 font-bold block uppercase tracking-wider">得分</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold block uppercase tracking-wider">得分 SCORE</span>
                         <span id="ui-score" class="text-2xl sm:text-3xl font-black text-amber-500 leading-none">0</span>
                     </div>
-                    <button onclick="confirmRestart()" class="text-slate-400 hover:text-red-500 p-2 transition">
-                        <i class="fa-solid fa-arrows-rotate text-xl"></i>
+                    <button onclick="confirmRestart()" class="text-slate-400 hover:text-red-500 p-2 transition rounded-xl hover:bg-slate-100" title="重新開始">
+                        <i class="fa-solid fa-rotate-right text-lg"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Timer Bar & Stage Hint -->
+            <!-- Memory Countdown & Status Header -->
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center px-1">
-                    <span id="ui-phase-text" class="text-base sm:text-lg font-black text-purple-800 flex items-center gap-2">
-                        <i class="fa-solid fa-eye text-indigo-500"></i> 請牢記以下圖片！
+                    <span id="ui-phase-text" class="text-sm sm:text-lg font-black text-indigo-900 flex items-center gap-2">
+                        <i class="fa-solid fa-eye text-indigo-500"></i> 請記住以下圖卡！
                     </span>
-                    <span id="ui-timer-text" class="font-extrabold text-lg text-purple-700">5.0s</span>
+                    <span id="ui-timer-text" class="font-black text-base sm:text-lg text-indigo-600">5.0s</span>
                 </div>
-                <!-- Progress bar container -->
+                <!-- Progress Bar -->
                 <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden p-0.5 border border-slate-300">
-                    <div id="ui-timer-bar" class="bg-gradient-to-r from-amber-400 to-red-500 h-full rounded-full transition-all duration-100" style="width: 100%;"></div>
+                    <div id="ui-timer-bar" class="bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-600 h-full rounded-full transition-all duration-100" style="width: 100%;"></div>
                 </div>
             </div>
 
             <!-- Cards Display Area -->
             <div id="cards-container" class="grid gap-3 sm:gap-6 my-auto py-4 min-h-[200px] sm:min-h-[260px] items-center justify-center">
-                <!-- Cards injected dynamically -->
+                <!-- Dynamic cards injected via JS -->
             </div>
 
-            <!-- Answer Options Area -->
-            <div id="options-panel" class="w-full bg-slate-100/90 rounded-2xl p-4 border border-slate-200 shadow-inner min-h-[120px] flex flex-col justify-center">
-                <div id="options-header" class="text-center font-extrabold text-slate-600 text-sm sm:text-base mb-3">
-                    ❓ 哪一個圖案消失了？請選擇對應詞語：
+            <!-- Options Choices Area (Strict Pure Text Words ONLY) -->
+            <div id="options-panel" class="w-full bg-slate-100/80 rounded-2xl p-4 border border-slate-200 shadow-inner min-h-[125px] flex flex-col justify-center">
+                <div id="options-header" class="text-center font-black text-slate-600 text-xs sm:text-sm mb-3">
+                    ❓ 哪一個圖案消失了？請點選正確詞語：
                 </div>
                 <div id="options-container" class="flex flex-wrap gap-2 sm:gap-3 justify-center">
-                    <!-- Buttons injected dynamically -->
+                    <!-- Dynamic option buttons injected via JS -->
                 </div>
             </div>
         </div>
 
-        <!-- ==================== RESULT SCREEN ==================== -->
+        <!-- ==================== RESULT / GAMEOVER SCREEN ==================== -->
         <div id="screen-result" class="hidden flex-col items-center justify-center flex-1 text-center py-6 space-y-6">
             <div class="relative">
                 <span id="result-emoji" class="text-7xl sm:text-8xl inline-block drop-shadow-md">🏆</span>
             </div>
             
-            <h2 class="text-3xl sm:text-4xl font-black text-slate-800">挑戰完成！</h2>
+            <h2 class="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">挑戰完成！</h2>
             
-            <div class="bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-xl space-y-4">
+            <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
                 <div>
-                    <span class="text-xs uppercase tracking-wider text-purple-200 font-bold block">最終得分</span>
+                    <span class="text-xs uppercase tracking-wider text-indigo-200 font-extrabold block">最終得分 TOTAL SCORE</span>
                     <span id="final-score" class="text-5xl sm:text-6xl font-black text-yellow-300">0</span>
-                    <span class="text-lg font-bold text-purple-100"> / 100 分</span>
+                    <span class="text-lg font-bold text-indigo-100"> / 100 分</span>
                 </div>
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-purple-400/40 text-center">
-                    <div class="bg-purple-700/50 rounded-xl p-3">
-                        <span class="text-xs text-purple-200 block">首答成功</span>
-                        <span id="stat-first-try" class="text-xl sm:text-2xl font-bold">0 題</span>
+                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-indigo-400/30 text-center">
+                    <div class="bg-indigo-900/40 rounded-2xl p-3">
+                        <span class="text-xs text-indigo-200 block font-bold">首答成功</span>
+                        <span id="stat-first-try" class="text-xl sm:text-2xl font-black">0 題</span>
                     </div>
-                    <div class="bg-purple-700/50 rounded-xl p-3">
-                        <span class="text-xs text-purple-200 block">補答成功</span>
-                        <span id="stat-second-try" class="text-xl sm:text-2xl font-bold">0 題</span>
+                    <div class="bg-indigo-900/40 rounded-2xl p-3">
+                        <span class="text-xs text-indigo-200 block font-bold">準確率 Accuracy</span>
+                        <span id="stat-accuracy" class="text-xl sm:text-2xl font-black text-green-300">0%</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Name Input Form for High Score -->
+            <!-- Player High Score Input -->
             <div id="name-input-box" class="w-full max-w-md space-y-3">
-                <p class="text-sm font-bold text-purple-900">恭喜高分！請留名登上龍虎榜：</p>
+                <p class="text-sm font-black text-purple-900">恭喜獲得高分！請輸入名字登錄龍虎榜：</p>
                 <div class="flex gap-2">
-                    <input type="text" id="player-name-input" maxlength="10" placeholder="輸入你的大名..." class="flex-1 border-2 border-purple-300 rounded-xl px-4 py-3 font-bold focus:outline-none focus:border-purple-600 text-center text-slate-700 shadow-sm">
-                    <button onclick="submitScore()" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-6 py-3 rounded-xl shadow-md transition">
-                        提交
+                    <input type="text" id="player-name-input" maxlength="10" placeholder="輸入大名..." class="flex-1 border-2 border-purple-300 rounded-xl px-4 py-3 font-bold focus:outline-none focus:border-purple-600 text-center text-slate-800 shadow-sm">
+                    <button onclick="submitScore()" class="bg-purple-600 hover:bg-purple-700 text-white font-black px-6 py-3 rounded-xl shadow-md transition">
+                        送出
                     </button>
                 </div>
             </div>
 
             <div class="flex gap-4 w-full max-w-md">
-                <button onclick="startGame()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-lg py-3.5 px-6 rounded-2xl shadow-lg transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> 再玩一次
+                <button onclick="startGame()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg py-3.5 px-6 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> 再玩一次
                 </button>
-                <button onclick="showLeaderboard()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-lg py-3.5 px-6 rounded-2xl shadow-lg transition">
-                    <i class="fa-solid fa-trophy mr-1"></i> 查看龍虎榜
+                <button onclick="showLeaderboard()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-lg py-3.5 px-6 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-trophy mr-1.5"></i> 龍虎榜
                 </button>
             </div>
         </div>
 
-        <!-- ==================== LEADERBOARD SCREEN ==================== -->
+        <!-- ==================== LEADERBOARD (龍虎榜) SCREEN ==================== -->
         <div id="screen-leaderboard" class="hidden flex-col flex-1 justify-between space-y-4 py-2">
             <div class="flex justify-between items-center border-b pb-3">
-                <h2 class="text-2xl sm:text-3xl font-black text-purple-900 flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-yellow-500"></i> 英雄龍虎榜
+                <h2 class="text-2xl sm:text-3xl font-black text-indigo-950 flex items-center gap-2 tracking-tight">
+                    <i class="fa-solid fa-trophy text-amber-400"></i> 英雄龍虎榜
                 </h2>
-                <button onclick="showHome()" class="text-slate-400 hover:text-slate-600 p-2">
+                <button onclick="showHome()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg">
                     <i class="fa-solid fa-xmark text-2xl"></i>
                 </button>
             </div>
 
             <!-- Leaderboard List -->
-            <div class="flex-1 overflow-y-auto max-h-[380px] space-y-2 pr-1" id="leaderboard-list">
-                <!-- Dynamically filled -->
+            <div class="flex-1 overflow-y-auto max-h-[380px] space-y-2.5 pr-1" id="leaderboard-list">
+                <!-- Dynamically populated via JS -->
             </div>
 
             <div class="flex justify-between items-center pt-2">
                 <button onclick="clearLeaderboard()" class="text-xs text-red-400 hover:text-red-600 font-bold px-2 py-1">
-                    <i class="fa-solid fa-trash mr-1"></i> 清除紀錄
+                    <i class="fa-solid fa-trash-can mr-1"></i> 清除紀錄
                 </button>
-                <button onclick="showHome()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-xl shadow transition">
+                <button onclick="showHome()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 px-6 rounded-xl shadow transition">
                     返回主頁
                 </button>
             </div>
@@ -258,8 +270,8 @@
     </div>
 
     <script>
-        /* ==================== AUDIO SYNTHESIZER (Web Audio API) ==================== */
-        class SoundEffects {
+        /* ==================== WEB AUDIO API SYNTHESIZER ==================== */
+        class SoundFX {
             constructor() {
                 this.ctx = null;
             }
@@ -268,9 +280,12 @@
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
             }
 
-            playTone(freq, type, duration, delay = 0) {
+            playTone(freq, type, duration, delay = 0, gainVal = 0.15) {
                 if (!this.ctx) return;
                 setTimeout(() => {
                     try {
@@ -278,8 +293,8 @@
                         const gain = this.ctx.createGain();
                         osc.type = type;
                         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                        gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
                         osc.connect(gain);
                         gain.connect(this.ctx.destination);
                         osc.start();
@@ -290,92 +305,106 @@
 
             flip() {
                 this.init();
-                this.playTone(400, 'sine', 0.08);
+                this.playTone(350, 'sine', 0.08, 0, 0.1);
             }
 
             tick() {
                 this.init();
-                this.playTone(600, 'triangle', 0.05);
+                this.playTone(700, 'triangle', 0.04, 0, 0.08);
+            }
+
+            shuffle() {
+                this.init();
+                this.playTone(280, 'sine', 0.05, 0, 0.08);
+                this.playTone(320, 'sine', 0.05, 60, 0.08);
+                this.playTone(360, 'sine', 0.05, 120, 0.08);
             }
 
             correct() {
                 this.init();
                 this.playTone(523.25, 'sine', 0.1, 0);   // C5
-                this.playTone(659.25, 'sine', 0.1, 100); // E5
-                this.playTone(783.99, 'sine', 0.2, 200); // G5
+                this.playTone(659.25, 'sine', 0.1, 80);  // E5
+                this.playTone(783.99, 'sine', 0.2, 160); // G5
+                this.playTone(1046.50, 'sine', 0.3, 240);// C6
             }
 
-            retry() {
+            retryCorrect() {
                 this.init();
-                this.playTone(440, 'sine', 0.1, 0);
-                this.playTone(554.37, 'sine', 0.15, 120);
+                this.playTone(440, 'sine', 0.1, 0);   // A4
+                this.playTone(554.37, 'sine', 0.1, 100); // C#5
+                this.playTone(659.25, 'sine', 0.2, 200); // E5
             }
 
             wrong() {
                 this.init();
-                this.playTone(220, 'sawtooth', 0.15, 0);
-                this.playTone(180, 'sawtooth', 0.25, 150);
+                this.playTone(200, 'sawtooth', 0.15, 0, 0.12);
+                this.playTone(160, 'sawtooth', 0.25, 140, 0.12);
             }
 
-            gameComplete() {
+            victory() {
                 this.init();
-                const notes = [523.25, 659.25, 783.99, 1046.50];
-                notes.forEach((freq, idx) => {
-                    this.playTone(freq, 'triangle', 0.25, idx * 120);
+                const notes = [523.25, 659.25, 783.99, 880, 1046.50];
+                notes.forEach((freq, i) => {
+                    this.playTone(freq, 'triangle', 0.25, i * 110, 0.18);
                 });
             }
         }
 
-        const sound = new SoundEffects();
+        const sound = new SoundFX();
 
-        /* ==================== ITEM POOL DATABASE (簡潔詞語，無雜質) ==================== */
+        /* ==================== GRAPHICS & PURE TEXT POOL ==================== */
+        // Cards contain strictly pure graphical emojis.
+        // Choices contain strictly pure concise text words (NO emojis on buttons).
         const itemPool = [
-            { name: "蘋果", emoji: "🍎", color: "bg-red-50 border-red-300" },
-            { name: "香蕉", emoji: "🍌", color: "bg-yellow-50 border-yellow-300" },
-            { name: "西瓜", emoji: "🍉", color: "bg-emerald-50 border-emerald-300" },
-            { name: "草莓", emoji: "🍓", color: "bg-rose-50 border-rose-300" },
-            { name: "葡萄", emoji: "🍇", color: "bg-purple-50 border-purple-300" },
-            { name: "小狗", emoji: "🐶", color: "bg-amber-50 border-amber-300" },
-            { name: "貓咪", emoji: "🐱", color: "bg-orange-50 border-orange-300" },
-            { name: "兔子", emoji: "🐰", color: "bg-pink-50 border-pink-300" },
-            { name: "熊貓", emoji: "🐼", color: "bg-slate-50 border-slate-300" },
-            { name: "狐狸", emoji: "🦊", color: "bg-orange-100 border-orange-400" },
-            { name: "星星", emoji: "⭐", color: "bg-yellow-100 border-yellow-400" },
-            { name: "月亮", emoji: "🌙", color: "bg-indigo-50 border-indigo-300" },
-            { name: "太陽", emoji: "☀️", color: "bg-amber-100 border-amber-400" },
-            { name: "彩虹", emoji: "🌈", color: "bg-teal-50 border-teal-300" },
-            { name: "火箭", emoji: "🚀", color: "bg-blue-50 border-blue-300" },
-            { name: "足球", emoji: "⚽", color: "bg-sky-50 border-sky-300" },
-            { name: "漢堡", emoji: "🍔", color: "bg-amber-50 border-yellow-400" },
-            { name: "雪糕", emoji: "🍦", color: "bg-pink-50 border-pink-300" },
-            { name: "吉他", emoji: "🎸", color: "bg-red-50 border-red-300" },
-            { name: "蛋糕", emoji: "🎂", color: "bg-rose-100 border-rose-300" },
-            { name: "飛機", emoji: "✈️", color: "bg-sky-50 border-sky-300" },
-            { name: "汽車", emoji: "🚗", color: "bg-red-50 border-red-300" },
-            { name: "皇冠", emoji: "👑", color: "bg-yellow-100 border-yellow-400" },
-            { name: "大象", emoji: "🐘", color: "bg-slate-100 border-slate-300" },
-            { name: "鋼琴", emoji: "🎹", color: "bg-slate-50 border-slate-400" }
+            { name: "蘋果", emoji: "🍎", color: "bg-red-50 border-red-300 text-red-500" },
+            { name: "香蕉", emoji: "🍌", color: "bg-yellow-50 border-yellow-300 text-yellow-500" },
+            { name: "西瓜", emoji: "🍉", color: "bg-emerald-50 border-emerald-300 text-emerald-500" },
+            { name: "草莓", emoji: "🍓", color: "bg-rose-50 border-rose-300 text-rose-500" },
+            { name: "葡萄", emoji: "🍇", color: "bg-purple-50 border-purple-300 text-purple-500" },
+            { name: "小狗", emoji: "🐶", color: "bg-amber-50 border-amber-300 text-amber-600" },
+            { name: "貓咪", emoji: "🐱", color: "bg-orange-50 border-orange-300 text-orange-500" },
+            { name: "兔子", emoji: "🐰", color: "bg-pink-50 border-pink-300 text-pink-400" },
+            { name: "熊貓", emoji: "🐼", color: "bg-slate-50 border-slate-300 text-slate-700" },
+            { name: "狐狸", emoji: "🦊", color: "bg-orange-100 border-orange-400 text-orange-600" },
+            { name: "星星", emoji: "⭐", color: "bg-yellow-100 border-yellow-400 text-yellow-500" },
+            { name: "月亮", emoji: "🌙", color: "bg-indigo-50 border-indigo-300 text-indigo-400" },
+            { name: "太陽", emoji: "☀️", color: "bg-amber-100 border-amber-400 text-amber-500" },
+            { name: "彩虹", emoji: "🌈", color: "bg-teal-50 border-teal-300 text-teal-400" },
+            { name: "火箭", emoji: "🚀", color: "bg-blue-50 border-blue-300 text-blue-500" },
+            { name: "足球", emoji: "⚽", color: "bg-slate-100 border-slate-400 text-slate-800" },
+            { name: "漢堡", emoji: "🍔", color: "bg-amber-50 border-amber-300 text-amber-700" },
+            { name: "雪糕", emoji: "🍦", color: "bg-pink-50 border-pink-300 text-pink-500" },
+            { name: "吉他", emoji: "🎸", color: "bg-red-50 border-red-300 text-red-600" },
+            { name: "蛋糕", emoji: "🎂", color: "bg-rose-100 border-rose-300 text-rose-500" },
+            { name: "飛機", emoji: "✈️", color: "bg-sky-50 border-sky-300 text-sky-500" },
+            { name: "汽車", emoji: "🚗", color: "bg-red-50 border-red-300 text-red-500" },
+            { name: "皇冠", emoji: "👑", color: "bg-yellow-100 border-yellow-400 text-amber-500" },
+            { name: "大象", emoji: "🐘", color: "bg-slate-100 border-slate-300 text-slate-500" },
+            { name: "小提琴", emoji: "🎻", color: "bg-amber-100 border-amber-400 text-amber-800" },
+            { name: "單車", emoji: "🚲", color: "bg-blue-50 border-blue-300 text-blue-600" }
         ];
 
         /* ==================== GAME STATE ==================== */
         let currentRound = 1;
         let score = 0;
+        let streak = 0;
         let firstTrySuccessCount = 0;
         let secondTrySuccessCount = 0;
         
-        let roundItems = [];       // items shown in current round
-        let missingItem = null;    // the missing item target
-        let displayCards = [];     // items state on layout
-        let isSecondChance = false;// status if player is on 補答 phase
+        let roundItems = [];
+        let missingItem = null;
+        let displayCards = [];
+        let isRetryAttempt = false;
         let timerInterval = null;
         let countdownLeft = 5.0;
 
-        /* ==================== CORE GAME LOGIC ==================== */
+        /* ==================== CORE GAME FLOW ==================== */
 
         function startGame() {
             sound.init();
             currentRound = 1;
             score = 0;
+            streak = 0;
             firstTrySuccessCount = 0;
             secondTrySuccessCount = 0;
             
@@ -383,38 +412,48 @@
             loadRound(currentRound);
         }
 
-        // Determine item count based on round specs:
-        // Rounds 1-3: 3 items | Rounds 4-7: 4 items | Rounds 8-10: 5 items
-        function getItemCountForRound(round) {
+        // Card Progression Rules:
+        // Rounds 1-3: 3 cards
+        // Rounds 4-7: 4 cards
+        // Rounds 8-10: 5 cards
+        function getCardCountForRound(round) {
             if (round <= 3) return 3;
             if (round <= 7) return 4;
             return 5;
         }
 
         function loadRound(round) {
-            const count = getItemCountForRound(round);
-            isSecondChance = false;
+            const count = getCardCountForRound(round);
+            isRetryAttempt = false;
 
-            // UI updates
+            // Update UI headers
             document.getElementById('ui-round').textContent = round;
             document.getElementById('ui-score').textContent = score;
-            document.getElementById('ui-difficulty-badge').textContent = `${count} 個圖卡`;
-            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-eye text-indigo-500"></i> 請牢記以下 ${count} 個圖案！`;
+            document.getElementById('ui-difficulty-badge').textContent = `${count} 張卡片`;
             
-            // Disable option buttons during memory phase
-            renderOptionsDisabled("記憶時間中...");
+            const streakBadge = document.getElementById('ui-streak-badge');
+            if (streak >= 2) {
+                streakBadge.classList.remove('hidden');
+                document.getElementById('ui-streak-count').textContent = streak;
+            } else {
+                streakBadge.classList.add('hidden');
+            }
 
-            // Select random unique items
+            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-eye text-indigo-500"></i> 請記住以下 ${count} 個圖樣！`;
+            
+            renderOptionsDisabled("記憶倒數中...");
+
+            // Select random unique items for this round
             const shuffledPool = [...itemPool].sort(() => Math.random() - 0.5);
             roundItems = shuffledPool.slice(0, count);
             displayCards = [...roundItems];
 
-            // Render cards (All active & visible)
+            // Render initial cards face up
             renderCards(displayCards, false);
 
-            // Start 5 Seconds Timer
+            // 5 Seconds Memory Timer
             startMemoryTimer(5.0, () => {
-                startShuffleAndCoverPhase();
+                triggerShufflePhase();
             });
         }
 
@@ -450,56 +489,58 @@
             }, stepMs);
         }
 
-        function startShuffleAndCoverPhase() {
+        function triggerShufflePhase() {
             sound.flip();
-            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-shuffle text-amber-500 animate-spin"></i> 卡片覆蓋洗牌中...`;
+            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-shuffle text-amber-500 animate-spin"></i> 卡片翻轉洗牌中...`;
             document.getElementById('ui-timer-text').textContent = '洗牌中';
             document.getElementById('ui-timer-bar').style.width = '0%';
 
-            // 1. Flip all cards face down
+            // Step 1: Flip face down
             flipAllCards(true);
 
-            // 2. Wait for flip down, then shuffle order and pick missing item
+            // Step 2: Shuffle & swap missing item
             setTimeout(() => {
-                // Select missing item
-                const missingIndex = Math.floor(Math.random() * roundItems.length);
-                missingItem = roundItems[missingIndex];
+                sound.shuffle();
+                // Add shuffle animation class
+                const inners = document.querySelectorAll('.card-inner');
+                inners.forEach(el => el.classList.add('animate-shuffle'));
 
-                // Shuffle order of remaining cards
-                let shuffledCards = [...roundItems].sort(() => Math.random() - 0.5);
-                
-                // Replace missing card position with a mystery placeholder
-                displayCards = shuffledCards.map(item => item === missingItem ? { isMissing: true } : item);
+                // Choose 1 missing item
+                const missingIdx = Math.floor(Math.random() * roundItems.length);
+                missingItem = roundItems[missingIdx];
 
-                // Re-render cards (they remain flipped)
+                // Shuffle positions
+                let shuffledOrder = [...roundItems].sort(() => Math.random() - 0.5);
+                displayCards = shuffledOrder.map(item => item === missingItem ? { isMissing: true } : item);
+
+                // Re-render layout (cards remain face down)
                 renderCards(displayCards, true);
 
-                // 3. Reveal cards after shuffle
+                // Step 3: Flip back face up displaying ❓
                 setTimeout(() => {
                     sound.flip();
                     flipAllCards(false);
                     enableAnsweringPhase();
                 }, 800);
 
-            }, 600);
+            }, 700);
         }
 
         function enableAnsweringPhase() {
-            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-circle-question text-red-500 animate-bounce"></i> 哪一個圖案消失了？`;
-            document.getElementById('ui-timer-text').textContent = '答題中';
+            document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-circle-question text-rose-500 animate-bounce"></i> 哪一個圖案消失了？`;
+            document.getElementById('ui-timer-text').textContent = '請選擇';
             
-            // Build choices (Current round items as choices, randomized)
+            // Generate option choices (Randomized list of pure text names)
             const choices = [...roundItems].sort(() => Math.random() - 0.5);
             renderOptionsButtons(choices);
         }
 
-        /* ==================== CARD & UI RENDERING ==================== */
+        /* ==================== CARD & UI DOM RENDERING ==================== */
 
         function renderCards(cards, isFlippedInitially = false) {
             const container = document.getElementById('cards-container');
             container.innerHTML = '';
 
-            // Adjust grid layout dynamically according to card amount
             const count = cards.length;
             if (count === 3) {
                 container.className = "grid grid-cols-3 gap-3 sm:gap-6 my-auto max-w-lg mx-auto w-full";
@@ -517,7 +558,7 @@
                 inner.className = `card-inner ${isFlippedInitially ? 'is-flipped' : ''}`;
                 inner.id = `card-inner-${index}`;
 
-                // Front View (Pure Graphic - NO TEXT)
+                // Front View (Pure Icon/Emoji Only - No Text)
                 const front = document.createElement('div');
                 
                 if (item.isMissing) {
@@ -532,11 +573,11 @@
                     `;
                 }
 
-                // Back View (Pattern Overlay)
+                // Back View
                 const back = document.createElement('div');
                 back.className = `card-back`;
                 back.innerHTML = `
-                    <div class="text-3xl sm:text-4xl text-purple-400 opacity-60">🧠</div>
+                    <div class="text-4xl text-white/80 drop-shadow">🧠</div>
                 `;
 
                 inner.appendChild(front);
@@ -557,9 +598,9 @@
             });
         }
 
-        function renderOptionsDisabled(message) {
+        function renderOptionsDisabled(msg) {
             const container = document.getElementById('options-container');
-            container.innerHTML = `<span class="text-slate-400 font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-hourglass-start animate-spin"></i> ${message}</span>`;
+            container.innerHTML = `<span class="text-slate-400 font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-spinner animate-spin"></i> ${msg}</span>`;
         }
 
         function renderOptionsButtons(choices) {
@@ -568,81 +609,80 @@
 
             choices.forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = `choice-btn bg-white hover:bg-purple-50 active:bg-purple-100 text-slate-800 font-extrabold text-base sm:text-xl px-5 sm:px-8 py-3 rounded-2xl border-2 border-slate-200 shadow-md hover:border-purple-400 transition-all transform hover:-translate-y-0.5 active:translate-y-0 tracking-wide`;
-                // Pure text options - NO EMOJI / IMAGE HINTS
-                btn.innerHTML = `<span>${item.name}</span>`;
-                btn.onclick = () => handleAnswer(item, btn);
+                // PURE TEXT ONLY (No icons or emojis on option buttons)
+                btn.className = `choice-btn bg-white hover:bg-indigo-50 active:bg-indigo-100 text-slate-800 font-black text-base sm:text-xl px-5 sm:px-7 py-3 rounded-2xl border-2 border-slate-200 shadow-md hover:border-indigo-400 transition-all transform hover:-translate-y-0.5 active:translate-y-0 tracking-wide flex-1 min-w-[90px] sm:min-w-[110px] text-center`;
+                btn.textContent = item.name;
+                btn.onclick = () => handleAnswerSelect(item, btn);
                 container.appendChild(btn);
             });
         }
 
-        /* ==================== ANSWER & SCORING ==================== */
+        /* ==================== ANSWER HANDLING & SCORING ==================== */
 
-        function handleAnswer(selectedItem, btnElement) {
-            // Disable all choice buttons temporarily to avoid multiple clicks
+        function handleAnswerSelect(selectedItem, btnElement) {
             const allBtns = document.querySelectorAll('.choice-btn');
             allBtns.forEach(b => b.disabled = true);
 
             if (selectedItem.name === missingItem.name) {
-                // Correct answer
-                sound.correct();
+                // Correct Choice
                 btnElement.classList.remove('bg-white', 'border-slate-200');
-                btnElement.classList.add('bg-green-500', 'text-white', 'border-green-600', 'ring-4', 'ring-green-200');
+                btnElement.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'ring-4', 'ring-emerald-200');
 
-                let gainedPoints = 0;
-                if (!isSecondChance) {
-                    gainedPoints = 10;
+                let gained = 0;
+                if (!isRetryAttempt) {
+                    gained = 10;
                     firstTrySuccessCount++;
+                    streak++;
+                    sound.correct();
                 } else {
-                    gainedPoints = 5;
+                    gained = 5;
                     secondTrySuccessCount++;
+                    sound.retryCorrect();
                 }
-                score += gainedPoints;
+
+                score += gained;
                 document.getElementById('ui-score').textContent = score;
 
-                // Show feedback banner
-                showFloatingFeedback(`+${gainedPoints} 正確！`, 'text-green-500');
+                showFloatingFeedback(`+${gained} 分！答對了！`, 'text-emerald-600');
 
-                // Transition to next round after short delay
                 setTimeout(() => {
                     nextRound();
-                }, 1200);
+                }, 1100);
 
             } else {
-                // Wrong answer
+                // Wrong Choice
                 sound.wrong();
+                streak = 0; // Reset streak
                 btnElement.classList.remove('bg-white');
-                btnElement.classList.add('bg-red-500', 'text-white', 'border-red-600', 'animate-shake');
+                btnElement.classList.add('bg-rose-500', 'text-white', 'border-rose-600', 'animate-shake');
 
-                if (!isSecondChance) {
-                    // Give Second Chance ("補答")
-                    isSecondChance = true;
-                    sound.retry();
+                if (!isRetryAttempt) {
+                    // Give Second Attempt (Retry for 5 points)
+                    isRetryAttempt = true;
                     showFloatingFeedback(`答錯了！給予一次補答機會 (+5分)`, 'text-orange-500');
 
                     setTimeout(() => {
-                        // Re-enable remaining buttons except the wrong one
                         allBtns.forEach(b => {
                             if (b !== btnElement) b.disabled = false;
                         });
-                        btnElement.style.opacity = '0.4';
+                        btnElement.style.opacity = '0.35';
                         document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i> 再試一次！選擇消失的詞語 (補答 +5分)`;
-                    }, 1000);
+                    }, 900);
 
                 } else {
-                    // Second Chance failed -> Skip to next round
-                    showFloatingFeedback(`遺憾答錯！正確答案是：${missingItem.name}`, 'text-red-500');
-                    
+                    // Failed Retry -> Reveal correct answer & move on
+                    showFloatingFeedback(`還是錯了！正確答案是：${missingItem.name}`, 'text-rose-500');
+
                     setTimeout(() => {
                         nextRound();
-                    }, 1600);
+                    }, 1500);
                 }
             }
         }
 
         function showFloatingFeedback(msg, colorClass) {
             const header = document.getElementById('options-header');
-            header.className = `text-center font-extrabold text-base sm:text-lg mb-3 ${colorClass}`;
+            header.className = `text-center font-black text-sm sm:text-base mb-3 ${colorClass}`;
             header.textContent = msg;
         }
 
@@ -651,66 +691,74 @@
             if (currentRound > 10) {
                 endGame();
             } else {
-                document.getElementById('options-header').className = "text-center font-extrabold text-slate-600 text-sm sm:text-base mb-3";
-                document.getElementById('options-header').textContent = "❓ 哪一個圖案消失了？請選擇對應詞語：";
+                document.getElementById('options-header').className = "text-center font-black text-slate-600 text-xs sm:text-sm mb-3";
+                document.getElementById('options-header').textContent = "❓ 哪一個圖案消失了？請點選正確詞語：";
                 loadRound(currentRound);
             }
         }
 
         function endGame() {
-            sound.gameComplete();
+            sound.victory();
+            
+            // Fire Confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
             showScreen('screen-result');
 
             document.getElementById('final-score').textContent = score;
-            document.getElementById('stat-first-try').textContent = `${firstTrySuccessCount} 題`;
-            document.getElementById('stat-second-try').textContent = `${secondTrySuccessCount} 題`;
+            document.getElementById('stat-first-try').textContent = `${firstTrySuccessCount} / 10`;
+            
+            const accuracy = Math.round(((firstTrySuccessCount * 1.0 + secondTrySuccessCount * 0.5) / 10) * 100);
+            document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
 
-            // Emoji rating
             const emojiEl = document.getElementById('result-emoji');
             if (score >= 90) emojiEl.textContent = '👑';
             else if (score >= 70) emojiEl.textContent = '🏆';
             else if (score >= 50) emojiEl.textContent = '🌟';
-            else emojiEl.textContent = '💪';
+            else emojiEl.textContent = '⚡';
 
-            // Show name input if score qualifies or is valid
-            const nameBox = document.getElementById('name-input-box');
-            nameBox.style.display = 'block';
+            document.getElementById('name-input-box').style.display = 'block';
         }
 
-        /* ==================== LEADERBOARD (LOCALSTORAGE) ==================== */
+        /* ==================== LEADERBOARD LOGIC ==================== */
 
         function getLeaderboardData() {
-            const data = localStorage.getItem('memory_game_leaderboard');
+            const data = localStorage.getItem('memory_master_leaderboard');
             return data ? JSON.parse(data) : [];
         }
 
         function saveLeaderboardData(data) {
-            localStorage.setItem('memory_game_leaderboard', JSON.stringify(data));
+            localStorage.setItem('memory_master_leaderboard', JSON.stringify(data));
         }
 
         function submitScore() {
             const nameInput = document.getElementById('player-name-input');
-            const name = nameInput.value.trim() || '無名英雄';
+            const name = nameInput.value.trim() || '無名大師';
 
             const records = getLeaderboardData();
             const dateStr = new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const accuracy = Math.round(((firstTrySuccessCount * 1.0 + secondTrySuccessCount * 0.5) / 10) * 100);
 
             records.push({
                 name: name,
                 score: score,
+                accuracy: accuracy,
                 date: dateStr
             });
 
-            // Sort descending by score
+            // Sort by score descending
             records.sort((a, b) => b.score - a.score);
 
             // Keep top 10
-            const top10 = records.slice(0, 10);
-            saveLeaderboardData(top10);
+            saveLeaderboardData(records.slice(0, 10));
 
-            // Hide input box to avoid multi submission
             document.getElementById('name-input-box').style.display = 'none';
-
             showLeaderboard();
         }
 
@@ -721,32 +769,35 @@
 
             if (records.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-10 text-slate-400 font-bold">
-                        尚無紀錄，快來成為第一個榜首吧！
+                    <div class="text-center py-12 text-slate-400 font-bold">
+                        尚無高分紀錄，成為第一個登榜大師吧！
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = records.map((item, idx) => {
-                let badgeColor = 'bg-slate-200 text-slate-700';
-                let medal = `${idx + 1}`;
+                let badgeStyle = 'bg-slate-200 text-slate-700';
+                let rankLabel = `${idx + 1}`;
                 
-                if (idx === 0) { badgeColor = 'bg-amber-400 text-white'; medal = '🥇 1'; }
-                else if (idx === 1) { badgeColor = 'bg-slate-300 text-slate-800'; medal = '🥈 2'; }
-                else if (idx === 2) { badgeColor = 'bg-amber-600 text-white'; medal = '🥉 3'; }
+                if (idx === 0) { badgeStyle = 'bg-amber-400 text-amber-950'; rankLabel = '🥇 1'; }
+                else if (idx === 1) { badgeStyle = 'bg-slate-300 text-slate-800'; rankLabel = '🥈 2'; }
+                else if (idx === 2) { badgeStyle = 'bg-amber-600 text-white'; rankLabel = '🥉 3'; }
 
                 return `
-                    <div class="flex items-center justify-between bg-white/80 p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between bg-white/90 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-sm">
                         <div class="flex items-center gap-3">
-                            <span class="w-10 h-8 flex items-center justify-center font-black rounded-lg text-sm ${badgeColor}">
-                                ${medal}
+                            <span class="w-10 h-8 flex items-center justify-center font-black rounded-xl text-xs sm:text-sm ${badgeStyle}">
+                                ${rankLabel}
                             </span>
-                            <span class="font-extrabold text-slate-800 text-base">${escapeHtml(item.name)}</span>
+                            <div>
+                                <span class="font-black text-slate-800 text-base block leading-tight">${escapeHtml(item.name)}</span>
+                                <span class="text-[11px] text-slate-400 font-bold">準確率: ${item.accuracy || 0}%</span>
+                            </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xl font-black text-purple-700 mr-2">${item.score} <span class="text-xs font-normal text-slate-500">分</span></span>
-                            <span class="text-xs text-slate-400 block">${item.date}</span>
+                            <span class="text-xl font-black text-indigo-700 leading-none">${item.score} <span class="text-xs font-normal text-slate-400">分</span></span>
+                            <span class="text-[10px] text-slate-400 block">${item.date}</span>
                         </div>
                     </div>
                 `;
@@ -754,13 +805,13 @@
         }
 
         function clearLeaderboard() {
-            if (confirm("確定要清空龍虎榜紀錄嗎？")) {
-                localStorage.removeItem('memory_game_leaderboard');
+            if (confirm("確定要清空所有龍虎榜紀錄嗎？")) {
+                localStorage.removeItem('memory_master_leaderboard');
                 showLeaderboard();
             }
         }
 
-        /* ==================== HELPER UTILITIES ==================== */
+        /* ==================== GENERAL UTILITIES ==================== */
 
         function showScreen(screenId) {
             ['screen-home', 'screen-game', 'screen-result', 'screen-leaderboard'].forEach(id => {
@@ -781,7 +832,7 @@
         }
 
         function confirmRestart() {
-            if (confirm("確定要重新開始遊戲嗎？當前進度將會遺失。")) {
+            if (confirm("確定要重新開始遊戲嗎？當前得分將會重置。")) {
                 clearInterval(timerInterval);
                 startGame();
             }
