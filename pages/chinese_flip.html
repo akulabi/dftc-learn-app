@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>詞語翻卡對對碰 - 幼兒廣東話記憶遊戲</title>
+    <title>詞語翻卡對對碰 - Bilingual Memory Flip Game</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -149,14 +149,14 @@
     <header class="w-full max-w-2xl mx-auto flex items-center justify-between shrink-0 mb-1 z-10">
         <div class="flex items-center gap-2 bg-white/85 backdrop-blur-md px-3 py-1 rounded-full shadow-md border-2 border-amber-300">
             <span class="text-xl animate-bounce">🐱</span>
-            <h1 class="text-base sm:text-lg font-black text-amber-600 tracking-wide">詞語對對碰</h1>
+            <h1 id="appTitle" class="text-base sm:text-lg font-black text-amber-600 tracking-wide">詞語對對碰</h1>
         </div>
 
         <div class="flex items-center gap-1.5">
             <!-- Home / Exit Button -->
             <button id="homeBtn" onclick="confirmGoHome()" class="hidden px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-black rounded-full transition active:scale-95 border-2 border-rose-300 flex items-center gap-1 shadow-sm text-xs sm:text-sm" title="返回首頁">
                 <i class="fa-solid fa-house"></i>
-                <span>首頁</span>
+                <span id="homeBtnText">首頁</span>
             </button>
             <button id="speechBtn" onclick="toggleSpeech()" class="w-9 h-9 sm:w-10 sm:h-10 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full transition active:scale-95 border-2 border-amber-300 flex items-center justify-center shadow-sm" title="語音">
                 <i class="fa-solid fa-volume-high text-sm sm:text-base" id="speechIcon"></i>
@@ -172,7 +172,7 @@
         <!-- Level -->
         <div class="flex items-center gap-1 bg-amber-100 px-2 py-0.5 sm:py-1 rounded-xl border border-amber-300">
             <span class="text-sm">🚩</span>
-            <div id="levelDisplay" class="text-xs sm:text-sm font-black text-amber-800">第 1 关</div>
+            <div id="levelDisplay" class="text-xs sm:text-sm font-black text-amber-800">第 1 關</div>
         </div>
 
         <!-- Timer Gauge -->
@@ -196,7 +196,7 @@
     <main class="w-full max-w-2xl mx-auto flex-1 flex flex-col items-center justify-center relative min-h-0 z-10 my-auto">
         <!-- Memory Preview Notice with Animated Countdown -->
         <div id="previewNotice" class="hidden absolute top-1 z-20 bg-amber-400/95 text-slate-900 font-black px-4 py-1 rounded-full shadow-lg border-2 border-white animate-pulse text-xs flex items-center gap-1.5">
-            <span>👀 記住卡牌：</span>
+            <span id="previewLabel">👀 記住卡牌：</span>
             <span id="previewCountdown" class="text-rose-700 text-xs sm:text-sm font-extrabold underline">5 秒!</span>
         </div>
 
@@ -208,11 +208,21 @@
         <!-- Start Game Screen Overlay -->
         <div id="startOverlay" class="absolute inset-0 bg-white/95 backdrop-blur-md rounded-3xl z-30 flex flex-col items-center justify-center p-4 text-center shadow-2xl border-4 border-sky-300">
             <div class="text-5xl sm:text-6xl mb-2 animate-bounce">🧩</div>
-            <h2 class="text-2xl sm:text-3xl font-black text-sky-600 mb-1">詞語翻卡對對碰</h2>
-            <p class="text-xs sm:text-sm text-slate-500 font-bold mb-5">翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！</p>
+            <h2 id="startTitle" class="text-2xl sm:text-3xl font-black text-sky-600 mb-1">詞語翻卡對對碰</h2>
+            <p id="startSubtitle" class="text-xs sm:text-sm text-slate-500 font-bold mb-4">翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！</p>
+
+            <!-- Language Mode Selector Toggle -->
+            <div class="flex items-center justify-center gap-2 bg-slate-100 p-1.5 rounded-2xl border-2 border-slate-200 mb-5">
+                <button id="langCantoneseBtn" onclick="setLanguage('zh-HK')" class="px-3.5 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-sm bg-amber-400 text-slate-900 border border-amber-500 flex items-center gap-1">
+                    <span>🇭🇰</span> 廣東話
+                </button>
+                <button id="langEnglishBtn" onclick="setLanguage('en-US')" class="px-3.5 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                    <span>🇬🇧</span> English
+                </button>
+            </div>
 
             <button onclick="startGame()" class="px-7 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 text-base sm:text-lg font-black rounded-2xl shadow-lg transform transition active:scale-95 border-b-4 border-amber-700 flex items-center gap-2">
-                <i class="fa-solid fa-play text-lg"></i> 開始遊戲
+                <i class="fa-solid fa-play text-lg"></i> <span id="startBtnText">開始遊戲</span>
             </button>
         </div>
     </main>
@@ -220,7 +230,7 @@
     <!-- Footer Controls -->
     <footer class="w-full max-w-2xl mx-auto flex justify-center items-center shrink-0 py-0.5 z-10">
         <button id="restartBtn" onclick="restartGame()" class="hidden px-3 py-1 bg-white/80 hover:bg-white text-slate-700 rounded-xl font-bold transition active:scale-95 border border-slate-300 text-xs shadow-sm flex items-center gap-1">
-            <i class="fa-solid fa-rotate-right text-xs"></i> 重新開始
+            <i class="fa-solid fa-rotate-right text-xs"></i> <span id="restartBtnText">重新開始</span>
         </button>
     </footer>
 
@@ -228,13 +238,13 @@
     <div id="homeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl border-4 border-rose-300 text-center">
             <div class="text-4xl mb-2">🏠</div>
-            <h3 class="text-lg font-black text-slate-800 mb-2">確定返回首頁？</h3>
-            <p class="text-xs text-slate-500 font-bold mb-4">當前關卡和分數會清除哦！</p>
+            <h3 id="homeModalTitle" class="text-lg font-black text-slate-800 mb-2">確定返回首頁？</h3>
+            <p id="homeModalSub" class="text-xs text-slate-500 font-bold mb-4">當前關卡和分數會清除哦！</p>
             <div class="flex gap-2">
-                <button onclick="goHome()" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
+                <button id="homeModalConfirm" onclick="goHome()" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
                     確定返回
                 </button>
-                <button onclick="closeModal('homeModal')" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
+                <button id="homeModalCancel" onclick="closeModal('homeModal')" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
                     繼續遊戲
                 </button>
             </div>
@@ -247,7 +257,7 @@
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-2 text-purple-700 font-black text-xl">
                     <i class="fa-solid fa-trophy text-amber-400"></i>
-                    <span>龍虎榜</span>
+                    <span id="lbTitle">龍虎榜</span>
                 </div>
                 <button onclick="closeLeaderboard()" class="w-8 h-8 bg-slate-100 text-slate-500 rounded-full font-bold hover:bg-slate-200 transition text-sm">✕</button>
             </div>
@@ -258,7 +268,7 @@
             </div>
 
             <div class="mt-3 pt-2 border-t flex justify-end">
-                <button onclick="closeLeaderboard()" class="px-5 py-2 bg-purple-600 text-white font-bold rounded-xl text-xs hover:bg-purple-700 transition">關閉</button>
+                <button id="lbCloseBtn" onclick="closeLeaderboard()" class="px-5 py-2 bg-purple-600 text-white font-bold rounded-xl text-xs hover:bg-purple-700 transition">關閉</button>
             </div>
         </div>
     </div>
@@ -267,16 +277,16 @@
     <div id="gameOverModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-4 border-amber-300 text-center">
             <div class="text-5xl mb-1">🎉</div>
-            <h2 class="text-xl font-black text-amber-600 mb-1">時間到！</h2>
+            <h2 id="goTitle" class="text-xl font-black text-amber-600 mb-1">時間到！</h2>
 
             <div class="bg-amber-50 rounded-xl p-3 mb-4 border border-amber-200 flex justify-around items-center">
                 <div>
-                    <div class="text-xs text-amber-700 font-bold">總分</div>
+                    <div id="goScoreLabel" class="text-xs text-amber-700 font-bold">總分</div>
                     <div id="finalScore" class="text-2xl font-black text-amber-600">0</div>
                 </div>
                 <div class="h-8 w-px bg-amber-200"></div>
                 <div>
-                    <div class="text-xs text-amber-700 font-bold">關卡</div>
+                    <div id="goLevelLabel" class="text-xs text-amber-700 font-bold">關卡</div>
                     <div id="finalLevel" class="text-2xl font-black text-amber-600">1</div>
                 </div>
             </div>
@@ -286,10 +296,10 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="submitScore()" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
+                <button id="saveScoreBtn" onclick="submitScore()" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow transition active:scale-95 text-xs">
                     💾 儲存成績
                 </button>
-                <button onclick="restartGame(); closeModal('gameOverModal');" class="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
+                <button id="playAgainBtn" onclick="restartGame(); closeModal('gameOverModal');" class="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition text-xs">
                     再玩一次
                 </button>
             </div>
@@ -299,50 +309,149 @@
     <!-- JavaScript Logic -->
     <script>
         /* ==========================================================================
-           1. 200+ CANTONESE VOCABULARY WORD BANK
+           1. 200+ BILINGUAL VOCABULARY WORD BANK
            ========================================================================== */
         const WORD_BANK = [
             // Animals
-            { word: '狗仔', emoji: '🐶' }, { word: '貓咪', emoji: '🐱' }, { word: '小白兔', emoji: '🐰' }, { word: '小熊', emoji: '🐻' },
-            { word: '熊貓', emoji: '🐼' }, { word: '猴子', emoji: '🐵' }, { word: '老虎', emoji: '🐯' }, { word: '獅子', emoji: '🦁' },
-            { word: '大象', emoji: '🐘' }, { word: '長頸鹿', emoji: '🦒' }, { word: '斑馬', emoji: '🦓' }, { word: '河馬', emoji: '🦛' },
-            { word: '小豬', emoji: '🐷' }, { word: '乳牛', emoji: '🐮' }, { word: '綿羊', emoji: '🐑' }, { word: '公雞', emoji: '🐓' },
-            { word: '小鸭', emoji: '🦆' }, { word: '青蛙', emoji: '🐸' }, { word: '企鵝', emoji: '🐧' }, { word: '海豚', emoji: '🐬' },
-            { word: '鯨魚', emoji: '🐳' }, { word: '章魚', emoji: '🐙' }, { word: '蝴蝶', emoji: '🦋' }, { word: '蜜蜂', emoji: '🐝' },
-            { word: '恐龍', emoji: '🦖' }, { word: '金魚', emoji: '🐠' }, { word: '烏龜', emoji: '🐢' }, { word: '松鼠', emoji: '🐿️' },
+            { wordZh: '狗仔', wordEn: 'Dog', emoji: '🐶' }, { wordZh: '貓咪', wordEn: 'Cat', emoji: '🐱' }, { wordZh: '小白兔', wordEn: 'Rabbit', emoji: '🐰' }, { wordZh: '小熊', wordEn: 'Bear', emoji: '🐻' },
+            { wordZh: '熊貓', wordEn: 'Panda', emoji: '🐼' }, { wordZh: '猴子', wordEn: 'Monkey', emoji: '🐵' }, { wordZh: '老虎', wordEn: 'Tiger', emoji: '🐯' }, { wordZh: '獅子', wordEn: 'Lion', emoji: '🦁' },
+            { wordZh: '大象', wordEn: 'Elephant', emoji: '🐘' }, { wordZh: '長頸鹿', wordEn: 'Giraffe', emoji: '🦒' }, { wordZh: '斑馬', wordEn: 'Zebra', emoji: '🦓' }, { wordZh: '河馬', wordEn: 'Hippo', emoji: '🦛' },
+            { wordZh: '小豬', wordEn: 'Pig', emoji: '🐷' }, { wordZh: '乳牛', wordEn: 'Cow', emoji: '🐮' }, { wordZh: '綿羊', wordEn: 'Sheep', emoji: '🐑' }, { wordZh: '公雞', wordEn: 'Rooster', emoji: '🐓' },
+            { wordZh: '小鴨', wordEn: 'Duck', emoji: '🦆' }, { wordZh: '青蛙', wordEn: 'Frog', emoji: '🐸' }, { wordZh: '企鵝', wordEn: 'Penguin', emoji: '🐧' }, { wordZh: '海豚', wordEn: 'Dolphin', emoji: '🐬' },
+            { wordZh: '鯨魚', wordEn: 'Whale', emoji: '🐳' }, { wordZh: '章魚', wordEn: 'Octopus', emoji: '🐙' }, { wordZh: '蝴蝶', wordEn: 'Butterfly', emoji: '🦋' }, { wordZh: '蜜蜂', wordEn: 'Bee', emoji: '🐝' },
+            { wordZh: '恐龍', wordEn: 'Dinosaur', emoji: '🦖' }, { wordZh: '金魚', wordEn: 'Goldfish', emoji: '🐠' }, { wordZh: '烏龜', wordEn: 'Turtle', emoji: '🐢' }, { wordZh: '松鼠', wordEn: 'Squirrel', emoji: '🐿️' },
 
             // Foods & Drinks
-            { word: '蘋果', emoji: '🍎' }, { word: '香蕉', emoji: '🍌' }, { word: '提子', emoji: '🍇' }, { word: '西瓜', emoji: '🍉' },
-            { word: '草莓', emoji: '🍓' }, { word: '橙仔', emoji: '🍊' }, { word: '檸檬', emoji: '🍋' }, { word: '水蜜桃', emoji: '🍑' },
-            { word: '菠蘿', emoji: '🍍' }, { word: '櫻桃', emoji: '🍒' }, { word: '麵包', emoji: '🍞' }, { word: '蛋撻', emoji: '🥧' },
-            { word: '蛋糕', emoji: '🎂' }, { word: '雪糕', emoji: '🍦' }, { word: '朱古力', emoji: '🍫' }, { word: '糖果', emoji: '🍬' },
-            { word: '漢堡包', emoji: '🍔' }, { word: '薯條', emoji: '🍟' }, { word: '薄餅', emoji: '🍕' }, { word: '三文治', emoji: '🥪' },
-            { word: '珍珠奶茶', emoji: '🧋' }, { word: '壽司', emoji: '🍣' }, { word: '拉麵', emoji: '🍜' }, { word: '牛奶', emoji: '🥛' },
+            { wordZh: '蘋果', wordEn: 'Apple', emoji: '🍎' }, { wordZh: '香蕉', wordEn: 'Banana', emoji: '🍌' }, { wordZh: '提子', wordEn: 'Grapes', emoji: '🍇' }, { wordZh: '西瓜', wordEn: 'Watermelon', emoji: '🍉' },
+            { wordZh: '草莓', wordEn: 'Strawberry', emoji: '🍓' }, { wordZh: '橙仔', wordEn: 'Orange', emoji: '🍊' }, { wordZh: '檸檬', wordEn: 'Lemon', emoji: '🍋' }, { wordZh: '水蜜桃', wordEn: 'Peach', emoji: '🍑' },
+            { wordZh: '菠蘿', wordEn: 'Pineapple', emoji: '🍍' }, { wordZh: '櫻桃', wordEn: 'Cherry', emoji: '🍒' }, { wordZh: '麵包', wordEn: 'Bread', emoji: '🍞' }, { wordZh: '蛋撻', wordEn: 'Egg Tart', emoji: '🥧' },
+            { wordZh: '蛋糕', wordEn: 'Cake', emoji: '🎂' }, { wordZh: '雪糕', wordEn: 'Ice Cream', emoji: '🍦' }, { wordZh: '朱古力', wordEn: 'Chocolate', emoji: '🍫' }, { wordZh: '糖果', wordEn: 'Candy', emoji: '🍬' },
+            { wordZh: '漢堡包', wordEn: 'Burger', emoji: '🍔' }, { wordZh: '薯條', wordEn: 'Fries', emoji: '🍟' }, { wordZh: '薄餅', wordEn: 'Pizza', emoji: '🍕' }, { wordZh: '三文治', wordEn: 'Sandwich', emoji: '🥪' },
+            { wordZh: '珍珠奶茶', wordEn: 'Boba Tea', emoji: '🧋' }, { wordZh: '壽司', wordEn: 'Sushi', emoji: '🍣' }, { wordZh: '拉麵', wordEn: 'Ramen', emoji: '🍜' }, { wordZh: '牛奶', wordEn: 'Milk', emoji: '🥛' },
 
             // Transport
-            { word: '巴士', emoji: '🚌' }, { word: '的士', emoji: '🚕' }, { word: '私家車', emoji: '🚗' }, { word: '警車', emoji: '🚓' },
-            { word: '救護車', emoji: '🚑' }, { word: '消防車', emoji: '🚒' }, { word: '單車', emoji: '🚲' }, { word: '飛機', emoji: '✈️' },
-            { word: '直升機', emoji: '🚁' }, { word: '火箭', emoji: '🚀' }, { word: '輪船', emoji: '🚢' }, { word: '火車', emoji: '🚆' },
-            { word: '電車', emoji: '🚃' }, { word: '校車', emoji: '🚐' }, { word: '熱氣球', emoji: '🎈' }, { word: '纜車', emoji: '🪂' },
+            { wordZh: '巴士', wordEn: 'Bus', emoji: '🚌' }, { wordZh: '的士', wordEn: 'Taxi', emoji: '🚕' }, { wordZh: '私家車', wordEn: 'Car', emoji: '🚗' }, { wordZh: '警車', wordEn: 'Police Car', emoji: '🚓' },
+            { wordZh: '救護車', wordEn: 'Ambulance', emoji: '🚑' }, { wordZh: '消防車', wordEn: 'Fire Truck', emoji: '🚒' }, { wordZh: '單車', wordEn: 'Bicycle', emoji: '🚲' }, { wordZh: '飛機', wordEn: 'Airplane', emoji: '✈️' },
+            { wordZh: '直升機', wordEn: 'Helicopter', emoji: '🚁' }, { wordZh: '火箭', wordEn: 'Rocket', emoji: '🚀' }, { wordZh: '輪船', wordEn: 'Ship', emoji: '🚢' }, { wordZh: '火車', wordEn: 'Train', emoji: '🚆' },
+            { wordZh: '電車', wordEn: 'Tram', emoji: '🚃' }, { wordZh: '校車', wordEn: 'School Bus', emoji: '🚐' }, { wordZh: '熱氣球', wordEn: 'Hot Air Balloon', emoji: '🎈' }, { wordZh: '纜車', wordEn: 'Cable Car', emoji: '🪂' },
 
             // Everyday Toys & Nature
-            { word: '牙刷', emoji: '🪥' }, { word: '鬧鐘', emoji: '⏰' }, { word: '雨傘', emoji: '☂️' }, { word: '眼鏡', emoji: '👓' },
-            { word: '帽子', emoji: '🧢' }, { word: '鞋子', emoji: '👟' }, { word: '書包', emoji: '🎒' }, { word: '剪刀', emoji: '✂️' },
-            { word: '足球', emoji: '⚽' }, { word: '籃球', emoji: '🏀' }, { word: '積木', emoji: '🧱' }, { word: '禮物', emoji: '🎁' },
-            { word: '太陽', emoji: '☀️' }, { word: '月亮', emoji: '🌙' }, { word: '星星', emoji: '⭐' }, { word: '彩虹', emoji: '🌈' },
-            { word: '白雲', emoji: '☁️' }, { word: '下雨', emoji: '🌧️' }, { word: '大樹', emoji: '🌳' }, { word: '鮮花', emoji: '🌸' },
+            { wordZh: '牙刷', wordEn: 'Toothbrush', emoji: '🪥' }, { wordZh: '鬧鐘', wordEn: 'Clock', emoji: '⏰' }, { wordZh: '雨傘', wordEn: 'Umbrella', emoji: '☂️' }, { wordZh: '眼鏡', wordEn: 'Glasses', emoji: '👓' },
+            { wordZh: '帽子', wordEn: 'Cap', emoji: '🧢' }, { wordZh: '鞋子', wordEn: 'Shoes', emoji: '👟' }, { wordZh: '書包', wordEn: 'Backpack', emoji: '🎒' }, { wordZh: '剪刀', wordEn: 'Scissors', emoji: '✂️' },
+            { wordZh: '足球', wordEn: 'Soccer', emoji: '⚽' }, { wordZh: '籃球', wordEn: 'Basketball', emoji: '🏀' }, { wordZh: '積木', wordEn: 'Blocks', emoji: '🧱' }, { wordZh: '禮物', wordEn: 'Gift', emoji: '🎁' },
+            { wordZh: '太陽', wordEn: 'Sun', emoji: '☀️' }, { wordZh: '月亮', wordEn: 'Moon', emoji: '🌙' }, { wordZh: '星星', wordEn: 'Star', emoji: '⭐' }, { wordZh: '彩虹', wordEn: 'Rainbow', emoji: '🌈' },
+            { wordZh: '白雲', wordEn: 'Cloud', emoji: '☁️' }, { wordZh: '下雨', wordEn: 'Rain', emoji: '🌧️' }, { wordZh: '大樹', wordEn: 'Tree', emoji: '🌳' }, { wordZh: '鮮花', wordEn: 'Flower', emoji: '🌸' },
 
             // Extra Items
-            { word: '老師', emoji: '🧑‍🏫' }, { word: '醫生', emoji: '🧑‍⚕️' }, { word: '警察', emoji: '👮' }, { word: '廚師', emoji: '🧑‍🍳' },
-            { word: '跑步', emoji: '🏃' }, { word: '游泳', emoji: '🏊' }, { word: '跳舞', emoji: '💃' }, { word: '唱歌', emoji: '🎤' },
-            { word: '體操', emoji: '🤸‍♀️' }, { word: '鋼琴', emoji: '🎹' }, { word: '吉他', emoji: '🎸' }, { word: '小提琴', emoji: '🎻' },
-            { word: '眼睛', emoji: '👀' }, { word: '耳朵', emoji: '👂' }, { word: '嘴巴', emoji: '👄' }, { word: '小手', emoji: '✋' },
-            { word: '房屋', emoji: '🏠' }, { word: '學校', emoji: '🏫' }, { word: '城堡', emoji: '🏰' }, { word: '公園', emoji: '🛝' },
-            { word: '鑽石', emoji: '💎' }, { word: '鑰匙', emoji: '🔑' }, { word: '機器人', emoji: '🤖' }, { word: '獎杯', emoji: '🏆' }
+            { wordZh: '老師', wordEn: 'Teacher', emoji: '🧑‍🏫' }, { wordZh: '醫生', wordEn: 'Doctor', emoji: '🧑‍⚕️' }, { wordZh: '警察', wordEn: 'Police', emoji: '👮' }, { wordZh: '廚師', wordEn: 'Chef', emoji: '🧑‍🍳' },
+            { wordZh: '跑步', wordEn: 'Running', emoji: '🏃' }, { wordZh: '游泳', wordEn: 'Swimming', emoji: '🏊' }, { wordZh: '跳舞', wordEn: 'Dancing', emoji: '💃' }, { wordZh: '唱歌', wordEn: 'Singing', emoji: '🎤' },
+            { wordZh: '鋼琴', wordEn: 'Piano', emoji: '🎹' }, { wordZh: '吉他', wordEn: 'Guitar', emoji: '🎸' }, { wordZh: '小提琴', wordEn: 'Violin', emoji: '🎻' }, { wordZh: '眼睛', wordEn: 'Eyes', emoji: '👀' },
+            { wordZh: '耳朵', wordEn: 'Ears', emoji: '👂' }, { wordZh: '嘴巴', wordEn: 'Mouth', emoji: '👄' }, { wordZh: '小手', emoji: '✋', wordEn: 'Hand' }, { wordZh: '房屋', wordEn: 'House', emoji: '🏠' },
+            { wordZh: '學校', wordEn: 'School', emoji: '🏫' }, { wordZh: '城堡', wordEn: 'Castle', emoji: '🏰' }, { wordZh: '公園', wordEn: 'Park', emoji: '🛝' }, { wordZh: '鑽石', wordEn: 'Diamond', emoji: '💎' },
+            { wordZh: '鑰匙', wordEn: 'Key', emoji: '🔑' }, { wordZh: '機器人', wordEn: 'Robot', emoji: '🤖' }, { wordZh: '獎杯', wordEn: 'Trophy', emoji: '🏆' }
         ];
 
         /* ==========================================================================
-           2. AUDIO SYNTHESIS & SOUND EFFECTS
+           2. LANGUAGE & LOCALIZATION CONFIG
+           ========================================================================== */
+        let currentLang = 'zh-HK'; // 'zh-HK' or 'en-US'
+
+        const UI_TEXT = {
+            'zh-HK': {
+                title: '詞語對對碰',
+                subtitle: '翻開卡牌 ‧ 詞語配圖片 ‧ 記憶力大挑戰！',
+                startBtn: '開始遊戲',
+                homeBtn: '首頁',
+                restartBtn: '重新開始',
+                levelPrefix: '第 ',
+                levelSuffix: ' 關',
+                previewLabel: '👀 記住卡牌：',
+                secSuffix: ' 秒!',
+                homeModalTitle: '確定返回首頁？',
+                homeModalSub: '當前關卡和分數會清除哦！',
+                confirm: '確定返回',
+                cancel: '繼續遊戲',
+                lbTitle: '龍虎榜',
+                close: '關閉',
+                goTitle: '時間到！',
+                scoreLabel: '總分',
+                levelLabel: '關卡',
+                placeholderName: '名字 (例如: 小明)',
+                saveScore: '💾 儲存成績',
+                playAgain: '再玩一次',
+                defaultPlayer: '小探險家',
+                speechOn: '語音已開啟',
+                speechOff: '語音已關閉'
+            },
+            'en-US': {
+                title: 'Word Memory Flip',
+                subtitle: 'Match words with pictures & train your memory!',
+                startBtn: 'Start Game',
+                homeBtn: 'Home',
+                restartBtn: 'Restart',
+                levelPrefix: 'Level ',
+                levelSuffix: '',
+                previewLabel: '👀 Memorize cards:',
+                secSuffix: 's!',
+                homeModalTitle: 'Return to Home?',
+                homeModalSub: 'Your current score will be lost!',
+                confirm: 'Go Home',
+                cancel: 'Continue',
+                lbTitle: 'Leaderboard',
+                close: 'Close',
+                goTitle: "Time's Up!",
+                scoreLabel: 'Score',
+                levelLabel: 'Level',
+                placeholderName: 'Name (e.g. Alex)',
+                saveScore: '💾 Save Score',
+                playAgain: 'Play Again',
+                defaultPlayer: 'Explorer',
+                speechOn: 'Voice enabled',
+                speechOff: 'Voice disabled'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const isZh = lang === 'zh-HK';
+
+            document.getElementById('langCantoneseBtn').className = `px-3.5 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all flex items-center gap-1 ${
+                isZh ? 'bg-amber-400 text-slate-900 shadow-sm border border-amber-500' : 'text-slate-600 hover:text-slate-900'
+            }`;
+
+            document.getElementById('langEnglishBtn').className = `px-3.5 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all flex items-center gap-1 ${
+                !isZh ? 'bg-amber-400 text-slate-900 shadow-sm border border-amber-500' : 'text-slate-600 hover:text-slate-900'
+            }`;
+
+            updateLocalizedUI();
+        }
+
+        function updateLocalizedUI() {
+            const t = UI_TEXT[currentLang];
+            document.getElementById('appTitle').innerText = t.title;
+            document.getElementById('startTitle').innerText = t.title;
+            document.getElementById('startSubtitle').innerText = t.subtitle;
+            document.getElementById('startBtnText').innerText = t.startBtn;
+            document.getElementById('homeBtnText').innerText = t.homeBtn;
+            document.getElementById('restartBtnText').innerText = t.restartBtn;
+            document.getElementById('previewLabel').innerText = t.previewLabel;
+            document.getElementById('homeModalTitle').innerText = t.homeModalTitle;
+            document.getElementById('homeModalSub').innerText = t.homeModalSub;
+            document.getElementById('homeModalConfirm').innerText = t.confirm;
+            document.getElementById('homeModalCancel').innerText = t.cancel;
+            document.getElementById('lbTitle').innerText = t.lbTitle;
+            document.getElementById('lbCloseBtn').innerText = t.close;
+            document.getElementById('goTitle').innerText = t.goTitle;
+            document.getElementById('goScoreLabel').innerText = t.scoreLabel;
+            document.getElementById('goLevelLabel').innerText = t.levelLabel;
+            document.getElementById('playerName').placeholder = t.placeholderName;
+            document.getElementById('saveScoreBtn').innerText = t.saveScore;
+            document.getElementById('playAgainBtn').innerText = t.playAgain;
+            updateDashboard();
+        }
+
+        /* ==========================================================================
+           3. AUDIO SYNTHESIS & SOUND EFFECTS
            ========================================================================== */
         let speechEnabled = true;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -399,11 +508,11 @@
             }
         }
 
-        function speakCantonese(text) {
+        function speakWord(text) {
             if (!speechEnabled || !('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-HK';
+            utterance.lang = currentLang;
             utterance.rate = 0.95;
             utterance.pitch = 1.1;
             window.speechSynthesis.speak(utterance);
@@ -413,10 +522,11 @@
             speechEnabled = !speechEnabled;
             const icon = document.getElementById('speechIcon');
             const btn = document.getElementById('speechBtn');
+            const t = UI_TEXT[currentLang];
             if (speechEnabled) {
                 icon.className = 'fa-solid fa-volume-high text-base';
                 btn.classList.replace('bg-slate-200', 'bg-amber-100');
-                speakCantonese('語音已開啟');
+                speakWord(t.speechOn);
             } else {
                 icon.className = 'fa-solid fa-volume-xmark text-base';
                 btn.classList.replace('bg-amber-100', 'bg-slate-200');
@@ -424,7 +534,7 @@
         }
 
         /* ==========================================================================
-           3. GAME STATE & MECHANICS
+           4. GAME STATE & MECHANICS
            ========================================================================== */
         let gameActive = false;
         let score = 0;
@@ -441,6 +551,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             renderLeaderboard();
+            updateLocalizedUI();
         });
 
         function startGame() {
@@ -493,8 +604,9 @@
         }
 
         function updateDashboard() {
+            const t = UI_TEXT[currentLang];
             document.getElementById('scoreDisplay').innerText = score;
-            document.getElementById('levelDisplay').innerText = `第 ${currentLevel} 關`;
+            document.getElementById('levelDisplay').innerText = `${t.levelPrefix}${currentLevel}${t.levelSuffix}`;
             document.getElementById('timerText').innerText = `${timeLeft}s`;
 
             const percentage = Math.max(0, Math.min(100, (timeLeft / 30) * 100));
@@ -531,8 +643,9 @@
 
             cardsData = [];
             selectedPairs.forEach((item, index) => {
-                cardsData.push({ id: `pair-${index}-word`, pairId: index, type: 'word', content: item.word, speechText: item.word });
-                cardsData.push({ id: `pair-${index}-pic`, pairId: index, type: 'picture', content: item.emoji, speechText: item.word });
+                const wordText = currentLang === 'zh-HK' ? item.wordZh : item.wordEn;
+                cardsData.push({ id: `pair-${index}-word`, pairId: index, type: 'word', content: wordText, speechText: wordText });
+                cardsData.push({ id: `pair-${index}-pic`, pairId: index, type: 'picture', content: item.emoji, speechText: wordText });
             });
 
             shuffleArray(cardsData);
@@ -548,7 +661,7 @@
                             <span class="text-2xl sm:text-3xl">❓</span>
                         </div>
                         <div class="card-back">
-                            <span class="${card.type === 'word' ? 'text-lg sm:text-2xl font-black text-slate-800 tracking-wider' : 'text-3xl sm:text-5xl'}">
+                            <span class="${card.type === 'word' ? 'text-base sm:text-2xl font-black text-slate-800 tracking-wider text-center px-1' : 'text-3xl sm:text-5xl'}">
                                 ${card.content}
                             </span>
                         </div>
@@ -561,9 +674,10 @@
 
             const notice = document.getElementById('previewNotice');
             const previewCountdownEl = document.getElementById('previewCountdown');
+            const t = UI_TEXT[currentLang];
             
             let previewSecondsLeft = 5;
-            previewCountdownEl.innerText = `${previewSecondsLeft} 秒!`;
+            previewCountdownEl.innerText = `${previewSecondsLeft} ${t.secSuffix}`;
             notice.classList.remove('hidden');
 
             const allCardEls = document.querySelectorAll('.card');
@@ -573,7 +687,7 @@
             const previewTimer = setInterval(() => {
                 previewSecondsLeft--;
                 if (previewSecondsLeft > 0) {
-                    previewCountdownEl.innerText = `${previewSecondsLeft} 秒!`;
+                    previewCountdownEl.innerText = `${previewSecondsLeft} ${t.secSuffix}`;
                 } else {
                     clearInterval(previewTimer);
                 }
@@ -599,7 +713,7 @@
 
             cardEl.classList.add('flipped');
             playSound('flip');
-            speakCantonese(card.speechText);
+            speakWord(card.speechText);
 
             flippedCards.push({ element: cardEl, data: card });
 
@@ -670,7 +784,7 @@
         }
 
         /* ==========================================================================
-           4. LEADERBOARD SYSTEM (龍虎榜)
+           5. LEADERBOARD SYSTEM (龍虎榜)
            ========================================================================== */
         const LEADERBOARD_KEY = 'hk_kids_memory_game_leaderboard';
 
@@ -684,7 +798,8 @@
         }
 
         function submitScore() {
-            const nameInput = document.getElementById('playerName').value.trim() || '小探險家';
+            const t = UI_TEXT[currentLang];
+            const nameInput = document.getElementById('playerName').value.trim() || t.defaultPlayer;
             const scores = getScores();
 
             scores.push({
@@ -706,6 +821,7 @@
         function renderLeaderboard() {
             const scores = getScores();
             const listEl = document.getElementById('leaderboardList');
+            const t = UI_TEXT[currentLang];
             listEl.innerHTML = '';
 
             const medalEmojis = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
@@ -721,11 +837,11 @@
                         <span class="text-xl">${medalEmojis[idx] || '⭐'}</span>
                         <div>
                             <div class="font-black text-slate-800 text-sm">${entry.name}</div>
-                            <div class="text-[10px] text-slate-500 font-bold">第 ${entry.level} 關</div>
+                            <div class="text-[10px] text-slate-500 font-bold">${t.levelPrefix}${entry.level}${t.levelSuffix}</div>
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-base font-black text-amber-600">${entry.score} 分</div>
+                        <div class="text-base font-black text-amber-600">${entry.score}</div>
                     </div>
                 `;
                 listEl.appendChild(item);
