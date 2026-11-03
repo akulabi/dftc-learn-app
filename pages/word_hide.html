@@ -530,8 +530,15 @@
             document.getElementById('ui-phase-text').innerHTML = `<i class="fa-solid fa-circle-question text-rose-500 animate-bounce"></i> 哪一個圖案消失了？`;
             document.getElementById('ui-timer-text').textContent = '請選擇';
             
-            // Generate option choices (Randomized list of pure text names)
-            const choices = [...roundItems].sort(() => Math.random() - 0.5);
+            // Pick 2 extra distractor items that are NOT in roundItems
+            const unusedItems = itemPool.filter(poolItem => 
+                !roundItems.some(rItem => rItem.name === poolItem.name)
+            );
+            const shuffledUnused = [...unusedItems].sort(() => Math.random() - 0.5);
+            const distractors = shuffledUnused.slice(0, 2);
+
+            // Generate option choices: round items (including target) + 2 extra distractors
+            const choices = [...roundItems, ...distractors].sort(() => Math.random() - 0.5);
             renderOptionsButtons(choices);
         }
 
