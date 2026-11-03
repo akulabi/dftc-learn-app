@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>順序記憶大挑戰 Memory Sequence Challenge</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fluent modern kid-friendly font -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 3D Card Flip Effects */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Front face (Face-down in gameplay, showing card back design) */
+        .card-front {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border: 4px solid #ffffff;
+            color: white;
+        }
+
+        /* Back face (Revealed content) */
+        .card-back {
+            background: #ffffff;
+            border: 4px solid #3b82f6;
+            transform: rotateY(180deg);
+        }
+
+        /* Shake animation for wrong answer */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Pulse glowing border for current target index */
+        @keyframes target-glow {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+        }
+        .target-active {
+            animation: target-glow 1.5s infinite;
+            border-color: #f59e0b !important;
+        }
+
+        /* Bounce effect for correct answer */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop {
+            animation: pop 0.4s ease-out;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between p-3 sm:p-6 overflow-x-hidden">
+
+    <!-- Header Navigation / Top Bar -->
+    <header class="max-w-4xl w-full mx-auto flex justify-between items-center bg-white/80 backdrop-blur-md px-5 py-3 rounded-2xl shadow-lg border border-white/50 mb-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                🧠
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black text-indigo-900 tracking-wide">順序記憶大挑戰</h1>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- Home / Quit Button -->
+            <button id="home-btn" onclick="confirmQuitToHome()" class="hidden px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition font-semibold text-sm items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-house"></i>
+                <span class="hidden sm:inline">返回首頁</span>
+            </button>
+            <button id="sound-toggle-btn" onclick="toggleSound()" class="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-xl transition font-semibold text-sm flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                <span class="hidden sm:inline" id="sound-text">音效: 開</span>
+            </button>
+            <button onclick="showLeaderboardModal()" class="px-3 py-2 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-xl transition text-sm flex items-center gap-1.5 shadow-sm shadow-amber-300">
+                <i class="fa-solid fa-trophy"></i>
+                <span>龍虎榜</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Area Container -->
+    <main class="max-w-4xl w-full mx-auto flex-grow flex flex-col justify-center">
+
+        <!-- 1. Start Screen -->
+        <section id="screen-start" class="bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-xl border-4 border-white text-center flex flex-col items-center">
+            <div class="text-7xl mb-4 animate-bounce">🎨🦁🍎</div>
+            <h2 class="text-3xl sm:text-4xl font-black text-indigo-900 mb-3">看圖記次序，越挑戰越聰明！</h2>
+            <p class="text-slate-600 text-base sm:text-lg mb-8 max-w-md leading-relaxed">
+                第一回合有 <strong class="text-indigo-600">1 個圖案</strong>，看 <strong class="text-amber-600">5 秒</strong> 蓋起來。<br>
+                依據 <strong class="text-emerald-600">從左到右</strong> 的次序選出對應詞語！每過一關多增加一個圖案！
+            </p>
+
+            <div class="bg-indigo-50 rounded-2xl p-4 mb-8 w-full max-w-md text-left text-sm text-indigo-900 space-y-2 border border-indigo-100">
+                <div class="flex items-center gap-2 font-bold text-base text-indigo-700 mb-1">
+                    <i class="fa-solid fa-star text-amber-500"></i> 遊戲規則：
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="bg-indigo-200 text-indigo-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                    <span>記憶階段可隨時點擊「我準備好啦！」提前蓋牌。</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="bg-indigo-200 text-indigo-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                    <span>選錯詞語每回合有 <strong class="text-rose-600">2 次補答機會</strong>（最多錯3次）。</span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="bg-indigo-200 text-indigo-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                    <span>回合數無限！挑戰你的大腦極限！</span>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xl rounded-2xl shadow-lg shadow-emerald-200 transform transition active:scale-95 cursor-pointer flex items-center justify-center gap-3">
+                <i class="fa-solid fa-play"></i> 開始遊戲
+            </button>
+        </section>
+
+        <!-- 2. Active Game Screen -->
+        <section id="screen-game" class="hidden flex-col gap-5">
+
+            <!-- Game Stats Bar -->
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl px-5 py-3 shadow-md flex justify-between items-center border border-white">
+                <!-- Round Info -->
+                <div class="flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-800 font-extrabold px-3 py-1 rounded-xl text-sm sm:text-base border border-indigo-200">
+                        第 <span id="current-round-num" class="text-indigo-600 text-lg sm:text-xl">1</span> 回合
+                    </span>
+                    <span class="text-xs sm:text-sm font-bold text-slate-500 hidden sm:inline">
+                        (共 <span id="target-count">1</span> 張牌)
+                    </span>
+                </div>
+
+                <!-- Game Status Message -->
+                <div id="game-status-text" class="font-bold text-indigo-900 text-sm sm:text-base animate-pulse text-center">
+                    請仔細記住圖案次序！
+                </div>
+
+                <!-- Lives Counter -->
+                <div class="flex items-center gap-1.5 bg-rose-50 px-3 py-1 rounded-xl border border-rose-100" title="剩餘嘗試機會">
+                    <span class="text-xs font-bold text-rose-500 mr-1 hidden sm:inline">剩餘機會:</span>
+                    <div id="lives-container" class="flex gap-1 text-lg sm:text-xl">
+                        <span>❤️</span><span>❤️</span><span>❤️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memorization Countdown Bar & Skip Button -->
+            <div id="memorize-bar-container" class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border border-white flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="w-full flex-grow flex items-center gap-3">
+                    <span class="font-bold text-indigo-900 text-sm whitespace-nowrap">記憶時間: <span id="timer-sec" class="text-amber-600 font-black text-lg">5</span>s</span>
+                    <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden shadow-inner">
+                        <div id="timer-progress" class="bg-gradient-to-r from-amber-400 to-amber-500 h-full w-full transition-all duration-100 ease-linear"></div>
+                    </div>
+                </div>
+                <button onclick="skipMemorizeTimer()" class="w-full sm:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-xl text-sm transition shadow-md whitespace-nowrap flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> 我準備好啦！ (蓋牌)
+                </button>
+            </div>
+
+            <!-- Cards Display Area -->
+            <div class="bg-white/60 backdrop-blur-md rounded-3xl p-4 sm:p-8 shadow-xl border-4 border-white">
+                <!-- Sequence hint header -->
+                <div class="flex justify-between items-center mb-3 text-xs font-bold text-slate-500 px-2">
+                    <span>👈 從左 (第 1 張)</span>
+                    <span id="current-target-indicator" class="text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                        等待選擇...
+                    </span>
+                    <span>到右 (最後張) 👉</span>
+                </div>
+
+                <!-- Cards Responsive Grid Container -->
+                <div id="cards-grid" class="flex flex-wrap justify-center gap-3 sm:gap-5 min-h-[160px] sm:min-h-[200px] items-center">
+                    <!-- Dynamic Cards Inserted Here -->
+                </div>
+            </div>
+
+            <!-- Answer Options Pool (Word Buttons) -->
+            <div id="answer-section" class="bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-xl border-4 border-white opacity-50 pointer-events-none transition-opacity duration-300">
+                <div class="text-center font-bold text-slate-700 text-sm mb-3 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-hand-pointer text-indigo-500"></i>
+                    <span>請點擊對應的詞語：</span>
+                </div>
+                
+                <div id="answer-buttons-pool" class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                    <!-- Dynamic Answer Buttons Inserted Here -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal 1: Game Over Modal -->
+    <div id="modal-gameover" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-rose-100 text-center animate-pop">
+            <div class="text-6xl mb-3">💔</div>
+            <h2 class="text-3xl font-black text-slate-800 mb-1">挑戰結束！</h2>
+            <p class="text-slate-500 text-sm mb-4">很遺憾，3 次補答機會都用完了～</p>
+
+            <div class="bg-amber-50 rounded-2xl p-4 mb-6 border border-amber-200">
+                <div class="text-xs font-bold text-amber-700 mb-1">本次成績</div>
+                <div class="text-3xl font-black text-amber-600">
+                    完成 <span id="final-round-count" class="text-amber-700">0</span> 回合
+                </div>
+                <div class="text-xs text-amber-800 mt-1">
+                    總共成功答對了 <span id="final-matched-count" class="font-bold">0</span> 個圖案
+                </div>
+            </div>
+
+            <!-- Leaderboard Submission Form -->
+            <div id="leaderboard-form" class="mb-6 text-left">
+                <label for="player-name-input" class="block text-xs font-bold text-slate-600 mb-1 ml-1">
+                    輸入你的名字留名龍虎榜：
+                </label>
+                <div class="flex gap-2">
+                    <input type="text" id="player-name-input" maxlength="10" placeholder="例如：聰明小英雄" class="flex-grow px-4 py-2.5 bg-slate-100 border-2 border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+                    <button onclick="submitScore()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-xl transition shadow-md whitespace-nowrap">
+                        記錄成績
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="startGame()" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition shadow-md">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 再玩一次
+                </button>
+                <button onclick="showLeaderboardModal()" class="py-3 px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition">
+                    <i class="fa-solid fa-trophy mr-1"></i> 龍虎榜
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Leaderboard (龍虎榜) Modal -->
+    <div id="modal-leaderboard" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-amber-100 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🏆</span>
+                    <h3 class="text-2xl font-black text-slate-800">記憶龍虎榜</h3>
+                </div>
+                <button onclick="closeLeaderboardModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+
+    <!-- Modal 3: Quit Confirmation Modal (返回首頁確認彈窗) -->
+    <div id="modal-quit-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-4 border-slate-100 text-center animate-pop">
+            <div class="text-5xl mb-3">🏠</div>
+            <h3 class="text-2xl font-black text-slate-800 mb-2">確定返回首頁？</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                確定要放棄當前遊戲並返回主選單嗎？<br><span class="text-rose-500 font-bold">目前的遊戲進度將不會儲存喔！</span>
+            </p>
+            <div class="flex gap-3">
+                <button onclick="cancelQuit()" class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition">
+                    繼續遊戲
+                </button>
+                <button onclick="confirmQuit()" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition shadow-md">
+                    確定離開
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-500 font-medium py-3 mt-4">
+        順序記憶力大挑戰 &copy; 益智兒童特訓遊戲
+    </footer>
+
+    <!-- Game Logic JavaScript -->
+    <script>
+        /* ==========================================================================
+           1. DATA SETS & GAME ITEM POOL
+           Child-friendly items with graphics/emojis and clear Chinese vocabulary
+           ========================================================================== */
+        const ITEM_DATABASE = [
+            { id: 'lion', emoji: '🦁', name: '獅子' },
+            { id: 'apple', emoji: '🍎', name: '蘋果' },
+            { id: 'rocket', emoji: '🚀', name: '火箭' },
+            { id: 'car', emoji: '🚗', name: '小汽車' },
+            { id: 'paint', emoji: '🎨', name: '畫板' },
+            { id: 'soccer', emoji: '⚽', name: '足球' },
+            { id: 'pizza', emoji: '🍕', name: '披薩' },
+            { id: 'guitar', emoji: '🎸', name: '吉他' },
+            { id: 'dog', emoji: '🐶', name: '小狗' },
+            { id: 'icecream', emoji: '🍦', name: '雪糕' },
+            { id: 'cat', emoji: '🐱', name: '貓咪' },
+            { id: 'banana', emoji: '🍌', name: '香蕉' },
+            { id: 'plane', emoji: '✈️', name: '飛機' },
+            { id: 'panda', emoji: '🐼', name: '熊貓' },
+            { id: 'burger', emoji: '🍔', name: '漢堡' },
+            { id: 'robot', emoji: '🤖', name: '機器人' },
+            { id: 'flower', emoji: '🌻', name: '向日葵' },
+            { id: 'strawberry', emoji: '🍓', name: '草莓' },
+            { id: 'frog', emoji: '🐸', name: '青蛙' },
+            { id: 'unicorn', emoji: '🦄', name: '獨角獸' },
+            { id: 'donut', emoji: '🍩', name: '甜甜圈' },
+            { id: 'dinosaur', emoji: '🦖', name: '恐龍' },
+            { id: 'cake', emoji: '🎂', name: '蛋糕' },
+            { id: 'rabbit', emoji: '🐰', name: '兔子' }
+        ];
+
+        /* ==========================================================================
+           2. GAME STATE VARIABLES
+           ========================================================================== */
+        let currentRound = 1;
+        let currentLives = 3;
+        let roundSequence = [];       // Target items for current round in order
+        let nextTargetIndex = 0;     // Current left-to-right index player needs to guess
+        let totalMatchedCards = 0;   // Accumulated score counter
+        let isMemorizePhase = false;
+        let timerInterval = null;
+        let soundEnabled = true;
+
+        /* Sound Synth via Web Audio API */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'roundComplete') {
+                    // Fanfare chords
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + i * 0.08);
+                        g.gain.setValueAtTime(0.12, now + i * 0.08);
+                        g.gain.linearRampToValueAtTime(0.01, now + i * 0.08 + 0.25);
+                        o.start(now + i * 0.08);
+                        o.stop(now + i * 0.08 + 0.25);
+                    });
+                }
+            } catch (e) {
+                console.warn('Audio playback error:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                text.textContent = '音效: 開';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+                text.textContent = '音效: 關';
+            }
+        }
+
+        /* ==========================================================================
+           3. GAME FLOW FUNCTIONS
+           ========================================================================== */
+
+        // Start a brand new game session
+        function startGame() {
+            initAudio();
+            currentRound = 1;
+            totalMatchedCards = 0;
+            currentLives = 3;
+
+            document.getElementById('modal-gameover').classList.add('hidden');
+            document.getElementById('modal-gameover').classList.remove('flex');
+            document.getElementById('modal-quit-confirm').classList.add('hidden');
+            document.getElementById('modal-quit-confirm').classList.remove('flex');
+
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('screen-game').classList.add('flex');
+
+            // Show Home Button in Top Nav
+            const homeBtn = document.getElementById('home-btn');
+            homeBtn.classList.remove('hidden');
+            homeBtn.classList.add('flex');
+
+            startRound();
+        }
+
+        /* ==========================================================================
+           QUIT TO HOME LOGIC
+           ========================================================================== */
+        function confirmQuitToHome() {
+            const modal = document.getElementById('modal-quit-confirm');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cancelQuit() {
+            const modal = document.getElementById('modal-quit-confirm');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmQuit() {
+            // Stop timers
+            clearInterval(timerInterval);
+            isMemorizePhase = false;
+
+            // Hide Confirmation Modal
+            const quitModal = document.getElementById('modal-quit-confirm');
+            quitModal.classList.add('hidden');
+            quitModal.classList.remove('flex');
+
+            // Hide Game Over Modal if open
+            const gameOverModal = document.getElementById('modal-gameover');
+            gameOverModal.classList.add('hidden');
+            gameOverModal.classList.remove('flex');
+
+            // Switch Screen back to Start Screen
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('flex');
+            document.getElementById('screen-start').classList.remove('hidden');
+
+            // Hide Home Button in Nav
+            const homeBtn = document.getElementById('home-btn');
+            homeBtn.classList.add('hidden');
+            homeBtn.classList.remove('flex');
+        }
+
+        // Setup and start a specific round
+        function startRound() {
+            nextTargetIndex = 0;
+            currentLives = 3; // Reset 3 chances per round as per requirements
+            updateLivesUI();
+
+            // Round N has N cards
+            const cardCount = currentRound;
+            document.getElementById('current-round-num').textContent = currentRound;
+            document.getElementById('target-count').textContent = cardCount;
+
+            // Generate sequence of cards (can contain random pick from item database)
+            roundSequence = [];
+            for (let i = 0; i < cardCount; i++) {
+                const randomItem = ITEM_DATABASE[Math.floor(Math.random() * ITEM_DATABASE.length)];
+                roundSequence.push(randomItem);
+            }
+
+            renderCards();
+            renderAnswerPool();
+
+            // Enable Memorization Phase
+            isMemorizePhase = true;
+            document.getElementById('memorize-bar-container').classList.remove('hidden');
+            document.getElementById('memorize-bar-container').classList.add('flex');
+            document.getElementById('answer-section').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('game-status-text').textContent = '請仔細記住圖案與次序！';
+            document.getElementById('game-status-text').className = 'font-bold text-amber-600 text-sm sm:text-base animate-pulse text-center';
+
+            startMemorizeCountdown(5);
+        }
+
+        // Countdown timer for 5s memorization
+        function startMemorizeCountdown(seconds) {
+            clearInterval(timerInterval);
+            let timeLeft = seconds;
+            const timerSecDisplay = document.getElementById('timer-sec');
+            const timerProgress = document.getElementById('timer-progress');
+
+            timerSecDisplay.textContent = timeLeft;
+            timerProgress.style.width = '100%';
+
+            const startTime = Date.now();
+            const totalDuration = seconds * 1000;
+
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const remaining = Math.max(0, totalDuration - elapsed);
+                const pct = (remaining / totalDuration) * 100;
+
+                timerProgress.style.width = pct + '%';
+                timerSecDisplay.textContent = Math.ceil(remaining / 1000);
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishMemorizePhase();
+                }
+            }, 50);
+        }
+
+        // Manual skip button "我準備好啦！"
+        function skipMemorizeTimer() {
+            if (!isMemorizePhase) return;
+            clearInterval(timerInterval);
+            finishMemorizePhase();
+        }
+
+        // Transition from memorization phase to guess phase (flip cards down)
+        function finishMemorizePhase() {
+            isMemorizePhase = false;
+            playSound('flip');
+
+            // Hide countdown bar
+            document.getElementById('memorize-bar-container').classList.add('hidden');
+            document.getElementById('memorize-bar-container').classList.remove('flex');
+
+            // Flip all cards face down
+            const cardInners = document.querySelectorAll('.card-inner');
+            cardInners.forEach(card => card.classList.remove('is-flipped'));
+
+            // Enable Answer Section
+            document.getElementById('answer-section').classList.remove('opacity-50', 'pointer-events-none');
+            document.getElementById('game-status-text').textContent = '請從左至右選出第 1 個圖案！';
+            document.getElementById('game-status-text').className = 'font-bold text-indigo-900 text-sm sm:text-base text-center';
+
+            highlightCurrentTargetCard();
+        }
+
+        // Render card elements in grid
+        function renderCards() {
+            const grid = document.getElementById('cards-grid');
+            grid.innerHTML = '';
+
+            roundSequence.forEach((item, idx) => {
+                const wrapper = document.createElement('div');
+                // Responsive sizing depending on count
+                wrapper.className = 'perspective-1000 w-24 h-32 sm:w-32 sm:h-44 m-1';
+                wrapper.id = `card-wrapper-${idx}`;
+
+                wrapper.innerHTML = `
+                    <div class="card-inner is-flipped" id="card-inner-${idx}">
+                        <!-- Card Front (Covered State) -->
+                        <div class="card-front flex flex-col items-center justify-center">
+                            <span class="text-xs text-indigo-200 font-bold mb-1">第 ${idx + 1} 張</span>
+                            <i class="fa-solid fa-question text-3xl text-white/80"></i>
+                        </div>
+                        <!-- Card Back (Revealed Content) -->
+                        <div class="card-back">
+                            <span class="text-4xl sm:text-6xl mb-1 sm:mb-2 select-none">${item.emoji}</span>
+                            <span class="text-xs sm:text-sm font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">${item.name}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(wrapper);
+            });
+        }
+
+        // Highlight the card that player currently needs to guess
+        function highlightCurrentTargetCard() {
+            // Remove highlight from all
+            document.querySelectorAll('.card-front').forEach(el => el.classList.remove('target-active'));
+
+            if (nextTargetIndex < roundSequence.length) {
+                const targetInner = document.getElementById(`card-inner-${nextTargetIndex}`);
+                if (targetInner) {
+                    const front = targetInner.querySelector('.card-front');
+                    if (front) front.classList.add('target-active');
+                }
+                document.getElementById('current-target-indicator').textContent = `請選擇第 ${nextTargetIndex + 1} / ${roundSequence.length} 個圖案`;
+            }
+        }
+
+        // Render answer buttons pool (Target items + random distractors)
+        function renderAnswerPool() {
+            const poolContainer = document.getElementById('answer-buttons-pool');
+            poolContainer.innerHTML = '';
+
+            // Unique items in target sequence
+            const targetNames = Array.from(new Set(roundSequence.map(i => i.name)));
+            let poolItems = [...targetNames];
+
+            // Add distractors until we have at least 6 buttons (or target size + 3)
+            const minPoolSize = Math.max(6, targetNames.length + 2);
+            const allPossible = ITEM_DATABASE.map(i => i.name);
+
+            while (poolItems.length < minPoolSize && poolItems.length < allPossible.length) {
+                const randomName = allPossible[Math.floor(Math.random() * allPossible.length)];
+                if (!poolItems.includes(randomName)) {
+                    poolItems.push(randomName);
+                }
+            }
+
+            // Shuffle answer options
+            poolItems.sort(() => Math.random() - 0.5);
+
+            poolItems.forEach(word => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn px-4 py-3 sm:px-6 sm:py-3.5 bg-indigo-50 hover:bg-indigo-500 hover:text-white active:scale-95 text-indigo-900 font-extrabold text-base sm:text-lg rounded-2xl border-2 border-indigo-200 shadow-sm transition-all duration-150 cursor-pointer flex items-center gap-1.5';
+                btn.textContent = word;
+                btn.onclick = () => handleAnswerSelect(word, btn);
+                poolContainer.appendChild(btn);
+            });
+        }
+
+        // Handle answer selection
+        function handleAnswerSelect(selectedWord, btnElement) {
+            if (isMemorizePhase) return;
+
+            const expectedItem = roundSequence[nextTargetIndex];
+
+            if (selectedWord === expectedItem.name) {
+                // --- CORRECT SELECTION ---
+                playSound('correct');
+                totalMatchedCards++;
+
+                // Flip card face up
+                const targetCardInner = document.getElementById(`card-inner-${nextTargetIndex}`);
+                targetCardInner.classList.add('is-flipped');
+                targetCardInner.querySelector('.card-front').classList.remove('target-active');
+
+                // Animate card bounce
+                targetCardInner.parentElement.classList.add('animate-pop');
+                setTimeout(() => targetCardInner.parentElement.classList.remove('animate-pop'), 400);
+
+                nextTargetIndex++;
+
+                // Check if round completed
+                if (nextTargetIndex >= roundSequence.length) {
+                    playSound('roundComplete');
+                    document.getElementById('game-status-text').textContent = '🎉 太棒了！完美過關！';
+                    document.getElementById('game-status-text').className = 'font-bold text-emerald-600 text-base sm:text-lg text-center animate-bounce';
+                    
+                    // Disable answer buttons temporarily
+                    document.getElementById('answer-section').classList.add('pointer-events-none');
+
+                    setTimeout(() => {
+                        currentRound++;
+                        startRound();
+                    }, 1400);
+                } else {
+                    document.getElementById('game-status-text').textContent = `✅ 答對了！接著請選第 ${nextTargetIndex + 1} 個圖案`;
+                    highlightCurrentTargetCard();
+                }
+
+            } else {
+                // --- INCORRECT SELECTION ---
+                playSound('wrong');
+                currentLives--;
+
+                // Visual feedback: shake card and button
+                const currentWrapper = document.getElementById(`card-wrapper-${nextTargetIndex}`);
+                if (currentWrapper) {
+                    currentWrapper.classList.add('animate-shake');
+                    setTimeout(() => currentWrapper.classList.remove('animate-shake'), 500);
+                }
+
+                btnElement.classList.add('bg-rose-500', 'text-white', 'border-rose-600', 'animate-shake');
+                setTimeout(() => {
+                    btnElement.classList.remove('bg-rose-500', 'text-white', 'border-rose-600', 'animate-shake');
+                }, 500);
+
+                updateLivesUI();
+
+                if (currentLives <= 0) {
+                    // GAME OVER
+                    triggerGameOver();
+                } else {
+                    document.getElementById('game-status-text').textContent = `❌ 答錯了！還剩 ${currentLives} 次補答機會！`;
+                    document.getElementById('game-status-text').className = 'font-bold text-rose-600 text-sm sm:text-base text-center animate-bounce';
+                }
+            }
+        }
+
+        // Update heart icons for remaining lives
+        function updateLivesUI() {
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = i < currentLives ? '❤️' : '🖤';
+                heart.className = i < currentLives ? 'inline-block transition-transform hover:scale-125' : 'opacity-40 grayscale';
+                container.appendChild(heart);
+            }
+        }
+
+        // Game Over modal display
+        function triggerGameOver() {
+            document.getElementById('final-round-count').textContent = currentRound - 1;
+            document.getElementById('final-matched-count').textContent = totalMatchedCards;
+
+            const modal = document.getElementById('modal-gameover');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        /* ==========================================================================
+           4. LEADERBOARD SYSTEM (龍虎榜 - LocalStorage)
+           ========================================================================== */
+        const LEADERBOARD_KEY = 'memory_game_leaderboard_v1';
+
+        function getLeaderboard() {
+            try {
+                const data = localStorage.getItem(LEADERBOARD_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveLeaderboard(data) {
+            try {
+                localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.warn('Failed to save score:', e);
+            }
+        }
+
+        function submitScore() {
+            const nameInput = document.getElementById('player-name-input');
+            let playerName = nameInput.value.trim() || '無名英雄';
+            
+            const records = getLeaderboard();
+            const completedRounds = currentRound - 1;
+
+            records.push({
+                name: playerName,
+                rounds: completedRounds,
+                cards: totalMatchedCards,
+                date: new Date().toLocaleDateString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            });
+
+            // Sort by completed rounds (descending), then matched cards (descending)
+            records.sort((a, b) => b.rounds - a.rounds || b.cards - a.cards);
+
+            // Keep top 10 scores
+            const topRecords = records.slice(0, 10);
+            saveLeaderboard(topRecords);
+
+            nameInput.value = '';
+            showLeaderboardModal();
+        }
+
+        function showLeaderboardModal() {
+            renderLeaderboardUI();
+            const modal = document.getElementById('modal-leaderboard');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLeaderboardModal() {
+            const modal = document.getElementById('modal-leaderboard');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderLeaderboardUI() {
+            const listContainer = document.getElementById('leaderboard-list');
+            const records = getLeaderboard();
+
+            if (records.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 font-bold">
+                        目前還沒有龍虎榜紀錄<br>快成為第一位挑戰者吧！
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = records.map((item, index) => {
+                let badge = `<span class="w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center">${index + 1}</span>`;
+                if (index === 0) badge = `<span class="text-2xl">🥇</span>`;
+                if (index === 1) badge = `<span class="text-2xl">🥈</span>`;
+                if (index === 2) badge = `<span class="text-2xl">🥉</span>`;
+
+                return `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 hover:bg-amber-50 rounded-2xl border border-slate-100 transition">
+                        <div class="flex items-center gap-3">
+                            ${badge}
+                            <div>
+                                <div class="font-extrabold text-slate-800 text-sm sm:text-base">${escapeHTML(item.name)}</div>
+                                <div class="text-xs text-slate-400">${item.date}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-amber-600 text-base">完成 ${item.rounds} 回合</div>
+                            <div class="text-xs font-bold text-slate-500">答對 ${item.cards} 個圖案</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearLeaderboard() {
+            if (window.confirm('確定要清除所有龍虎榜紀錄嗎？')) {
+                localStorage.removeItem(LEADERBOARD_KEY);
+                renderLeaderboardUI();
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
