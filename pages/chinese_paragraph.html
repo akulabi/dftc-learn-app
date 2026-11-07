@@ -44,12 +44,12 @@
     }
   </style>
 </head>
-<body class="h-screen flex flex-col justify-between overflow-hidden select-none">
+<body class="h-dvh min-h-[100vh] flex flex-col justify-between overflow-hidden select-none bg-[#F8F3ED] text-[#4A3E3D]">
 
   <!-- TOP HEADER / INPUT SECTION -->
-  <header class="w-full max-w-xl mx-auto pt-4 px-4 flex flex-col items-center gap-3 flex-none">
-    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-6 py-2 shadow-sm text-center">
-      <h1 class="text-xl font-medium tracking-wide text-[#5C4033]">中文筆順練習</h1>
+  <header class="w-full max-w-xl mx-auto pt-3 px-4 flex flex-col items-center gap-2 flex-none">
+    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-5 py-1.5 shadow-sm text-center">
+      <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆順練習</h1>
     </div>
 
     <!-- Text input box -->
@@ -59,13 +59,13 @@
         id="textInput" 
         value="中文筆順練習" 
         placeholder="請輸入中文單字或句子..."
-        class="w-full px-4 py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-lg shadow-inner text-[#4A3E3D]"
+        class="w-full px-4 py-2 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
       />
     </div>
   </header>
 
-  <!-- MIDDLE CHARACTER GRID (Auto-scrolls) -->
-  <main class="flex-1 w-full max-w-xl mx-auto px-3 sm:px-4 my-2 sm:my-4 overflow-hidden flex flex-col min-h-0">
+  <!-- MIDDLE CHARACTER GRID (Auto-scrolls, Flexibly scales inside dynamic viewport) -->
+  <main class="flex-1 w-full max-w-xl mx-auto px-3 sm:px-4 my-2 overflow-hidden flex flex-col min-h-0">
     <div 
       id="gridContainer" 
       class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-3 sm:p-4 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-3 sm:gap-4 auto-rows-max shadow-inner place-items-center"
@@ -74,14 +74,14 @@
     </div>
   </main>
 
-  <!-- BOTTOM CONTROL BAR (Mobile Optimized) -->
-  <footer class="w-full max-w-xl mx-auto px-3 sm:px-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex-none">
-    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2 sm:gap-3 shadow-md">
+  <!-- BOTTOM CONTROL BAR (Fixed/Sticky for Android Chrome dynamic address bar) -->
+  <footer class="w-full max-w-xl mx-auto px-3 sm:px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1 flex-none sticky bottom-0 z-50">
+    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-3 shadow-lg">
       
       <!-- Play / Pause Button -->
       <button 
         id="playPauseBtn" 
-        class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-lg sm:text-xl transition active:scale-95 shadow flex-none"
+        class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-base sm:text-xl transition active:scale-95 shadow flex-none"
         title="播放/暫停"
       >
         <i class="fa-solid fa-play ml-0.5" id="playIcon"></i>
@@ -97,7 +97,7 @@
       </button>
 
       <!-- Timeline Seek Slider -->
-      <div class="flex-1 min-w-0 px-1">
+      <div class="flex-1 min-w-0 px-1 flex items-center">
         <input 
           type="range" 
           id="seekBar" 
