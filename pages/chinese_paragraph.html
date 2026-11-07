@@ -2,13 +2,13 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>中文筆劃練習</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中文筆順練習</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Hanzi Writer -->
+  <!-- Hanzi Writer CDN -->
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 
   <style>
@@ -31,9 +31,9 @@
       border-radius: 4px;
     }
 
-    /* 九宮格 (3x3 Grid) SVG Background */
+    /* 九宮格 (3x3 Grid) SVG background */
     .jiugong-grid-bg {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Crect width='90' height='90' fill='%3C%23FAF6F0'/%3E%3C!-- Vertical Guidelines (3 columns) --%3E%3Cline x1='30' y1='0' x2='30' y2='90' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3Cline x1='60' y1='0' x2='60' y2='90' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3C!-- Horizontal Guidelines (3 rows) --%3E%3Cline x1='0' y1='30' x2='90' y2='30' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='60' x2='90' y2='60' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3C!-- Diagonal Guidelines --%3E%3Cline x1='0' y1='0' x2='90' y2='90' stroke='%3C%23F0E6DD' stroke-width='1' stroke-dasharray='2,2'/%3E%3Cline x1='90' y1='0' x2='0' y2='90' stroke='%3C%23F0E6DD' stroke-width='1' stroke-dasharray='2,2'/%3E%3C!-- Outer Border --%3E%3Crect x='1' y='1' width='88' height='88' fill='none' stroke='%3C%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FAF6F0'/%3E%3Cline x1='33.33' y1='0' x2='33.33' y2='100' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='66.66' y1='0' x2='66.66' y2='100' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='33.33' x2='100' y2='33.33' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='66.66' x2='100' y2='66.66' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Crect x='1' y='1' width='98' height='98' fill='none' stroke='%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
       background-size: cover;
     }
 
@@ -44,12 +44,12 @@
     }
   </style>
 </head>
-<body class="h-dvh min-h-[100vh] w-full flex flex-col justify-between overflow-hidden select-none">
+<body class="h-dvh min-h-[100vh] flex flex-col justify-between overflow-hidden select-none bg-[#F8F3ED] text-[#4A3E3D]">
 
   <!-- TOP HEADER / INPUT SECTION -->
-  <header class="flex-none w-full max-w-xl mx-auto pt-3 px-4 flex flex-col items-center gap-2">
-    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-4 py-1.5 shadow-sm text-center">
-      <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆劃練習</h1>
+  <header class="w-full max-w-xl mx-auto pt-3 px-4 flex flex-col items-center gap-2 flex-none">
+    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-5 py-1.5 shadow-sm text-center">
+      <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆順練習</h1>
     </div>
 
     <!-- Text input box -->
@@ -57,47 +57,47 @@
       <input 
         type="text" 
         id="textInput" 
-        value="中文筆劃練習" 
-        placeholder="請輸入中文單字或句子..."
-        class="w-full px-4 py-2 sm:py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
+        value="中文筆順練習" 
+        placeholder="請輸入中文單字、句子或標點符號..."
+        class="w-full px-4 py-2 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
       />
     </div>
   </header>
 
-  <!-- MIDDLE CHARACTER GRID (Auto-scrolls) -->
-  <main class="flex-1 min-h-0 w-full max-w-xl mx-auto px-4 my-3 overflow-hidden flex flex-col">
+  <!-- MIDDLE CHARACTER GRID (Auto-scrolls, Flexibly scales inside dynamic viewport) -->
+  <main class="flex-1 w-full max-w-xl mx-auto px-3 sm:px-4 my-2 overflow-hidden flex flex-col min-h-0">
     <div 
       id="gridContainer" 
-      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-3 sm:p-4 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-3 sm:gap-4 auto-rows-max shadow-inner"
+      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-3 sm:p-4 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-3 sm:gap-4 auto-rows-max shadow-inner place-items-center"
     >
       <!-- Hanzi Writer cards generated dynamically here -->
     </div>
   </main>
 
-  <!-- BOTTOM CONTROL BAR (Mobile safe area friendly) -->
-  <footer class="flex-none w-full max-w-xl mx-auto px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sticky bottom-0 z-50">
-    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2 sm:gap-3 shadow-md">
+  <!-- BOTTOM CONTROL BAR (Fixed/Sticky for Android Chrome dynamic address bar) -->
+  <footer class="w-full max-w-xl mx-auto px-3 sm:px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1 flex-none sticky bottom-0 z-50">
+    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-3 shadow-lg">
       
+      <!-- Play / Pause Button -->
+      <button 
+        id="playPauseBtn" 
+        class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-base sm:text-xl transition active:scale-95 shadow flex-none"
+        title="播放/暫停"
+      >
+        <i class="fa-solid fa-play ml-0.5" id="playIcon"></i>
+      </button>
+
       <!-- Rewind / Reset Button -->
       <button 
         id="rewindBtn" 
-        class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-base sm:text-lg transition active:scale-95 shadow shrink-0"
+        class="w-9 h-9 sm:w-10 sm:h-10 bg-[#D9C4B0] hover:bg-[#CBB49E] text-[#5C4033] rounded-full flex items-center justify-center text-sm sm:text-base transition active:scale-95 shadow flex-none"
         title="重置"
       >
         <i class="fa-solid fa-rotate-left"></i>
       </button>
 
-      <!-- Play / Pause Button -->
-      <button 
-        id="playPauseBtn" 
-        class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-lg sm:text-xl transition active:scale-95 shadow shrink-0"
-        title="播放/暫停"
-      >
-        <i class="fa-solid fa-play" id="playIcon"></i>
-      </button>
-
       <!-- Timeline Seek Slider -->
-      <div class="flex-1 min-w-0 px-1">
+      <div class="flex-1 min-w-0 px-1 flex items-center">
         <input 
           type="range" 
           id="seekBar" 
@@ -109,10 +109,10 @@
       </div>
 
       <!-- Speed Control Dropdown -->
-      <div class="relative shrink-0">
+      <div class="relative flex-none">
         <select 
           id="speedSelect" 
-          class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2 py-1.5 text-xs sm:text-sm focus:outline-none cursor-pointer shadow-sm"
+          class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs sm:text-sm focus:outline-none cursor-pointer shadow-sm"
         >
           <option value="0.25">0.25x</option>
           <option value="0.5">0.5x</option>
@@ -129,262 +129,282 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
-    const textInput = document.getElementById('textInput');
-    const gridContainer = document.getElementById('gridContainer');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const playIcon = document.getElementById('playIcon');
-    const rewindBtn = document.getElementById('rewindBtn');
-    const seekBar = document.getElementById('seekBar');
-    const speedSelect = document.getElementById('speedSelect');
+    document.addEventListener('DOMContentLoaded', () => {
+      const textInput = document.getElementById('textInput');
+      const gridContainer = document.getElementById('gridContainer');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const playIcon = document.getElementById('playIcon');
+      const rewindBtn = document.getElementById('rewindBtn');
+      const seekBar = document.getElementById('seekBar');
+      const speedSelect = document.getElementById('speedSelect');
 
-    let charList = [];
-    let writers = []; // Array storing writer instances or null (for punctuation)
-    let currentIndex = 0;
-    let isPlaying = false;
-    let currentSpeed = 1.0;
-    let animationSessionToken = 0; // Async playback token
+      let charList = [];
+      let writers = []; // Holds references to HanziWriter instances or null for punctuation
+      let currentIndex = 0;
+      let isPlaying = false;
+      let currentSpeed = 1.0;
+      let animationSessionToken = 0; // Ensures clean async sequence control
 
-    // Check if character is a Chinese character (or supported by HanziWriter)
-    function isChineseChar(char) {
-      return /[\u4e00-\u9fa5\u3400-\u4dbf\u20000-\u2a6df]/.test(char);
-    }
-
-    // Create a single HanziWriter instance inside target container with HK local data fallback
-    function createWriterForChar(char, targetId) {
-      const container = document.getElementById(targetId);
-      container.innerHTML = '';
-
-      if (!isChineseChar(char)) {
-        // Render punctuation/symbols as plain text inside grid
-        container.className = 'w-full h-full flex items-center justify-center font-serif text-5xl font-bold text-[#4A3E3D]';
-        container.innerText = char;
-        return null;
+      // Check if character is a Chinese Hanzi (stroke data capable)
+      function isHanzi(char) {
+        return /[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]/.test(char);
       }
 
-      return HanziWriter.create(targetId, char, {
-        width: 140,
-        height: 140,
-        padding: 10,
-        showOutline: true,
-        strokeColor: '#000000',
-        outlineColor: '#E0E0E0',
-        drawingColor: '#000000',
-        strokeAnimationSpeed: currentSpeed, 
-        delayBetweenStrokes: 200 / currentSpeed,
-        charDataLoader: (char, onComplete) => {
-          // Primary: Try loading from local /hanzi-writer-data-hk/data/
-          fetch(`/hanzi-writer-data-hk/data/${char}.json`)
-            .then(res => {
-              if (!res.ok) throw new Error('Local HK dataset not found');
-              return res.json();
-            })
-            .then(onComplete)
-            .catch(() => {
-              // Fallback: Fetch from standard jsDelivr CDN
-              fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${char}.json`)
-                .then(res => res.json())
-                .then(onComplete)
-                .catch(() => {
-                  container.innerHTML = `<span class="text-gray-400 text-xs">${char}</span>`;
-                });
-            });
+      // Create an individual HanziWriter instance inside a card container or display punctuation mark
+      function createWriterForChar(char, targetId) {
+        const container = document.getElementById(targetId);
+        container.innerHTML = ''; // Clear container element
+
+        if (!isHanzi(char)) {
+          // Render punctuation mark directly as formatted text
+          container.className = 'w-full h-full flex items-center justify-center text-5xl font-serif text-[#000000]';
+          container.innerText = char;
+          return null;
         }
-      });
-    }
 
-    // Render grid of characters
-    function renderGrid() {
-      stopAnimation();
-      gridContainer.innerHTML = '';
-      writers = [];
-      
-      const rawText = textInput.value.trim();
-      charList = rawText.split('');
+        return HanziWriter.create(targetId, char, {
+          width: 140,
+          height: 140,
+          padding: 8,
+          showOutline: true,
+          strokeColor: '#000000', // Pure black stroke
+          outlineColor: '#E0E0E0',
+          drawingColor: '#000000',
+          strokeAnimationSpeed: currentSpeed, 
+          delayBetweenStrokes: 200 / currentSpeed,
+          charDataLoader: (charToLoad, onComplete, onError) => {
+            const hkUrl = `/hanzi-writer-data-hk/data/${charToLoad}.json`;
+            const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${charToLoad}.json`;
 
-      if (charList.length === 0) {
-        seekBar.max = 0;
-        seekBar.value = 0;
-        return;
+            fetch(hkUrl)
+              .then(res => {
+                if (!res.ok) throw new Error('HK data fetch failed');
+                return res.json();
+              })
+              .then(onComplete)
+              .catch(() => {
+                // Fallback to standard CDN if local HK dataset is not found or fails
+                fetch(cdnUrl)
+                  .then(res => {
+                    if (!res.ok) throw new Error('CDN data fetch failed');
+                    return res.json();
+                  })
+                  .then(onComplete)
+                  .catch(err => {
+                    if (onError) onError(err);
+                    container.innerHTML = `<span class="text-gray-400 text-xs">${charToLoad}</span>`;
+                  });
+              });
+          }
+        });
       }
 
-      seekBar.max = charList.length - 1;
-      seekBar.value = 0;
-      currentIndex = 0;
-
-      charList.forEach((char, idx) => {
-        const card = document.createElement('div');
-        card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-2xl p-2 flex items-center justify-center cursor-pointer transition-all duration-200 aspect-square relative shadow-sm hover:border-[#C88A4B]';
-        card.id = `card-${idx}`;
+      // Render character grid cards
+      function renderGrid() {
+        stopAnimation();
+        gridContainer.innerHTML = '';
+        writers = [];
         
-        const targetDiv = document.createElement('div');
-        targetDiv.id = `writer-target-${idx}`;
-        targetDiv.className = 'w-full h-full flex items-center justify-center';
-        card.appendChild(targetDiv);
+        charList = textInput.value.split('');
 
-        card.addEventListener('click', () => {
-          jumpToCharacter(idx, true);
+        if (charList.length === 0) {
+          gridContainer.innerHTML = `
+            <div class="col-span-full py-16 text-center text-[#9E8B7D] font-medium">
+              請在上方輸入欄輸入中文字符
+            </div>
+          `;
+          seekBar.max = 0;
+          seekBar.value = 0;
+          return;
+        }
+
+        seekBar.max = charList.length - 1;
+        seekBar.value = 0;
+        currentIndex = 0;
+
+        charList.forEach((char, idx) => {
+          const card = document.createElement('div');
+          card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-2xl p-2 flex items-center justify-center cursor-pointer transition-all duration-200 w-[150px] h-[150px] relative shadow-sm hover:border-[#C88A4B]';
+          card.id = `card-${idx}`;
+          
+          const targetDiv = document.createElement('div');
+          targetDiv.id = `writer-target-${idx}`;
+          targetDiv.className = 'w-full h-full flex items-center justify-center';
+          card.appendChild(targetDiv);
+
+          card.addEventListener('click', () => {
+            jumpToCharacter(idx, true);
+          });
+
+          gridContainer.appendChild(card);
+
+          const writer = createWriterForChar(char, targetDiv.id);
+          writers.push(writer);
         });
 
-        gridContainer.appendChild(card);
-
-        const writer = createWriterForChar(char, targetDiv.id);
-        writers.push(writer);
-      });
-
-      highlightCard(currentIndex);
-    }
-
-    // Highlight focused card & scroll smoothly into center view
-    function highlightCard(index) {
-      charList.forEach((_, idx) => {
-        const card = document.getElementById(`card-${idx}`);
-        if (card) {
-          if (idx === index) {
-            card.classList.add('card-active');
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          } else {
-            card.classList.remove('card-active');
-          }
-        }
-      });
-      seekBar.value = index;
-    }
-
-    // Play character strokes recursively
-    function playCurrentSequence(sessionToken) {
-      if (!isPlaying || sessionToken !== animationSessionToken) return;
-      if (currentIndex >= charList.length) {
-        stopAnimation();
-        return;
+        highlightCard(currentIndex);
       }
 
-      highlightCard(currentIndex);
-      const currentWriter = writers[currentIndex];
-
-      if (!currentWriter) {
-        // Non-stroke character (punctuation): pause briefly then move next
-        setTimeout(() => {
-          if (isPlaying && sessionToken === animationSessionToken) {
-            currentIndex++;
-            if (currentIndex < charList.length) {
-              playCurrentSequence(sessionToken);
+      // Highlight focused card & scroll smoothly into center view
+      function highlightCard(index) {
+        writers.forEach((_, idx) => {
+          const card = document.getElementById(`card-${idx}`);
+          if (card) {
+            if (idx === index) {
+              card.classList.add('card-active');
+              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
-              stopAnimation();
+              card.classList.remove('card-active');
             }
           }
-        }, 300 / currentSpeed);
-        return;
+        });
+        seekBar.value = index;
       }
 
-      currentWriter.animateCharacter({
-        strokeAnimationSpeed: currentSpeed,
-        delayBetweenStrokes: 200 / currentSpeed,
-        onComplete: () => {
-          if (isPlaying && sessionToken === animationSessionToken) {
-            currentIndex++;
-            if (currentIndex < charList.length) {
-              playCurrentSequence(sessionToken);
-            } else {
-              stopAnimation();
+      // Play character strokes recursively
+      function playCurrentSequence(sessionToken) {
+        if (!isPlaying || sessionToken !== animationSessionToken) return;
+        if (currentIndex >= writers.length) {
+          stopAnimation();
+          return;
+        }
+
+        highlightCard(currentIndex);
+        const currentWriter = writers[currentIndex];
+
+        // If character is a punctuation mark (writer === null), skip directly to next character after brief delay
+        if (!currentWriter) {
+          setTimeout(() => {
+            if (isPlaying && sessionToken === animationSessionToken) {
+              currentIndex++;
+              if (currentIndex < writers.length) {
+                playCurrentSequence(sessionToken);
+              } else {
+                stopAnimation();
+              }
+            }
+          }, 300 / currentSpeed);
+          return;
+        }
+
+        currentWriter.hideCharacter();
+        currentWriter.animateCharacter({
+          strokeAnimationSpeed: currentSpeed,
+          delayBetweenStrokes: 200 / currentSpeed,
+          onComplete: () => {
+            if (isPlaying && sessionToken === animationSessionToken) {
+              currentIndex++;
+              if (currentIndex < writers.length) {
+                playCurrentSequence(sessionToken);
+              } else {
+                stopAnimation();
+              }
             }
           }
-        }
-      });
-    }
-
-    // Start playback
-    function startAnimation() {
-      if (charList.length === 0) return;
-      if (currentIndex >= charList.length) currentIndex = 0;
-
-      isPlaying = true;
-      playIcon.className = 'fa-solid fa-pause';
-      animationSessionToken++;
-      playCurrentSequence(animationSessionToken);
-    }
-
-    // Stop / Pause playback
-    function stopAnimation() {
-      isPlaying = false;
-      playIcon.className = 'fa-solid fa-play';
-      animationSessionToken++;
-      writers.forEach(w => w && w.pauseAnimation());
-    }
-
-    // Jump to specific index
-    function jumpToCharacter(index, startPlaying = false) {
-      stopAnimation();
-      currentIndex = index;
-      
-      // Hide all strokes for upcoming characters
-      writers.forEach((w, idx) => {
-        if (idx >= index && w) {
-          w.hideCharacter();
-        }
-      });
-
-      highlightCard(currentIndex);
-
-      if (startPlaying) {
-        startAnimation();
+        });
       }
-    }
 
-    // Rewind back to 0
-    function rewind() {
-      stopAnimation();
-      currentIndex = 0;
-      writers.forEach(w => w && w.hideCharacter());
-      highlightCard(0);
-    }
+      // Start playback
+      function startAnimation() {
+        if (writers.length === 0) return;
+        if (currentIndex >= writers.length) currentIndex = 0;
 
-    // Destroy and recreate writers when speed option is changed
-    function recreateWritersAndResume() {
-      const werePlaying = isPlaying;
-      stopAnimation();
-
-      writers = charList.map((char, idx) => {
-        const targetId = `writer-target-${idx}`;
-        return createWriterForChar(char, targetId);
-      });
-
-      writers.forEach((w, idx) => {
-        if (idx < currentIndex && w) {
-          w.showCharacter();
-        } else if (w) {
-          w.hideCharacter();
-        }
-      });
-
-      if (werePlaying) {
-        startAnimation();
+        isPlaying = true;
+        playIcon.className = 'fa-solid fa-pause';
+        animationSessionToken++;
+        playCurrentSequence(animationSessionToken);
       }
-    }
 
-    // Event Listeners
-    textInput.addEventListener('input', () => renderGrid());
+      // Stop / Pause playback
+      function stopAnimation() {
+        isPlaying = false;
+        playIcon.className = 'fa-solid fa-play ml-0.5';
+        animationSessionToken++;
+        writers.forEach(w => w && w.pauseAnimation());
+      }
 
-    playPauseBtn.addEventListener('click', () => {
-      if (isPlaying) {
+      // Jump to specific index
+      function jumpToCharacter(index, startPlaying = false) {
         stopAnimation();
-      } else {
-        startAnimation();
+        currentIndex = index;
+        
+        // Update stroke visibility
+        writers.forEach((w, idx) => {
+          if (idx < index && w) {
+            w.showCharacter();
+          } else if (w) {
+            w.hideCharacter();
+            w.showOutline();
+          }
+        });
+
+        highlightCard(currentIndex);
+
+        if (startPlaying) {
+          startAnimation();
+        }
       }
+
+      // Rewind back to 0
+      function rewind() {
+        stopAnimation();
+        currentIndex = 0;
+        writers.forEach(w => w && w.hideCharacter());
+        highlightCard(0);
+      }
+
+      // Recreate all HanziWriter instances with current speed
+      function recreateWritersAndResume() {
+        const werePlaying = isPlaying;
+        stopAnimation();
+
+        // Destroy and recreate each writer
+        writers = charList.map((char, idx) => {
+          const targetId = `writer-target-${idx}`;
+          return createWriterForChar(char, targetId);
+        });
+
+        // Restore stroke states up to currentIndex
+        writers.forEach((w, idx) => {
+          if (idx < currentIndex && w) {
+            w.showCharacter();
+          } else if (w) {
+            w.hideCharacter();
+            w.showOutline();
+          }
+        });
+
+        if (werePlaying) {
+          startAnimation();
+        }
+      }
+
+      // Event Listeners
+      textInput.addEventListener('input', () => renderGrid());
+
+      playPauseBtn.addEventListener('click', () => {
+        if (isPlaying) {
+          stopAnimation();
+        } else {
+          startAnimation();
+        }
+      });
+
+      rewindBtn.addEventListener('click', rewind);
+
+      seekBar.addEventListener('input', (e) => {
+        jumpToCharacter(parseInt(e.target.value, 10), isPlaying);
+      });
+
+      // Destroy and recreate writers when speed option is changed
+      speedSelect.addEventListener('change', (e) => {
+        currentSpeed = parseFloat(e.target.value);
+        recreateWritersAndResume();
+      });
+
+      // Initialize on load
+      renderGrid();
     });
-
-    rewindBtn.addEventListener('click', rewind);
-
-    seekBar.addEventListener('input', (e) => {
-      jumpToCharacter(parseInt(e.target.value, 10), isPlaying);
-    });
-
-    speedSelect.addEventListener('change', (e) => {
-      currentSpeed = parseFloat(e.target.value);
-      recreateWritersAndResume();
-    });
-
-    // Initialize on load
-    renderGrid();
   </script>
 </body>
 </html>
