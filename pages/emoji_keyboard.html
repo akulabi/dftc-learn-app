@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Fun & Learn Keyboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    
+    /* Custom Keyframe Animations */
+    @keyframes popBounce {
+      0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+      50% { transform: scale(1.3) rotate(10deg); }
+      70% { transform: scale(0.9) rotate(-5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 10px 15px rgba(255, 182, 193, 0.4)); }
+      50% { transform: scale(1.06); filter: drop-shadow(0 20px 25px rgba(255, 105, 180, 0.6)); }
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-12deg); }
+      75% { transform: rotate(12deg); }
+    }
+
+    /* Swipeable Track Transition */
+    .pages-track {
+      display: flex;
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      will-change: transform;
+    }
+    .page-slide {
+      min-width: 100%;
+      flex-shrink: 0;
+    }
+
+    .animate-pop-bounce {
+      animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .animate-pulse-glow {
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    .animate-wiggle {
+      animation: wiggle 0.4s ease-in-out;
+    }
+
+    .animate-float {
+      animation: floatBubble 4s ease-in-out infinite;
+    }
+
+    /* Speech bubble arrow */
+    .speech-bubble-arrow::after {
+      content: '';
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 14px 14px 0 14px;
+      border-style: solid;
+      border-color: #ffffff transparent transparent transparent;
+    }
+
+    /* Custom Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 h-screen w-screen overflow-hidden text-slate-800 flex flex-col justify-between selection:bg-pink-200">
+
+  <!-- Main Container fitting screen height -->
+  <div class="max-w-4xl mx-auto w-full h-full px-3 py-3 flex flex-col gap-2 overflow-hidden">
+
+    <!-- Header Section (Compact Bar) -->
+    <header class="flex-none flex flex-row justify-between items-center bg-white/80 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl shadow-sm border border-white/60 gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="bg-gradient-to-tr from-pink-500 to-yellow-400 p-1.5 sm:p-2 rounded-xl shadow-sm text-xl sm:text-2xl animate-bounce flex-none">
+          🎨
+        </div>
+        <h1 class="text-base sm:text-xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent truncate">
+          Emoji Speak & Learn
+        </h1>
+      </div>
+
+      <!-- Controls & Search in Header -->
+      <div class="flex items-center gap-2 flex-1 max-w-xs sm:max-w-md justify-end">
+        <!-- Search Input -->
+        <div class="relative w-full max-w-[150px] sm:max-w-[200px]">
+          <input type="text" id="searchInput" placeholder="Search..." class="w-full pl-8 pr-7 py-1.5 bg-slate-100/90 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 font-medium text-xs sm:text-sm text-slate-700 placeholder-slate-400">
+          <div class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+            🔍
+          </div>
+          <button id="clearSearchBtn" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5 rounded-full">
+            ✖
+          </button>
+        </div>
+
+        <!-- Language Selector -->
+        <select id="langSelect" class="bg-slate-100 border border-slate-200 font-semibold text-slate-700 py-1.5 px-2 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-purple-400 cursor-pointer shadow-inner shrink-0">
+          <option value="en-US">🇺🇸 EN</option>
+          <option value="zh-HK">🇭🇰 粵</option>
+          <option value="zh-CN">🇨🇳 普</option>
+          <option value="es-ES">🇪🇸 ES</option>
+          <option value="fr-FR">🇫🇷 FR</option>
+          <option value="ja-JP">🇯🇵 JA</option>
+          <option value="de-DE">🇩🇪 DE</option>
+        </select>
+
+        <!-- Mute Toggle -->
+        <button id="soundToggleBtn" class="flex-none p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl transition shadow-sm border border-emerald-200 active:scale-95" title="Toggle Sound">
+          <span id="soundIcon" class="text-base sm:text-lg">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Big Display Stage (Scaled Compact for Viewport Fit) -->
+    <section class="flex-1 bg-white/90 backdrop-blur-lg rounded-2xl p-3 shadow-md border border-white flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 min-h-0">
+      
+      <!-- Background Blur Circles -->
+      <div class="absolute -top-10 -left-10 w-28 h-28 bg-pink-300/30 rounded-full blur-xl pointer-events-none"></div>
+      <div class="absolute -bottom-10 -right-10 w-28 h-28 bg-purple-300/30 rounded-full blur-xl pointer-events-none"></div>
+
+      <!-- Speech Bubble (Word Display) -->
+      <div id="wordBubble" class="relative speech-bubble-arrow bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg sm:text-2xl py-1.5 px-5 rounded-2xl shadow-md cursor-pointer transform hover:scale-105 active:scale-95 transition-all mb-2 flex items-center gap-2 animate-float" title="Click to hear name again">
+        <span id="displayWord">Click an Emoji!</span>
+        <button id="speakIconBtn" class="bg-white/20 p-1 rounded-full hover:bg-white/30 text-xs sm:text-sm transition">
+          🔊
+        </button>
+      </div>
+
+      <!-- Large Animated Emoji -->
+      <div id="emojiDisplayWrapper" class="relative cursor-pointer group p-2 rounded-full transition-all duration-300 hover:bg-purple-50/50" title="Click to speak emoji name again!">
+        <div id="emojiDisplay" class="text-6xl sm:text-7xl select-none animate-pulse-glow transition-transform duration-300 group-hover:scale-110">
+          🎉
+        </div>
+      </div>
+
+      <!-- Audio Wave Visualizer Animation Effect -->
+      <div id="soundWaves" class="flex gap-1 items-end h-3 mt-1 opacity-0 transition-opacity duration-300">
+        <span class="w-1 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.0s;"></span>
+        <span class="w-1 h-3 bg-pink-500 rounded-full animate-bounce" style="animation-delay: 0.15s;"></span>
+        <span class="w-1 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.3s;"></span>
+        <span class="w-1 h-3 bg-pink-500 rounded-full animate-bounce" style="animation-delay: 0.45s;"></span>
+        <span class="w-1 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.6s;"></span>
+      </div>
+    </section>
+
+    <!-- Emoji Paginated Keyboard Container (Flexible Box) -->
+    <main class="flex-1 bg-white/80 backdrop-blur-md rounded-2xl p-3 shadow-md border border-white flex flex-col justify-between relative overflow-hidden min-h-0">
+      
+      <!-- Category Tabs Bar -->
+      <div id="categoryTabs" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-slate-100 flex-none">
+        <!-- Tabs populated dynamically by JS -->
+      </div>
+
+      <!-- Swipeable Pages Viewport -->
+      <div class="relative flex-1 min-h-0 flex items-center my-1">
+        <!-- Left Arrow -->
+        <button id="prevPageBtn" class="absolute -left-1 sm:-left-2 z-10 w-8 h-8 bg-white/90 shadow-md border border-slate-200 rounded-full flex items-center justify-center text-slate-700 font-bold text-xs sm:text-sm hover:bg-purple-600 hover:text-white transition-all disabled:opacity-20 disabled:pointer-events-none active:scale-90">
+          ❮
+        </button>
+
+        <!-- Carousel Window -->
+        <div id="swipeViewport" class="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing touch-pan-y flex items-center">
+          <div id="pagesTrack" class="pages-track w-full">
+            <!-- Paginated grid pages generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Right Arrow -->
+        <button id="nextPageBtn" class="absolute -right-1 sm:-right-2 z-10 w-8 h-8 bg-white/90 shadow-md border border-slate-200 rounded-full flex items-center justify-center text-slate-700 font-bold text-xs sm:text-sm hover:bg-purple-600 hover:text-white transition-all disabled:opacity-20 disabled:pointer-events-none active:scale-90">
+          ❯
+        </button>
+      </div>
+
+      <!-- Pagination Indicators & Footer -->
+      <div class="flex items-center justify-between pt-1 border-t border-slate-100 flex-none text-xs text-slate-400 font-medium">
+        <span>👈 Swipe 👉</span>
+        <div id="paginationDots" class="flex items-center justify-center gap-1.5">
+          <!-- Dots rendered by JS -->
+        </div>
+        <span>Emoji Speak</span>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- App Script Logic -->
+  <script>
+    // --- Expanded Emoji Dataset with Multi-Lingual Name Support ---
+    const EMOJI_CATEGORIES = [
+      {
+        id: 'smileys',
+        name: 'Smileys',
+        icon: '😀',
+        emojis: [
+          { char: '😀', names: { 'en-US': 'Grinning Face', 'zh-HK': '笑臉', 'zh-CN': '大笑', 'es-ES': 'Cara sonriente', 'fr-FR': 'Visage souriant', 'ja-JP': 'にっこり', 'de-DE': 'Lachendes Gesicht' } },
+          { char: '😃', names: { 'en-US': 'Grinning Face with Big Eyes', 'zh-HK': '大眼笑臉', 'zh-CN': '开心笑脸', 'es-ES': 'Cara sonriente feliz', 'fr-FR': 'Grands yeux souriants', 'ja-JP': '大目の笑顔', 'de-DE': 'Strahlendes Gesicht' } },
+          { char: '😄', names: { 'en-US': 'Grinning Face with Smiling Eyes', 'zh-HK': '瞇眼笑臉', 'zh-CN': '眯眼笑', 'es-ES': 'Ojos sonrientes', 'fr-FR': 'Yeux rieurs', 'ja-JP': '笑い目', 'de-DE': 'Lächeln mit Augen' } },
+          { char: '😁', names: { 'en-US': 'Beaming Face', 'zh-HK': '露齒笑臉', 'zh-CN': '嘻嘻', 'es-ES': 'Cara radiante', 'fr-FR': 'Visage rayonnant', 'ja-JP': '歯を見せて笑う', 'de-DE': 'Grinsendes Gesicht' } },
+          { char: '😆', names: { 'en-US': 'Grinning Squinting Face', 'zh-HK': '狂笑', 'zh-CN': '大笑', 'es-ES': 'Cara risueña', 'fr-FR': 'Visage rigolard', 'ja-JP': '大爆笑', 'de-DE': 'Lachen mit zugekniffenen Augen' } },
+          { char: '😅', names: { 'en-US': 'Grinning Face with Sweat', 'zh-HK': '汗顏', 'zh-CN': '汗颜', 'es-ES': 'Cara con sudor', 'fr-FR': 'Sueur froide', 'ja-JP': '冷や汗', 'de-DE': 'Erleichtert' } },
+          { char: '😂', names: { 'en-US': 'Tears of Joy', 'zh-HK': '笑到波滾', 'zh-CN': '破涕为笑', 'es-ES': 'Llorar de alegría', 'fr-FR': 'Rire aux larmes', 'ja-JP': '嬉し泣き', 'de-DE': 'Tränen lachen' } },
+          { char: '🤣', names: { 'en-US': 'Rolling on the Floor Laughing', 'zh-HK': '捧腹大笑', 'zh-CN': '爆笑', 'es-ES': 'Risa descontrolada', 'fr-FR': 'MDR', 'ja-JP': '床を転がって笑う', 'de-DE': 'Lachkrampf' } },
+          { char: '😊', names: { 'en-US': 'Smiling Face', 'zh-HK': '微笑', 'zh-CN': '微笑', 'es-ES': 'Cara sonriente', 'fr-FR': 'Visage chaleureux', 'ja-JP': 'にっこり笑顔', 'de-DE': 'Zufriedenes Lächeln' } },
+          { char: '😇', names: { 'en-US': 'Smiling Face with Halo', 'zh-HK': '天使笑臉', 'zh-CN': '天使', 'es-ES': 'Cara con aureola', 'fr-FR': 'Visage avec auréole', 'ja-JP': '天使の顔', 'de-DE': 'Engelchen' } },
+          { char: '🙂', names: { 'en-US': 'Slightly Smiling Face', 'zh-HK': '淺笑', 'zh-CN': '微笑着', 'es-ES': 'Ligera sonrisa', 'fr-FR': 'Un petit sourire', 'ja-JP': '控えめな笑顔', 'de-DE': 'Leichtes Lächeln' } },
+          { char: '🙃', names: { 'en-US': 'Upside-Down Face', 'zh-HK': '倒立笑臉', 'zh-CN': '倒脸', 'es-ES': 'Cara al revés', 'fr-FR': 'Visage à l\'envers', 'ja-JP': '逆さまの顔', 'de-DE': 'Kopfstehendes Gesicht' } },
+          { char: '😉', names: { 'en-US': 'Winking Face', 'zh-HK': '眨眼', 'zh-CN': '眨眼', 'es-ES': 'Guiño', 'fr-FR': 'Clin d\'œil', 'ja-JP': 'ウインク', 'de-DE': 'Zwinkern' } },
+          { char: '😍', names: { 'en-US': 'Heart Eyes', 'zh-HK': '花痴', 'zh-CN': '色咪咪', 'es-ES': 'Ojos de corazón', 'fr-FR': 'Yeux en cœur', 'ja-JP': 'ハートの目', 'de-DE': 'Verliebt' } },
+          { char: '🥰', names: { 'en-US': 'Smiling Face with Hearts', 'zh-HK': '愛心包圍', 'zh-CN': '满脸爱意', 'es-ES': 'Cara con corazones', 'fr-FR': 'Visage rempli d\'amour', 'ja-JP': 'ハート顔', 'de-DE': 'Liebevoll' } },
+          { char: '😘', names: { 'en-US': 'Face Blowing a Kiss', 'zh-HK': '飛吻', 'zh-CN': '飞吻', 'es-ES': 'Beso', 'fr-FR': 'Bisou', 'ja-JP': '投げキス', 'de-DE': 'Kuss geben' } },
+          { char: '😋', names: { 'en-US': 'Face Savoring Food', 'zh-HK': '美味', 'zh-CN': '吐舌头美味', 'es-ES': 'Delicioso', 'fr-FR': 'Miam', 'ja-JP': '美味しい顔', 'de-DE': 'Lecker' } },
+          { char: '😜', names: { 'en-US': 'Winking Face with Tongue', 'zh-HK': '俏皮鬼臉', 'zh-CN': '鬼脸', 'es-ES': 'Guiño y lengua', 'fr-FR': 'Tirer la langue', 'ja-JP': 'あっかんべー', 'de-DE': 'Zunge raus' } },
+          { char: '🤪', names: { 'en-US': 'Zany Face', 'zh-HK': '滑稽', 'zh-CN': '滑稽', 'es-ES': 'Cara de locura', 'fr-FR': 'Visage zany', 'ja-JP': 'へんてこ顔', 'de-DE': 'Verrückt' } },
+          { char: '😎', names: { 'en-US': 'Cool Sunglasses', 'zh-HK': '戴墨鏡', 'zh-CN': '酷手姿', 'es-ES': 'Cara con gafas de sol', 'fr-FR': 'Visage cool avec lunettes', 'ja-JP': 'サングラス', 'de-DE': 'Cool' } },
+          { char: '🤩', names: { 'en-US': 'Star Struck', 'zh-HK': '星星眼', 'zh-CN': '追星', 'es-ES': 'Deslumbrado', 'fr-FR': 'Étoiles dans les yeux', 'ja-JP': 'キラキラ顔', 'de-DE': 'Begeistert' } },
+          { char: '🥳', names: { 'en-US': 'Partying Face', 'zh-HK': '派對慶祝', 'zh-CN': '庆祝脸', 'es-ES': 'Cara de fiesta', 'fr-FR': 'Visage de fête', 'ja-JP': 'パーティー顔', 'de-DE': 'Partygewand' } },
+          { char: '🤔', names: { 'en-US': 'Thinking Face', 'zh-HK': '沉思', 'zh-CN': '思考', 'es-ES': 'Cara pensativa', 'fr-FR': 'Visage pensif', 'ja-JP': '考え中', 'de-DE': 'Nachdenklich' } },
+          { char: '🤗', names: { 'en-US': 'Hugging Face', 'zh-HK': '抱抱', 'zh-CN': '拥抱', 'es-ES': 'Abrazo', 'fr-FR': 'Câlin', 'ja-JP': 'ハグ顔', 'de-DE': 'Umarmung' } },
+          { char: '😴', names: { 'en-US': 'Sleeping Face', 'zh-HK': '睡覺', 'zh-CN': '睡觉', 'es-ES': 'Cara durmiendo', 'fr-FR': 'Visage qui dort', 'ja-JP': '居眠り顔', 'de-DE': 'Schlafend' } },
+          { char: '😭', names: { 'en-US': 'Loudly Crying Face', 'zh-HK': '大哭', 'zh-CN': '大哭', 'es-ES': 'Cara llorando fuerte', 'fr-FR': 'Visage pleurant à chaudes larmes', 'ja-JP': '号泣', 'de-DE': 'Weinendes Gesicht' } },
+          { char: '😡', names: { 'en-US': 'Pouting Angry Face', 'zh-HK': '生氣', 'zh-CN': '愤怒', 'es-ES': 'Cara de enfadado', 'fr-FR': 'Visage en colère', 'ja-JP': 'プンプン顔', 'de-DE': 'Wütend' } },
+          { char: '🤖', names: { 'en-US': 'Robot', 'zh-HK': '機器人', 'zh-CN': '机器人', 'es-ES': 'Robot', 'fr-FR': 'Robot', 'ja-JP': 'ロボット', 'de-DE': 'Roboter' } },
+          { char: '💩', names: { 'en-US': 'Pile of Poop', 'zh-HK': '便便', 'zh-CN': '便便', 'es-ES': 'Caca', 'fr-FR': 'Caca', 'ja-JP': 'ウンチ', 'de-DE': 'Kot' } },
+          { char: '👻', names: { 'en-US': 'Ghost', 'zh-HK': '幽靈', 'zh-CN': '幽灵', 'es-ES': 'Fantasma', 'fr-FR': 'Fantôme', 'ja-JP': 'おばけ', 'de-DE': 'Gespenst' } }
+        ]
+      },
+      {
+        id: 'animals',
+        name: 'Animals',
+        icon: '🐱',
+        emojis: [
+          { char: '🐶', names: { 'en-US': 'Dog', 'zh-HK': '小狗', 'zh-CN': '小狗', 'es-ES': 'Perro', 'fr-FR': 'Chien', 'ja-JP': '犬', 'de-DE': 'Hund' } },
+          { char: '🐱', names: { 'en-US': 'Cat', 'zh-HK': '貓咪', 'zh-CN': '小猫', 'es-ES': 'Gato', 'fr-FR': 'Chat', 'ja-JP': '猫', 'de-DE': 'Katze' } },
+          { char: '🐭', names: { 'en-US': 'Mouse', 'zh-HK': '老鼠', 'zh-CN': '老鼠', 'es-ES': 'Ratón', 'fr-FR': 'Souris', 'ja-JP': 'ねずみ', 'de-DE': 'Maus' } },
+          { char: '🐹', names: { 'en-US': 'Hamster', 'zh-HK': '倉鼠', 'zh-CN': '仓鼠', 'es-ES': 'Hámster', 'fr-FR': 'Hamster', 'ja-JP': 'ハムスター', 'de-DE': 'Hamster' } },
+          { char: '🐰', names: { 'en-US': 'Rabbit', 'zh-HK': '兔子', 'zh-CN': '兔子', 'es-ES': 'Conejo', 'fr-FR': 'Lapin', 'ja-JP': 'うさぎ', 'de-DE': 'Hase' } },
+          { char: '🦊', names: { 'en-US': 'Fox', 'zh-HK': '狐狸', 'zh-CN': '狐狸', 'es-ES': 'Zorro', 'fr-FR': 'Renard', 'ja-JP': 'きつね', 'de-DE': 'Fuchs' } },
+          { char: '🐻', names: { 'en-US': 'Bear', 'zh-HK': '大熊', 'zh-CN': '大熊', 'es-ES': 'Oso', 'fr-FR': 'Ours', 'ja-JP': 'くま', 'de-DE': 'Bär' } },
+          { char: '🐼', names: { 'en-US': 'Panda', 'zh-HK': '熊貓', 'zh-CN': '熊猫', 'es-ES': 'Oso Panda', 'fr-FR': 'Panda', 'ja-JP': 'パンダ', 'de-DE': 'Panda' } },
+          { char: 'KOALA', names: { 'en-US': 'Koala', 'zh-HK': '樹熊', 'zh-CN': '考拉', 'es-ES': 'Coala', 'fr-FR': 'Koala', 'ja-JP': 'コアラ', 'de-DE': 'Koala' } },
+          { char: '🐯', names: { 'en-US': 'Tiger', 'zh-HK': '老虎', 'zh-CN': '老虎', 'es-ES': 'Tigre', 'fr-FR': 'Tigre', 'ja-JP': 'トラ', 'de-DE': 'Tiger' } },
+          { char: '🦁', names: { 'en-US': 'Lion', 'zh-HK': '獅子', 'zh-CN': '狮子', 'es-ES': 'León', 'fr-FR': 'Lion', 'ja-JP': 'ライオン', 'de-DE': 'Löwe' } },
+          { char: '🐮', names: { 'en-US': 'Cow', 'zh-HK': '乳牛', 'zh-CN': '奶牛', 'es-ES': 'Vaca', 'fr-FR': 'Vache', 'ja-JP': '牛', 'de-DE': 'Kuh' } },
+          { char: '🐷', names: { 'en-US': 'Pig', 'zh-HK': '小豬', 'zh-CN': '小猪', 'es-ES': 'Cerdo', 'fr-FR': 'Cochon', 'ja-JP': 'ぶた', 'de-DE': 'Schwein' } },
+          { char: '🐸', names: { 'en-US': 'Frog', 'zh-HK': '青蛙', 'zh-CN': '青蛙', 'es-ES': 'Rana', 'fr-FR': 'Grenouille', 'ja-JP': 'カエル', 'de-DE': 'Frosch' } },
+          { char: '🐵', names: { 'en-US': 'Monkey', 'zh-HK': '猴子', 'zh-CN': '猴子', 'es-ES': 'Mono', 'fr-FR': 'Singe', 'ja-JP': '猿', 'de-DE': 'Affe' } },
+          { char: '🐔', names: { 'en-US': 'Chicken', 'zh-HK': '小雞', 'zh-CN': '鸡', 'es-ES': 'Pollo', 'fr-FR': 'Poulet', 'ja-JP': 'にわとり', 'de-DE': 'Huhn' } },
+          { char: '🐧', names: { 'en-US': 'Penguin', 'zh-HK': '企鵝', 'zh-CN': '企鹅', 'es-ES': 'Pingüino', 'fr-FR': 'Manchot', 'ja-JP': 'ペンギン', 'de-DE': 'Pinguin' } },
+          { char: '🐦', names: { 'en-US': 'Bird', 'zh-HK': '小鳥', 'zh-CN': '小鸟', 'es-ES': 'Pájaro', 'fr-FR': 'Oiseau', 'ja-JP': '小鳥', 'de-DE': 'Vogel' } },
+          { char: '🦆', names: { 'en-US': 'Duck', 'zh-HK': '鴨子', 'zh-CN': '鸭子', 'es-ES': 'Pato', 'fr-FR': 'Canard', 'ja-JP': 'アヒル', 'de-DE': 'Ente' } },
+          { char: '🦅', names: { 'en-US': 'Eagle', 'zh-HK': '老鷹', 'zh-CN': '老鹰', 'es-ES': 'Águila', 'fr-FR': 'Aigle', 'ja-JP': 'ワシ', 'de-DE': 'Adler' } },
+          { char: '🦉', names: { 'en-US': 'Owl', 'zh-HK': '貓頭鷹', 'zh-CN': '猫头鹰', 'es-ES': 'Búho', 'fr-FR': 'Hibou', 'ja-JP': 'フクロウ', 'de-DE': 'Eule' } },
+          { char: '🦄', names: { 'en-US': 'Unicorn', 'zh-HK': '獨角獸', 'zh-CN': '独角兽', 'es-ES': 'Unicornio', 'fr-FR': 'Licorne', 'ja-JP': 'ユニコーン', 'de-DE': 'Einhorn' } },
+          { char: '🐝', names: { 'en-US': 'Honeybee', 'zh-HK': '蜜蜂', 'zh-CN': '蜜蜂', 'es-ES': 'Abeja', 'fr-FR': 'Aabeille', 'ja-JP': 'ミツバチ', 'de-DE': 'Biene' } },
+          { char: '🦋', names: { 'en-US': 'Butterfly', 'zh-HK': '蝴蝶', 'zh-CN': '蝴蝶', 'es-ES': 'Mariposa', 'fr-FR': 'Papillon', 'ja-JP': '蝶', 'de-DE': 'Schmetterling' } },
+          { char: '🐌', names: { 'en-US': 'Snail', 'zh-HK': '蝸牛', 'zh-CN': '蜗牛', 'es-ES': 'Caracol', 'fr-FR': 'Escargot', 'ja-JP': 'カタツムリ', 'de-DE': 'Schnecke' } },
+          { char: '🐢', names: { 'en-US': 'Turtle', 'zh-HK': '烏龜', 'zh-CN': '乌龟', 'es-ES': 'Tortuga', 'fr-FR': 'Tortue', 'ja-JP': 'カメ', 'de-DE': 'Schildkröte' } },
+          { char: '🐬', names: { 'en-US': 'Dolphin', 'zh-HK': '海豚', 'zh-CN': '海豚', 'es-ES': 'Delfín', 'fr-FR': 'Dauphin', 'ja-JP': 'イルカ', 'de-DE': 'Delfin' } },
+          { char: '🐳', names: { 'en-US': 'Whale', 'zh-HK': '鯨魚', 'zh-CN': '鲸鱼', 'es-ES': 'Ballena', 'fr-FR': 'Baleine', 'ja-JP': 'クジラ', 'de-DE': 'Wal' } },
+          { char: '🦈', names: { 'en-US': 'Shark', 'zh-HK': '鯊魚', 'zh-CN': '鲨鱼', 'es-ES': 'Tiburón', 'fr-FR': 'Requin', 'ja-JP': 'サメ', 'de-DE': 'Hai' } },
+          { char: '🐙', names: { 'en-US': 'Octopus', 'zh-HK': '八爪魚', 'zh-CN': '章鱼', 'es-ES': 'Pulpo', 'fr-FR': 'Pieuvre', 'ja-JP': 'タコ', 'de-DE': 'Oktopus' } }
+        ]
+      },
+      {
+        id: 'food',
+        name: 'Food & Drink',
+        icon: '🍕',
+        emojis: [
+          { char: '🍕', names: { 'en-US': 'Pizza', 'zh-HK': '薄餅', 'zh-CN': '披萨', 'es-ES': 'Pizza', 'fr-FR': 'Pizza', 'ja-JP': 'ピザ', 'de-DE': 'Pizza' } },
+          { char: '🍔', names: { 'en-US': 'Hamburger', 'zh-HK': '漢堡包', 'zh-CN': '汉堡包', 'es-ES': 'Hamburguesa', 'fr-FR': 'Hamburger', 'ja-JP': 'ハンバーガー', 'de-DE': 'Hamburger' } },
+          { char: '🍟', names: { 'en-US': 'French Fries', 'zh-HK': '薯條', 'zh-CN': '薯条', 'es-ES': 'Patatas fritas', 'fr-FR': 'Frites', 'ja-JP': 'フライドポテト', 'de-DE': 'Pommes' } },
+          { char: '🌭', names: { 'en-US': 'Hot Dog', 'zh-HK': '熱狗', 'zh-CN': '热狗', 'es-ES': 'Perrito caliente', 'fr-FR': 'Hot-dog', 'ja-JP': 'ホットドッグ', 'de-DE': 'Hotdog' } },
+          { char: '🍿', names: { 'en-US': 'Popcorn', 'zh-HK': '爆谷', 'zh-CN': '爆米花', 'es-ES': 'Palomitas', 'fr-FR': 'Pop-corn', 'ja-JP': 'ポップコーン', 'de-DE': 'Popcorn' } },
+          { char: '🥓', names: { 'en-US': 'Bacon', 'zh-HK': '煙肉', 'zh-CN': '培根', 'es-ES': 'Bacon', 'fr-FR': 'Bacon', 'ja-JP': 'ベーコン', 'de-DE': 'Speck' } },
+          { char: '🍳', names: { 'en-US': 'Cooking Egg', 'zh-HK': '煎蛋', 'zh-CN': '煎蛋', 'es-ES': 'Huevo frito', 'fr-FR': 'Œuf au plat', 'ja-JP': '目玉焼き', 'de-DE': 'Spiegelei' } },
+          { char: '🧇', names: { 'en-US': 'Waffle', 'zh-HK': '窩夫', 'zh-CN': '华夫饼', 'es-ES': 'Waffle', 'fr-FR': 'Gaufre', 'ja-JP': 'ワッフル', 'de-DE': 'Waffel' } },
+          { char: '🥞', names: { 'en-US': 'Pancakes', 'zh-HK': '班戟', 'zh-CN': '煎饼', 'es-ES': 'Tortitas', 'fr-FR': 'Pancakes', 'ja-JP': 'ホットケーキ', 'de-DE': 'Pfannkuchen' } },
+          { char: '🍩', names: { 'en-US': 'Donut', 'zh-HK': '甜甜圈', 'zh-CN': '甜甜圈', 'es-ES': 'Donut', 'fr-FR': 'Beignet', 'ja-JP': 'ドーナツ', 'de-DE': 'Donut' } },
+          { char: '🍦', names: { 'en-US': 'Ice Cream', 'zh-HK': '雪糕', 'zh-CN': '冰淇淋', 'es-ES': 'Helado', 'fr-FR': 'Glace', 'ja-JP': 'ソフトクリーム', 'de-DE': 'Eis' } },
+          { char: '🍰', names: { 'en-US': 'Shortcake', 'zh-HK': '蛋糕', 'zh-CN': '蛋糕', 'es-ES': 'Pastel', 'fr-FR': 'Gâteau', 'ja-JP': 'ショートケーキ', 'de-DE': 'Kuchen' } },
+          { char: '🎂', names: { 'en-US': 'Birthday Cake', 'zh-HK': '生日蛋糕', 'zh-CN': '生日蛋糕', 'es-ES': 'Pastel de cumpleaños', 'fr-FR': 'Gâteau d\'anniversaire', 'ja-JP': 'バースデーケーキ', 'de-DE': 'Geburtstagstorte' } },
+          { char: '🍫', names: { 'en-US': 'Chocolate Bar', 'zh-HK': '朱古力', 'zh-CN': '巧克力', 'es-ES': 'Chocolate', 'fr-FR': 'Chocolat', 'ja-JP': 'チョコレート', 'de-DE': 'Schokolade' } },
+          { char: '🍬', names: { 'en-US': 'Candy', 'zh-HK': '糖果', 'zh-CN': '糖果', 'es-ES': 'Caramelo', 'fr-FR': 'Bonbon', 'ja-JP': 'キャンディー', 'de-DE': 'Bonbon' } },
+          { char: '🍓', names: { 'en-US': 'Strawberry', 'zh-HK': '士多啤梨', 'zh-CN': '草莓', 'es-ES': 'Fresa', 'fr-FR': 'Fraise', 'ja-JP': 'いちご', 'de-DE': 'Erdbeere' } },
+          { char: '🍉', names: { 'en-US': 'Watermelon', 'zh-HK': '西瓜', 'zh-CN': '西瓜', 'es-ES': 'Sandía', 'fr-FR': 'Pastèque', 'ja-JP': 'スイカ', 'de-DE': 'Wassermelone' } },
+          { char: '🍌', names: { 'en-US': 'Banana', 'zh-HK': '香蕉', 'zh-CN': '香蕉', 'es-ES': 'Plátano', 'fr-FR': 'Banane', 'ja-JP': 'バナナ', 'de-DE': 'Banane' } },
+          { char: '🍎', names: { 'en-US': 'Red Apple', 'zh-HK': '紅蘋果', 'zh-CN': '红苹果', 'es-ES': 'Manzana roja', 'fr-FR': 'Pomme rouge', 'ja-JP': 'りんご', 'de-DE': 'Apfel' } },
+          { char: '🍇', names: { 'en-US': 'Grapes', 'zh-HK': '提子', 'zh-CN': '葡萄', 'es-ES': 'Uvas', 'fr-FR': 'Raisin', 'ja-JP': 'ぶどう', 'de-DE': 'Trauben' } },
+          { char: '🍒', names: { 'en-US': 'Cherries', 'zh-HK': '車厘子', 'zh-CN': '樱桃', 'es-ES': 'Cerezas', 'fr-FR': 'Cerises', 'ja-JP': 'さくらんぼ', 'de-DE': 'Kirschen' } },
+          { char: '🥑', names: { 'en-US': 'Avocado', 'zh-HK': '牛油果', 'zh-CN': '牛油果', 'es-ES': 'Aguacate', 'fr-FR': 'Avocat', 'ja-JP': 'アボカド', 'de-DE': 'Avocado' } },
+          { char: '🥕', names: { 'en-US': 'Carrot', 'zh-HK': '紅蘿蔔', 'zh-CN': '胡萝卜', 'es-ES': 'Zanahoria', 'fr-FR': 'Carotte', 'ja-JP': 'にんじん', 'de-DE': 'Karotte' } },
+          { char: '🌽', names: { 'en-US': 'Ear of Corn', 'zh-HK': '粟米', 'zh-CN': '玉米', 'es-ES': 'Maíz', 'fr-FR': 'Maïs', 'ja-JP': 'トウモロコシ', 'de-DE': 'Mais' } },
+          { char: '🍣', names: { 'en-US': 'Sushi', 'zh-HK': '壽司', 'zh-CN': '寿司', 'es-ES': 'Sushi', 'fr-FR': 'Sushi', 'ja-JP': '寿司', 'de-DE': 'Sushi' } },
+          { char: '🍜', names: { 'en-US': 'Steaming Noodle', 'zh-HK': '拉麵', 'zh-CN': '面条', 'es-ES': 'Fideos', 'fr-FR': 'Nouilles', 'ja-JP': 'ラーメン', 'de-DE': 'Nudeln' } },
+          { char: '🧋', names: { 'en-US': 'Bubble Tea', 'zh-HK': '珍珠奶茶', 'zh-CN': '珍珠奶茶', 'es-ES': 'Té de boba', 'fr-FR': 'Thé aux perles', 'ja-JP': 'タピオカ', 'de-DE': 'Bubble Tea' } },
+          { char: '🧃', names: { 'en-US': 'Beverage Box', 'zh-HK': '紙包飲品', 'zh-CN': '果汁盒', 'es-ES': 'Zumo en brick', 'fr-FR': 'Brique de jus', 'ja-JP': 'ジュースパック', 'de-DE': 'Saftpäckchen' } }
+        ]
+      },
+      {
+        id: 'activities',
+        name: 'Sports & Play',
+        icon: '⚽',
+        emojis: [
+          { char: '⚽', names: { 'en-US': 'Soccer Ball', 'zh-HK': '足球', 'zh-CN': '足球', 'es-ES': 'Balón de fútbol', 'fr-FR': 'Ballon de football', 'ja-JP': 'サッカーボール', 'de-DE': 'Fußball' } },
+          { char: '🏀', names: { 'en-US': 'Basketball', 'zh-HK': '籃球', 'zh-CN': '篮球', 'es-ES': 'Baloncesto', 'fr-FR': 'Basket-ball', 'ja-JP': 'バスケットボール', 'de-DE': 'Basketball' } },
+          { char: '🏈', names: { 'en-US': 'American Football', 'zh-HK': '美式足球', 'zh-CN': '橄榄球', 'es-ES': 'Fútbol americano', 'fr-FR': 'Football américain', 'ja-JP': 'ラグビー', 'de-DE': 'Football' } },
+          { char: '⚾', names: { 'en-US': 'Baseball', 'zh-HK': '棒球', 'zh-CN': '棒球', 'es-ES': 'Béisbol', 'fr-FR': 'Baseball', 'ja-JP': '野球', 'de-DE': 'Baseball' } },
+          { char: '🎾', names: { 'en-US': 'Tennis', 'zh-HK': '網球', 'zh-CN': '网球', 'es-ES': 'Tenis', 'fr-FR': 'Tennis', 'ja-JP': 'テニス', 'de-DE': 'Tennis' } },
+          { char: '🏐', names: { 'en-US': 'Volleyball', 'zh-HK': '排球', 'zh-CN': '排球', 'es-ES': 'Voleibol', 'fr-FR': 'Volley-ball', 'ja-JP': 'バレーボール', 'de-DE': 'Volleyball' } },
+          { char: '🏓', names: { 'en-US': 'Ping Pong', 'zh-HK': '乒乓球', 'zh-CN': '乒乓球', 'es-ES': 'Ping pong', 'fr-FR': 'Ping-pong', 'ja-JP': '卓球', 'de-DE': 'Tischtennis' } },
+          { char: '🥊', names: { 'en-US': 'Boxing Glove', 'zh-HK': '拳擊手套', 'zh-CN': '拳击手套', 'es-ES': 'Guante de boxeo', 'fr-FR': 'Gant de boxe', 'ja-JP': 'ボクシンググローブ', 'de-DE': 'Boxhandschuh' } },
+          { char: '🎯', names: { 'en-US': 'Bullseye', 'zh-HK': '飛鏢', 'zh-CN': '飞镖', 'es-ES': 'Diana', 'fr-FR': 'Cible', 'ja-JP': 'ダーツ', 'de-DE': 'Zielscheibe' } },
+          { char: '🎮', names: { 'en-US': 'Video Game Controller', 'zh-HK': '手掣', 'zh-CN': '游戏手柄', 'es-ES': 'Mando de consola', 'fr-FR': 'Manette de jeu', 'ja-JP': 'ゲームコントローラー', 'de-DE': 'Controller' } },
+          { char: '🎨', names: { 'en-US': 'Artist Palette', 'zh-HK': '調色板', 'zh-CN': '调色板', 'es-ES': 'Paleta de pintor', 'fr-FR': 'Palette de peinture', 'ja-JP': '絵の具パレット', 'de-DE': 'Malgruppe' } },
+          { char: '🎤', names: { 'en-US': 'Microphone', 'zh-HK': '麥克風', 'zh-CN': '麦克风', 'es-ES': 'Micrófono', 'fr-FR': 'Microphone', 'ja-JP': 'マイク', 'de-DE': 'Mikrofon' } },
+          { char: '🎧', names: { 'en-US': 'Headphones', 'zh-HK': '耳機', 'zh-CN': '耳机', 'es-ES': 'Auriculares', 'fr-FR': 'Casque audio', 'ja-JP': 'ヘッドホン', 'de-DE': 'Kopfhörer' } },
+          { char: '🎷', names: { 'en-US': 'Saxophone', 'zh-HK': '薩克斯風', 'zh-CN': '萨克斯', 'es-ES': 'Saxofón', 'fr-FR': 'Saxophone', 'ja-JP': 'サックス', 'de-DE': 'Saxofon' } },
+          { char: '🎸', names: { 'en-US': 'Guitar', 'zh-HK': '結他', 'zh-CN': '吉他', 'es-ES': 'Guitarra', 'fr-FR': 'Guitare', 'ja-JP': 'ギター', 'de-DE': 'Gitarre' } },
+          { char: '🎹', names: { 'en-US': 'Musical Keyboard', 'zh-HK': '鋼琴', 'zh-CN': '键盘乐器', 'es-ES': 'Teclado musical', 'fr-FR': 'Clavier musical', 'ja-JP': 'ピアノ', 'de-DE': 'Klavier' } },
+          { char: '🚲', names: { 'en-US': 'Bicycle', 'zh-HK': '單車', 'zh-CN': '自行车', 'es-ES': 'Bicicleta', 'fr-FR': 'Vélo', 'ja-JP': '自転車', 'de-DE': 'Fahrrad' } },
+          { char: '🛹', names: { 'en-US': 'Skateboard', 'zh-HK': '滑板', 'zh-CN': '滑板', 'es-ES': 'Monopatín', 'fr-FR': 'Skateboard', 'ja-JP': 'スケートボード', 'de-DE': 'Skateboard' } },
+          { char: '🏊', names: { 'en-US': 'Person Swimming', 'zh-HK': '游泳', 'zh-CN': '游泳', 'es-ES': 'Nadador', 'fr-FR': 'Nageur', 'ja-JP': '水泳', 'de-DE': 'Schwimmen' } },
+          { char: '🧘', names: { 'en-US': 'Person in Lotus Position', 'zh-HK': '瑜伽', 'zh-CN': '瑜伽', 'es-ES': 'Yoga', 'fr-FR': 'Yoga', 'ja-JP': 'ヨガ', 'de-DE': 'Yoga' } }
+        ]
+      },
+      {
+        id: 'objects',
+        name: 'Objects & Nature',
+        icon: '🚀',
+        emojis: [
+          { char: '🚀', names: { 'en-US': 'Rocket', 'zh-HK': '火箭', 'zh-CN': '火箭', 'es-ES': 'Cohete', 'fr-FR': 'Fusée', 'ja-JP': 'ロケット', 'de-DE': 'Rakete' } },
+          { char: '✈️', names: { 'en-US': 'Airplane', 'zh-HK': '飛機', 'zh-CN': '飞机', 'es-ES': 'Avión', 'fr-FR': 'Avion', 'ja-JP': '飛行機', 'de-DE': 'Flugzeug' } },
+          { char: '🚁', names: { 'en-US': 'Helicopter', 'zh-HK': '直升機', 'zh-CN': '直升机', 'es-ES': 'Helicóptero', 'fr-FR': 'Hélicoptère', 'ja-JP': 'ヘリコプター', 'de-DE': 'Hubschrauber' } },
+          { char: '🚗', names: { 'en-US': 'Car', 'zh-HK': '汽車', 'zh-CN': '汽车', 'es-ES': 'Coche', 'fr-FR': 'Voiture', 'ja-JP': '車', 'de-DE': 'Auto' } },
+          { char: '🚑', names: { 'en-US': 'Ambulance', 'zh-HK': '救護車', 'zh-CN': '救护车', 'es-ES': 'Ambulancia', 'fr-FR': 'Ambulance', 'ja-JP': '救急車', 'de-DE': 'Krankenwagen' } },
+          { char: '🚒', names: { 'en-US': 'Fire Engine', 'zh-HK': '消防車', 'zh-CN': '消防车', 'es-ES': 'Coche de bomberos', 'fr-FR': 'Camion de pompiers', 'ja-JP': '消防車', 'de-DE': 'Feuerwehr' } },
+          { char: '🌈', names: { 'en-US': 'Rainbow', 'zh-HK': '彩虹', 'zh-CN': '彩虹', 'es-ES': 'Arcoíris', 'fr-FR': 'Arc-en-ciel', 'ja-JP': '虹', 'de-DE': 'Regenbogen' } },
+          { char: '☀️', names: { 'en-US': 'Sun', 'zh-HK': '太陽', 'zh-CN': '太阳', 'es-ES': 'Sol', 'fr-FR': 'Soleil', 'ja-JP': '太陽', 'de-DE': 'Sonne' } },
+          { char: '🌙', names: { 'en-US': 'Crescent Moon', 'zh-HK': '月亮', 'zh-CN': '月亮', 'es-ES': 'Luna', 'fr-FR': 'Lune', 'ja-JP': '三日月', 'de-DE': 'Mond' } },
+          { char: '⭐', names: { 'en-US': 'Star', 'zh-HK': '星星', 'zh-CN': '星星', 'es-ES': 'Estrella', 'fr-FR': 'Étoile', 'ja-JP': '星', 'de-DE': 'Stern' } },
+          { char: '⚡', names: { 'en-US': 'High Voltage Lightning', 'zh-HK': '閃電', 'zh-CN': '闪电', 'es-ES': 'Rayo', 'fr-FR': 'Éclair', 'ja-JP': '雷', 'de-DE': 'Blitz' } },
+          { char: '❄️', names: { 'en-US': 'Snowflake', 'zh-HK': '雪花', 'zh-CN': '雪花', 'es-ES': 'Copo de nieve', 'fr-FR': 'Flocon de neige', 'ja-JP': '雪の結晶', 'de-DE': 'Schneeflocke' } },
+          { char: '🎈', names: { 'en-US': 'Balloon', 'zh-HK': '氣球', 'zh-CN': '气球', 'es-ES': 'Globo', 'fr-FR': 'Ballon', 'ja-JP': '風船', 'de-DE': 'Luftballon' } },
+          { char: '🎁', names: { 'en-US': 'Wrapped Gift', 'zh-HK': '禮物', 'zh-CN': '礼物', 'es-ES': 'Regalo', 'fr-FR': 'Cadeau', 'ja-JP': 'プレゼント', 'de-DE': 'Geschenk' } },
+          { char: '💎', names: { 'en-US': 'Gem Stone', 'zh-HK': '鑽石', 'zh-CN': '钻石', 'es-ES': 'Gema', 'fr-FR': 'Diamant', 'ja-JP': '宝石', 'de-DE': 'Edelstein' } },
+          { char: '🔥', names: { 'en-US': 'Fire', 'zh-HK': '火焰', 'zh-CN': '火焰', 'es-ES': 'Fuego', 'fr-FR': 'Feu', 'ja-JP': '炎', 'de-DE': 'Feuer' } },
+          { char: '💡', names: { 'en-US': 'Light Bulb', 'zh-HK': '燈泡', 'zh-CN': '灯泡', 'es-ES': 'Bombilla', 'fr-FR': 'Ampoule', 'ja-JP': 'ひらめき電球', 'de-DE': 'Glühbirne' } },
+          { char: '📚', names: { 'en-US': 'Books', 'zh-HK': '書本', 'zh-CN': '书本', 'es-ES': 'Libros', 'fr-FR': 'Livres', 'ja-JP': '本', 'de-DE': 'Bücher' } },
+          { char: '🔔', names: { 'en-US': 'Bell', 'zh-HK': '鈴鐺', 'zh-CN': '铃铛', 'es-ES': 'Campana', 'fr-FR': 'Cloche', 'ja-JP': 'ベル', 'de-DE': 'Glocke' } },
+          { char: '⏰', names: { 'en-US': 'Alarm Clock', 'zh-HK': '鬧鐘', 'zh-CN': '闹钟', 'es-ES': 'Reloj despertador', 'fr-FR': 'Réveil', 'ja-JP': '目覚まし時計', 'de-DE': 'Wecker' } }
+        ]
+      }
+    ];
+
+    // --- Pagination & Swiping State ---
+    let activeCategory = 'smileys';
+    let isMuted = false;
+    let selectedLang = 'en-US';
+    let currentEmoji = { char: '🥳', word: 'Partying Face' };
+    
+    let currentPageIndex = 0;
+    let totalPages = 1;
+    const ITEMS_PER_PAGE = 12; // Fits cleanly into viewport grid without vertical scroll
+
+
+    // Touch & Swipe gesture state
+    let startX = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let isDragging = false;
+
+    // --- DOM Elements ---
+    const emojiDisplay = document.getElementById('emojiDisplay');
+    const displayWord = document.getElementById('displayWord');
+    const wordBubble = document.getElementById('wordBubble');
+    const emojiDisplayWrapper = document.getElementById('emojiDisplayWrapper');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const langSelect = document.getElementById('langSelect');
+    const soundWaves = document.getElementById('soundWaves');
+
+    const swipeViewport = document.getElementById('swipeViewport');
+    const pagesTrack = document.getElementById('pagesTrack');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const paginationDots = document.getElementById('paginationDots');
+
+    // --- Speech Synthesis ---
+    function speak(text) {
+      if (isMuted || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = selectedLang;
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+
+      utterance.onstart = () => soundWaves.classList.remove('opacity-0');
+      utterance.onend = () => soundWaves.classList.add('opacity-0');
+      utterance.onerror = () => soundWaves.classList.add('opacity-0');
+
+      const voices = window.speechSynthesis.getVoices();
+      const matchVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-') === selectedLang.toLowerCase().replace('_', '-'));
+      if (matchVoice) utterance.voice = matchVoice;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Get localized emoji name
+    function getEmojiName(emojiObj) {
+      if (!emojiObj || !emojiObj.names) return 'Emoji';
+      return emojiObj.names[selectedLang] || emojiObj.names['en-US'] || 'Emoji';
+    }
+
+    // --- Render Category Tabs ---
+    function renderTabs() {
+      categoryTabs.innerHTML = '';
+      EMOJI_CATEGORIES.forEach(cat => {
+        const isActive = cat.id === activeCategory;
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-1 rounded-xl font-semibold text-xs flex items-center gap-1.5 whitespace-nowrap transition-all duration-200 ${
+          isActive 
+            ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm scale-105' 
+            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+        }`;
+        btn.innerHTML = `<span>${cat.icon}</span> <span>${cat.name}</span>`;
+        btn.addEventListener('click', () => {
+          activeCategory = cat.id;
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          currentPageIndex = 0;
+          renderTabs();
+          renderPaginatedKeyboard();
+        });
+        categoryTabs.appendChild(btn);
+      });
+    }
+
+    // --- Paginated Keyboard Rendering & Calculation ---
+    function renderPaginatedKeyboard(filterQuery = '') {
+      pagesTrack.innerHTML = '';
+      let listToRender = [];
+
+      if (filterQuery.trim() !== '') {
+        const query = filterQuery.toLowerCase();
+        EMOJI_CATEGORIES.forEach(cat => {
+          cat.emojis.forEach(item => {
+            const name = getEmojiName(item).toLowerCase();
+            if (name.includes(query) || item.char.includes(query)) {
+              listToRender.push(item);
+            }
+          });
+        });
+      } else {
+        const cat = EMOJI_CATEGORIES.find(c => c.id === activeCategory);
+        if (cat) listToRender = cat.emojis;
+      }
+
+      // Calculate total page count
+      totalPages = Math.max(1, Math.ceil(listToRender.length / ITEMS_PER_PAGE));
+      if (currentPageIndex >= totalPages) currentPageIndex = totalPages - 1;
+
+      if (listToRender.length === 0) {
+        pagesTrack.innerHTML = `
+          <div class="page-slide w-full py-6 text-center text-slate-400 font-medium text-xs">
+            No emojis found for "${filterQuery}" 🔍
+          </div>
+        `;
+        renderPaginationDots();
+        updatePagePosition();
+        return;
+      }
+
+      // Build Slides for each page
+      for (let p = 0; p < totalPages; p++) {
+        const pageItems = listToRender.slice(p * ITEMS_PER_PAGE, (p + 1) * ITEMS_PER_PAGE);
+        const slideEl = document.createElement('div');
+        slideEl.className = 'page-slide px-1';
+
+        const gridEl = document.createElement('div');
+        gridEl.className = 'grid grid-cols-6 gap-2';
+
+        pageItems.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = 'aspect-square flex items-center justify-center text-2xl sm:text-3xl bg-slate-50 hover:bg-purple-100 rounded-xl border border-slate-200 hover:border-purple-300 shadow-sm hover:shadow active:scale-90 transition-all cursor-pointer select-none';
+          btn.textContent = item.char;
+          btn.title = getEmojiName(item);
+
+          btn.addEventListener('click', (e) => {
+            if (isDragging) return;
+            selectEmoji(item.char, getEmojiName(item));
+          });
+
+          gridEl.appendChild(btn);
+        });
+
+        slideEl.appendChild(gridEl);
+        pagesTrack.appendChild(slideEl);
+      }
+
+      renderPaginationDots();
+      updatePagePosition();
+    }
+
+    // Update Pagination Dots UI
+    function renderPaginationDots() {
+      paginationDots.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('button');
+        dot.className = `h-2 rounded-full transition-all duration-300 ${
+          i === currentPageIndex 
+            ? 'bg-purple-600 w-5' 
+            : 'bg-slate-300 hover:bg-slate-400 w-2'
+        }`;
+        dot.title = `Page ${i + 1}`;
+        dot.addEventListener('click', () => {
+          currentPageIndex = i;
+          updatePagePosition();
+        });
+        paginationDots.appendChild(dot);
+      }
+    }
+
+    // Set Track Horizontal Position & Control Buttons State
+    function updatePagePosition() {
+      const width = swipeViewport.clientWidth;
+      currentTranslate = -currentPageIndex * width;
+      prevTranslate = currentTranslate;
+      pagesTrack.style.transform = `translateX(${currentTranslate}px)`;
+
+      // Arrow states
+      prevPageBtn.disabled = currentPageIndex === 0;
+      nextPageBtn.disabled = currentPageIndex === totalPages - 1;
+
+      renderPaginationDots();
+    }
+
+    // Move to next / previous page
+    function goToNextPage() {
+      if (currentPageIndex < totalPages - 1) {
+        currentPageIndex++;
+        updatePagePosition();
+      }
+    }
+
+    function goToPrevPage() {
+      if (currentPageIndex > 0) {
+        currentPageIndex--;
+        updatePagePosition();
+      }
+    }
+
+    // --- Touch / Mouse Drag Swipe Gestures ---
+    function touchStart(index) {
+      return function(event) {
+        isDragging = true;
+        startX = getPositionX(event);
+        pagesTrack.style.transition = 'none';
+      }
+    }
+
+    function touchMove(event) {
+      if (!isDragging) return;
+      const currentPosition = getPositionX(event);
+      const diff = currentPosition - startX;
+      currentTranslate = prevTranslate + diff;
+      pagesTrack.style.transform = `translateX(${currentTranslate}px)`;
+    }
+
+    function touchEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      pagesTrack.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
+      const movedBy = currentTranslate - prevTranslate;
+
+      // Threshold for swipe trigger (50px)
+      if (movedBy < -50 && currentPageIndex < totalPages - 1) {
+        currentPageIndex++;
+      }
+      if (movedBy > 50 && currentPageIndex > 0) {
+        currentPageIndex--;
+      }
+
+      updatePagePosition();
+    }
+
+    function getPositionX(event) {
+      return event.type.includes('touch') ? event.touches[0].clientX : event.clientX;
+    }
+
+    // Attach Swipe Events
+    swipeViewport.addEventListener('touchstart', touchStart(0));
+    swipeViewport.addEventListener('touchend', touchEnd);
+    swipeViewport.addEventListener('touchmove', touchMove);
+
+    swipeViewport.addEventListener('mousedown', touchStart(0));
+    swipeViewport.addEventListener('mouseup', touchEnd);
+    swipeViewport.addEventListener('mouseleave', touchEnd);
+    swipeViewport.addEventListener('mousemove', touchMove);
+
+    // Prev / Next Button Listeners
+    prevPageBtn.addEventListener('click', goToPrevPage);
+    nextPageBtn.addEventListener('click', goToNextPage);
+
+    // Resize Event - recalculate carousel offsets on window resize
+    window.addEventListener('resize', () => {
+      updatePagePosition();
+    });
+
+    // --- Action: Select & Trigger Big Animation + Speech ---
+    function selectEmoji(char, word) {
+      currentEmoji = { char, word };
+
+      displayWord.textContent = word;
+      emojiDisplay.textContent = char;
+
+      emojiDisplay.classList.remove('animate-pop-bounce', 'animate-wiggle');
+      void emojiDisplay.offsetWidth; // Force Reflow
+      emojiDisplay.classList.add('animate-pop-bounce');
+
+      wordBubble.classList.remove('animate-wiggle');
+      void wordBubble.offsetWidth;
+      wordBubble.classList.add('animate-wiggle');
+
+      speak(word);
+    }
+
+    // --- Global Event Listeners ---
+    wordBubble.addEventListener('click', () => {
+      speak(displayWord.textContent);
+      wordBubble.classList.remove('animate-wiggle');
+      void wordBubble.offsetWidth;
+      wordBubble.classList.add('animate-wiggle');
+    });
+
+    emojiDisplayWrapper.addEventListener('click', () => {
+      speak(displayWord.textContent);
+      emojiDisplay.classList.remove('animate-pop-bounce');
+      void emojiDisplay.offsetWidth;
+      emojiDisplay.classList.add('animate-pop-bounce');
+    });
+
+    soundToggleBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      soundIcon.textContent = isMuted ? '🔇' : '🔊';
+      soundToggleBtn.className = isMuted 
+        ? 'flex items-center justify-center p-2.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-2xl transition shadow-sm border border-rose-200 active:scale-95'
+        : 'flex items-center justify-center p-2.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-2xl transition shadow-sm border border-emerald-200 active:scale-95';
+      
+      if (isMuted && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        soundWaves.classList.add('opacity-0');
+      }
+    });
+
+    langSelect.addEventListener('change', (e) => {
+      selectedLang = e.target.value;
+      let matchedItem = null;
+      EMOJI_CATEGORIES.forEach(c => {
+        c.emojis.forEach(item => {
+          if (item.char === currentEmoji.char) matchedItem = item;
+        });
+      });
+
+      if (matchedItem) {
+        selectEmoji(matchedItem.char, getEmojiName(matchedItem));
+      } else {
+        speak(displayWord.textContent);
+      }
+      renderPaginatedKeyboard(searchInput.value);
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (val.length > 0) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+      }
+
+      const emojiRegex = /(\p{Extended_Pictographic})/u;
+      const match = val.match(emojiRegex);
+      if (match) {
+        const typedChar = match[0];
+        let found = null;
+        EMOJI_CATEGORIES.forEach(c => {
+          c.emojis.forEach(item => {
+            if (item.char === typedChar) found = item;
+          });
+        });
+
+        if (found) {
+          selectEmoji(found.char, getEmojiName(found));
+        } else {
+          selectEmoji(typedChar, 'Emoji');
+        }
+      }
+
+      currentPageIndex = 0;
+      renderPaginatedKeyboard(val);
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+      currentPageIndex = 0;
+      renderPaginatedKeyboard();
+    });
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
+    // --- Initial Setup ---
+    window.onload = () => {
+      renderTabs();
+      renderPaginatedKeyboard();
+      selectEmoji('🥳', EMOJI_CATEGORIES[0].emojis[21].names['en-US']);
+    };
+  </script>
+</body>
+</html>
