@@ -40,10 +40,10 @@
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col justify-between select-none overflow-hidden">
+<body class="h-screen w-screen flex flex-col justify-between select-none overflow-hidden p-0 m-0">
 
     <!-- 頂部：極簡單一文字輸入框 (固定高度，不隨頁面滾動) -->
-    <header class="w-full py-4 px-6 flex justify-center z-10 shrink-0">
+    <header class="w-full py-3 px-6 flex justify-center z-10 shrink-0">
         <div class="w-full max-w-xl">
             <input 
                 type="text" 
@@ -56,16 +56,16 @@
         </div>
     </header>
 
-    <!-- 主要內容區 (Canvas 習字簿：適應剩餘高度，每次顯示 4 個大字格，自動居中) -->
-    <main class="flex-1 w-full px-4 py-2 flex items-center justify-center overflow-hidden min-h-0">
+    <!-- 主要內容區 (Canvas 習字簿：依剩餘空間彈性縮放，確保底部控制條 100% 可見) -->
+    <main class="flex-1 w-full px-4 py-2 flex items-center justify-center overflow-hidden min-h-0 shrink">
         
-        <!-- 淺黃宣紙外框視窗 (4 * 220px = 880px) -->
-        <div class="relative bg-[#fbf8f1] border-4 border-amber-900/30 rounded-3xl p-4 shadow-2xl overflow-hidden flex items-center justify-center max-h-full">
+        <!-- 淺黃宣紙外框視窗 -->
+        <div class="relative bg-[#fbf8f1] border-4 border-amber-900/30 rounded-3xl p-3 shadow-2xl overflow-hidden flex items-center justify-center max-h-full shrink">
             
-            <!-- 視窗容器 (寬度 880px，剛好容納 4 個 220px 米字格) -->
+            <!-- 視窗容器 (寬度 880px，4 個 220px 米字格) -->
             <div 
                 id="viewportBox" 
-                class="w-[880px] max-w-[90vw] h-[220px] overflow-x-auto no-scrollbar scroll-smooth border-t-2 border-l-2 border-red-800/60 shadow-inner flex flex-row flex-nowrap"
+                class="w-[880px] max-w-[90vw] h-[220px] max-h-full overflow-x-auto no-scrollbar scroll-smooth border-t-2 border-l-2 border-red-800/60 shadow-inner flex flex-row flex-nowrap shrink-0"
             >
                 <div 
                     id="characterGrid" 
@@ -78,12 +78,12 @@
         </div>
     </main>
 
-    <!-- 底部極簡播放控制條 (固定底部，不擠壓版面) -->
-    <div class="bg-[#ede5d3]/95 border-t border-amber-900/20 shadow-lg px-8 py-3 backdrop-blur z-50 shrink-0">
-        <div class="max-w-3xl mx-auto flex items-center justify-between gap-6">
+    <!-- 底部極簡播放控制條 (固定底部，防擠壓，確保完全可見) -->
+    <footer class="w-full bg-[#ede5d3]/95 border-t border-amber-900/20 shadow-lg px-6 py-3 backdrop-blur z-50 shrink-0">
+        <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
             
             <!-- 播放 / 暫停 -->
-            <button id="btnGlobalPlay" onclick="togglePlayPause()" class="px-6 py-2.5 rounded-full bg-red-900 hover:bg-red-800 text-amber-50 font-medium text-sm shadow-md transition flex items-center gap-2 justify-center shrink-0">
+            <button id="btnGlobalPlay" onclick="togglePlayPause()" class="px-5 py-2 rounded-full bg-red-900 hover:bg-red-800 text-amber-50 font-medium text-sm shadow-md transition flex items-center gap-2 justify-center shrink-0">
                 <i id="playIcon" class="fa-solid fa-play"></i>
                 <span id="playText">播放</span>
             </button>
@@ -104,7 +104,7 @@
             </div>
 
         </div>
-    </div>
+    </footer>
 
     <!-- 腳本區域 -->
     <script>
