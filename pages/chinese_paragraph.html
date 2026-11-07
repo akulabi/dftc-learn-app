@@ -2,443 +2,404 @@
 <html lang="zh-TW" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>中文筆順習字簿</title>
-
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Hanzi Writer CDN -->
+    <!-- HanziWriter CDN -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-
-    <!-- 字體與圖標 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
+        /* Custom scrollbar for rice paper container */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(184, 115, 51, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(184, 115, 51, 0.25);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(184, 115, 51, 0.4);
+        }
+        
+        /* Smooth scrolling */
+        .scroll-smooth-vertical {
+            scroll-behavior: smooth;
+        }
+
+        /* Prevent rubber-band effect on mobile */
         body {
-            font-family: 'Noto Serif TC', serif;
-            background-color: #f7f3e8;
-            background-image: radial-gradient(#e5dcc7 1px, transparent 1px);
-            background-size: 20px 20px;
-            color: #2c2416;
-        }
-
-        /* 隱藏原生滾動條以維護習字簿美觀 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        input[type=range] {
-            accent-color: #991b1b;
+            overscroll-behavior-y: none;
         }
     </style>
 </head>
-<body class="h-screen w-screen flex flex-col justify-between select-none overflow-hidden p-0 m-0 border-box">
+<body class="bg-[#f4efe6] h-[100dvh] w-screen flex flex-col font-sans text-stone-800 antialiased overflow-hidden select-none">
 
-    <!-- 頂部：極簡單一文字輸入框 (固定高度，防壓迫) -->
-    <header class="w-full py-3 px-6 flex justify-center z-50 shrink-0 bg-[#f7f3e8]">
-        <div class="w-full max-w-xl">
+    <!-- Top Input Bar (Fixed height) -->
+    <header class="shrink-0 pt-4 pb-2 px-4 flex justify-center z-20">
+        <div class="w-full max-w-[340px] relative">
             <input 
                 type="text" 
                 id="textInput" 
-                oninput="onInputTextChange(this.value)"
-                placeholder="請輸入文字..." 
-                value="中文筆順練習"
-                class="w-full px-5 py-2 rounded-full border-2 border-red-900/30 bg-[#faf7f0]/90 focus:bg-[#faf7f0] focus:border-red-800 text-stone-900 placeholder-stone-400 outline-none transition text-lg font-serif shadow-sm text-center tracking-widest"
+                value="中文筆順練習" 
+                placeholder="請輸入文字..."
+                class="w-full text-center text-lg font-serif bg-[#faf6ee] border-2 border-[#b87333]/30 rounded-full px-5 py-2 text-stone-800 focus:outline-none focus:border-[#b87333] shadow-sm tracking-widest transition-all"
             />
         </div>
     </header>
 
-    <!-- 主要內容區 (直向滾動 每行 2 個字格習字簿) -->
-    <main class="flex-1 w-full px-4 py-2 flex items-center justify-center overflow-hidden min-h-0 shrink">
-        
-        <!-- 淺黃宣紙外框視窗 (支援垂直滾動) -->
+    <!-- Main Viewport: Vertical Scrollable Grid Sheet -->
+    <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
         <div 
             id="viewportBox" 
-            class="relative bg-[#fbf8f1] border-4 border-amber-900/30 rounded-3xl p-4 shadow-2xl overflow-y-auto no-scrollbar scroll-smooth h-full max-h-full border-t-2 border-l-2 border-red-800/60 shadow-inner flex justify-center"
+            class="w-full max-w-[340px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-24 pt-2"
         >
-            <!-- 每行固定 2 個字格 (2 Column Grid) -->
-            <div 
-                id="characterGrid" 
-                class="grid grid-cols-2 gap-0 justify-items-center items-center max-w-[320px] border-r-2 border-b-2 border-red-800/60 h-fit"
-            >
-                <!-- 動態生成字格 (米字格 Canvas 背景 + HanziWriter SVG) -->
+            <!-- Xuan Paper Card -->
+            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-3 shadow-md relative min-h-full">
+                <!-- Grid Container: 2 Columns -->
+                <div id="characterGrid" class="grid grid-cols-2 gap-3 justify-items-center">
+                    <!-- Dynamic Character Items Will Be Rendered Here -->
+                </div>
             </div>
-
         </div>
     </main>
 
-    <!-- 底部極簡播放控制條 (固定底部，防擠壓) -->
-    <footer class="w-full bg-[#ede5d3] border-t-2 border-amber-900/30 shadow-2xl px-6 py-3 z-50 shrink-0">
-        <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
+    <!-- Bottom Playback Control Toolbar (Fixed Floating Tray) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
+        <div class="w-full max-w-[340px] flex items-center justify-between gap-3">
             
-            <!-- 播放 / 暫停 -->
-            <button id="btnGlobalPlay" onclick="togglePlayPause()" class="px-5 py-2 rounded-full bg-red-900 hover:bg-red-800 text-amber-50 font-medium text-sm shadow-md transition flex items-center gap-2 justify-center shrink-0">
-                <i id="playIcon" class="fa-solid fa-play"></i>
-                <span id="playText">播放</span>
+            <!-- Play / Pause Button -->
+            <button 
+                id="playPauseBtn" 
+                class="w-10 h-10 shrink-0 flex items-center justify-center bg-[#b87333] text-white rounded-full shadow hover:bg-[#a06228] active:scale-95 transition-all focus:outline-none"
+                title="播放 / 暫停"
+            >
+                <svg id="playIcon" class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg id="pauseIcon" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
             </button>
 
-            <!-- 時間軸 Slider -->
-            <div class="relative flex-1 flex items-center">
-                <input type="range" id="globalTimeline" min="0" max="100" value="0" step="0.1" oninput="onTimelineScrub(this.value)" class="w-full h-2.5 bg-stone-300 rounded-lg appearance-none cursor-pointer">
+            <!-- Timeline Scrubber Range -->
+            <div class="flex-1 flex items-center px-1">
+                <input 
+                    type="range" 
+                    id="timelineSlider" 
+                    min="0" 
+                    max="100" 
+                    value="0" 
+                    step="0.1"
+                    class="w-full h-2 bg-[#d8c3a5] rounded-lg appearance-none cursor-pointer accent-[#b87333] focus:outline-none"
+                />
             </div>
 
-            <!-- 筆劃速度控制 -->
-            <div class="flex items-center shrink-0">
-                <select id="speedSelect" onchange="changeSpeed(this.value)" class="bg-stone-200/80 border border-stone-300 text-stone-800 text-xs rounded-lg px-3 py-2 outline-none font-mono font-medium shadow-sm">
+            <!-- Speed Control Selector -->
+            <div class="shrink-0 relative">
+                <select 
+                    id="speedSelect" 
+                    class="bg-[#faf6ee] text-xs font-semibold text-stone-700 border border-[#b87333]/40 rounded-lg px-2 py-2 focus:outline-none focus:border-[#b87333] cursor-pointer shadow-sm"
+                >
                     <option value="0.5">0.5x</option>
-                    <option value="1" selected>1.0x</option>
+                    <option value="1.0" selected>1.0x</option>
                     <option value="1.5">1.5x</option>
-                    <option value="2">2.0x</option>
+                    <option value="2.0">2.0x</option>
                 </select>
             </div>
 
         </div>
     </footer>
 
-    <!-- 邏輯與動畫控制腳本 -->
     <script>
-        let charactersData = [];
-        const STROKE_COLOR = '#000000'; // 純黑墨跡
-        const GRID_SIZE = 150;           // 每字格 150px * 150px
-        
-        let playbackSpeed = 1.0;
-        let isPlaying = false;
+        // Data & State Management
+        let currentText = "中文筆順練習";
+        let writers = [];
+        let strokeCounts = [];
         let activeCharIndex = 0;
-        let isCancelled = false;
-        let inputDebounceTimer = null;
+        let isPlaying = false;
+        let playAnimationId = null;
+        let speedMultiplier = 1.0;
+        const GRID_SIZE = 140; // 140px size per grid item
 
-        function isChineseChar(ch) {
-            return /^[\u4e00-\u9fa5]$/.test(ch);
-        }
-
-        window.onload = function() {
-            const initialText = document.getElementById('textInput').value;
-            parseAndLoadParagraph(initialText);
-        };
-
-        function onInputTextChange(val) {
-            clearTimeout(inputDebounceTimer);
-            inputDebounceTimer = setTimeout(() => {
-                parseAndLoadParagraph(val);
-            }, 300);
-        }
-
-        /* 繪製傳統淺黃米字格 Canvas 背景 */
-        function drawMizigeCanvas(canvas) {
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            
-            canvas.width = GRID_SIZE * dpr;
-            canvas.height = GRID_SIZE * dpr;
-            ctx.scale(dpr, dpr);
-
-            // 宣紙黃底
-            ctx.fillStyle = '#faf7f0';
-            ctx.fillRect(0, 0, GRID_SIZE, GRID_SIZE);
-
-            // 筆畫邊框與虛線米字格
-            ctx.strokeStyle = 'rgba(185, 28, 28, 0.35)';
-            ctx.lineWidth = 1;
-
-            // 對角虛線
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(GRID_SIZE, GRID_SIZE);
-            ctx.moveTo(GRID_SIZE, 0);
-            ctx.lineTo(0, GRID_SIZE);
-            ctx.stroke();
-
-            // 十字實線/細線
-            ctx.strokeStyle = 'rgba(185, 28, 28, 0.5)';
-            ctx.setLineDash([6, 3]);
-            ctx.beginPath();
-            ctx.moveTo(GRID_SIZE / 2, 0);
-            ctx.lineTo(GRID_SIZE / 2, GRID_SIZE);
-            ctx.moveTo(0, GRID_SIZE / 2);
-            ctx.lineTo(GRID_SIZE, GRID_SIZE / 2);
-            ctx.stroke();
-
-            // 左與上邊界實線 (組成米字格網格)
-            ctx.setLineDash([]);
-            ctx.strokeStyle = 'rgba(185, 28, 28, 0.6)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(0, 0, GRID_SIZE, GRID_SIZE);
-        }
-
-        // 自訂字形資料載入器：優先使用 HK 筆順資料集，失敗時自動備援至 CDN
+        // Custom Data Loader: Try local HK dataset first, fallback to CDN
         function customCharDataLoader(char, onComplete, onError) {
-            const encodedChar = encodeURIComponent(char);
-            const hkUrl = `/hanzi-writer-data-hk/data/${encodedChar}.json`;
-            const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodedChar}.json`;
-
-            fetch(hkUrl)
-                .then(res => {
-                    if (res.ok) return res.json();
-                    throw new Error('HK data not found');
+            const hkPath = `/hanzi-writer-data-hk/data/${char}.json`;
+            fetch(hkPath)
+                .then(response => {
+                    if (!response.ok) throw new Error('HK Data file not found');
+                    return response.json();
                 })
                 .then(data => onComplete(data))
-                .catch(() => {
-                    // HK 資料庫獲取失敗，降級使用標準 CDN
+                .catch(err => {
+                    // Fallback to official CDN loader logic
+                    const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${char}.json`;
                     fetch(cdnUrl)
                         .then(res => {
-                            if (res.ok) return res.json();
-                            throw new Error('CDN data not found');
+                            if (!res.ok) throw new Error('CDN Data fetch failed');
+                            return res.json();
                         })
                         .then(data => onComplete(data))
-                        .catch(err => onError(err));
+                        .catch(e => onError(e));
                 });
         }
 
-        function createHanziWriterInstance(targetId, charStr) {
-            const targetEl = document.getElementById(targetId);
-            if (targetEl) targetEl.innerHTML = '';
-            
-            const baseSpeed = 1.0;
-            const computedSpeed = baseSpeed * playbackSpeed;
-            const computedDelay = 200 / playbackSpeed;
+        // Draw Traditional Rice-Grid (米字格) on HTML5 Canvas
+        function drawRiceGrid(canvas) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const size = GRID_SIZE;
 
-            return HanziWriter.create(targetId, charStr, {
-                width: GRID_SIZE - 10,
-                height: GRID_SIZE - 10,
-                padding: 5,
-                showOutline: true,
-                strokeColor: STROKE_COLOR,
-                outlineColor: '#dcd3c1',
-                strokeAnimationSpeed: computedSpeed,
-                delayBetweenStrokes: computedDelay,
-                charDataLoader: customCharDataLoader
-            });
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+            canvas.style.width = `${size}px`;
+            canvas.style.height = `${size}px`;
+            ctx.scale(dpr, dpr);
+
+            // Background Fill
+            ctx.fillStyle = '#faf6ee';
+            ctx.fillRect(0, 0, size, size);
+
+            // Outer Border
+            ctx.strokeStyle = '#d4bda5';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(1, 1, size - 2, size - 2);
+
+            // Inner Grid Lines (Dashed Red Lines)
+            ctx.strokeStyle = '#e8c4c4';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+
+            // Horizontal Line
+            ctx.beginPath();
+            ctx.moveTo(0, size / 2);
+            ctx.lineTo(size, size / 2);
+            ctx.stroke();
+
+            // Vertical Line
+            ctx.beginPath();
+            ctx.moveTo(size / 2, 0);
+            ctx.lineTo(size / 2, size);
+            ctx.stroke();
+
+            // Diagonals
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(size, size);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(size, 0);
+            ctx.lineTo(0, size);
+            ctx.stroke();
         }
 
-        function parseAndLoadParagraph(text) {
-            stopPlayback();
-
+        // Initialize Character Grid Sheet
+        function initGrid() {
+            stopAnimation();
             const gridContainer = document.getElementById('characterGrid');
             gridContainer.innerHTML = '';
-            charactersData = [];
+            writers = [];
+            strokeCounts = [];
+            activeCharIndex = 0;
+            document.getElementById('timelineSlider').value = 0;
 
-            if (!text) return;
+            const chars = Array.from(currentText).filter(c => c.trim() !== '');
 
-            const chars = Array.from(text).filter(c => c.trim() !== '');
-            if (chars.length === 0) return;
+            chars.forEach((char, index) => {
+                // Wrapper item
+                const itemEl = document.createElement('div');
+                itemEl.id = `char-item-${index}`;
+                itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1.5 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
+                
+                // Canvas background for grid
+                const canvas = document.createElement('canvas');
+                canvas.className = "rounded-lg shadow-inner";
+                drawRiceGrid(canvas);
+                itemEl.appendChild(canvas);
 
-            chars.forEach((ch, index) => {
-                const isHanzi = isChineseChar(ch);
-
-                // 單個字格卡片 (150px * 150px)
-                const cardDiv = document.createElement('div');
-                cardDiv.className = `relative flex items-center justify-center m-0 p-0 cursor-pointer select-none box-border shrink-0`;
-                cardDiv.style.width = `${GRID_SIZE}px`;
-                cardDiv.style.height = `${GRID_SIZE}px`;
-                cardDiv.id = `charCard-${index}`;
-                cardDiv.onclick = () => onCharCardClick(index);
-
-                // 1. 底層 Canvas 米字格
-                const bgCanvas = document.createElement('canvas');
-                bgCanvas.className = 'absolute inset-0 pointer-events-none';
-                bgCanvas.style.width = `${GRID_SIZE}px`;
-                bgCanvas.style.height = `${GRID_SIZE}px`;
-                drawMizigeCanvas(bgCanvas);
-                cardDiv.appendChild(bgCanvas);
-
-                // 2. 上層 HanziWriter SVG 容器
+                // HanziWriter Container Overlay
                 const writerDiv = document.createElement('div');
-                writerDiv.id = `target-${index}`;
-                writerDiv.className = `relative z-10 w-full h-full flex items-center justify-center`;
-                cardDiv.appendChild(writerDiv);
+                writerDiv.className = "absolute inset-0 flex items-center justify-center";
+                writerDiv.style.width = `${GRID_SIZE}px`;
+                writerDiv.style.height = `${GRID_SIZE}px`;
+                writerDiv.style.top = '6px';
+                writerDiv.style.left = '6px';
+                itemEl.appendChild(writerDiv);
 
-                gridContainer.appendChild(cardDiv);
+                gridContainer.appendChild(itemEl);
 
-                const item = {
-                    char: ch,
-                    isChinese: isHanzi,
-                    writer: null,
-                    targetId: `target-${index}`
-                };
-                charactersData.push(item);
+                // Click event to focus and animate single character
+                itemEl.addEventListener('click', () => {
+                    focusCharacter(index);
+                    playSingleCharacter(index);
+                });
 
-                if (isHanzi) {
-                    try {
-                        item.writer = createHanziWriterInstance(item.targetId, ch);
-                    } catch (err) {
-                        console.error(err);
-                    }
-                } else {
-                    writerDiv.innerHTML = `<span class="text-6xl text-black font-serif leading-none">${ch}</span>`;
-                }
+                // Instantiate HanziWriter
+                const writer = HanziWriter.create(writerDiv, char, {
+                    width: GRID_SIZE - 12,
+                    height: GRID_SIZE - 12,
+                    padding: 5,
+                    strokeColor: '#000000',
+                    radicalColor: null,
+                    showOutline: true,
+                    outlineColor: '#e0d5c1',
+                    strokeAnimationSpeed: 1.0 * speedMultiplier,
+                    delayBetweenStrokes: 150 / speedMultiplier,
+                    charDataLoader: customCharDataLoader
+                });
+
+                writers.push(writer);
+
+                // Fetch stroke counts for global timeline computation
+                writer._charDataPromise.then(data => {
+                    strokeCounts[index] = data ? data.strokes.length : 1;
+                }).catch(() => {
+                    strokeCounts[index] = 1;
+                });
             });
 
-            updateGlobalTimelineUI(0);
-            if (charactersData.length > 0) focusCharacter(0);
-        }
-
-        // 點擊字格：跳轉至該字、居中並播放
-        function onCharCardClick(index) {
-            pausePlayback();
-            focusCharacter(index);
-            
-            const item = charactersData[index];
-            if (item && item.isChinese && item.writer) {
-                item.writer.animateCharacter();
+            if (chars.length > 0) {
+                focusCharacter(0);
             }
         }
 
-        // 當前字自動平滑垂直滾動至中間視角
+        // Focus & Center Target Character Grid
         function focusCharacter(index) {
-            if (index < 0 || index >= charactersData.length) return;
+            if (index < 0 || index >= writers.length) return;
+            
+            // Remove previous active outline
+            document.querySelectorAll('#characterGrid > div').forEach((el, i) => {
+                if (i === index) {
+                    el.classList.add('border-[#b87333]', 'shadow-md', 'bg-amber-50/50');
+                    el.classList.remove('border-transparent');
+                } else {
+                    el.classList.remove('border-[#b87333]', 'shadow-md', 'bg-amber-50/50');
+                    el.classList.add('border-transparent');
+                }
+            });
+
             activeCharIndex = index;
 
-            charactersData.forEach((_, i) => {
-                const card = document.getElementById(`charCard-${i}`);
-                if (card) {
-                    if (i === index) {
-                        card.classList.add('ring-4', 'ring-red-800', 'ring-inset', 'z-20');
-                        card.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center',
-                            inline: 'nearest'
-                        });
-                    } else {
-                        card.classList.remove('ring-4', 'ring-red-800', 'ring-inset', 'z-20');
-                    }
+            // Smooth Scroll Into View (Center Vertically)
+            const activeEl = document.getElementById(`char-item-${index}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Play single character
+        function playSingleCharacter(index) {
+            stopAnimation();
+            isPlaying = true;
+            updatePlayPauseIcon();
+            
+            writers[index].animateCharacter({
+                onComplete: () => {
+                    isPlaying = false;
+                    updatePlayPauseIcon();
                 }
             });
-
-            updateGlobalTimelineUI(index);
         }
 
-        function togglePlayPause() {
-            if (isPlaying) {
-                pausePlayback();
-            } else {
-                startPlayback();
-            }
-        }
-
-        async function startPlayback() {
-            if (charactersData.length === 0) return;
+        // Global Playback Loop across all characters
+        function startGlobalPlayback() {
+            if (writers.length === 0) return;
             isPlaying = true;
-            isCancelled = false;
-            updatePlayButtonUI();
+            updatePlayPauseIcon();
 
-            if (activeCharIndex >= charactersData.length - 1) {
-                activeCharIndex = 0;
-            }
-
-            for (let i = activeCharIndex; i < charactersData.length; i++) {
-                if (!isPlaying || isCancelled) break;
-
-                activeCharIndex = i;
-                focusCharacter(i);
-
-                const item = charactersData[i];
-                if (item.isChinese && item.writer) {
-                    await animateWriterPromise(item.writer);
-                } else {
-                    await new Promise(r => setTimeout(r, 300 / playbackSpeed));
-                }
-            }
-
-            if (!isCancelled && activeCharIndex >= charactersData.length - 1) {
-                isPlaying = false;
-                updatePlayButtonUI();
-            }
-        }
-
-        function animateWriterPromise(writer) {
-            return new Promise((resolve) => {
-                if (isCancelled || !isPlaying) {
-                    resolve();
+            function playNext(index) {
+                if (!isPlaying) return;
+                if (index >= writers.length) {
+                    isPlaying = false;
+                    updatePlayPauseIcon();
                     return;
                 }
-                writer.animateCharacter({
-                    onComplete: () => resolve()
+
+                focusCharacter(index);
+                writers[index].animateCharacter({
+                    onComplete: () => {
+                        if (isPlaying) {
+                            playNext(index + 1);
+                        }
+                    }
+                });
+            }
+
+            playNext(activeCharIndex);
+        }
+
+        // Stop All Animations
+        function stopAnimation() {
+            isPlaying = false;
+            updatePlayPauseIcon();
+            writers.forEach(w => w.cancelAnimation());
+        }
+
+        // Update Play/Pause UI Button
+        function updatePlayPauseIcon() {
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            if (isPlaying) {
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        }
+
+        // Apply Speed Adjustment Seamlessly
+        function applySpeedChange(newSpeed) {
+            speedMultiplier = parseFloat(newSpeed);
+            writers.forEach(writer => {
+                writer.updateOptions({
+                    strokeAnimationSpeed: 1.0 * speedMultiplier,
+                    delayBetweenStrokes: 150 / speedMultiplier
                 });
             });
         }
 
-        function pausePlayback() {
-            isPlaying = false;
-            isCancelled = true;
-            updatePlayButtonUI();
-        }
-
-        function stopPlayback() {
-            isPlaying = false;
-            isCancelled = true;
-            activeCharIndex = 0;
-            updatePlayButtonUI();
-        }
-
-        function onTimelineScrub(val) {
-            if (charactersData.length === 0) return;
-            const targetIndex = Math.min(
-                Math.floor((val / 100) * charactersData.length),
-                charactersData.length - 1
-            );
-
-            activeCharIndex = targetIndex;
-            focusCharacter(targetIndex);
-
-            charactersData.forEach((item, idx) => {
-                if (item.writer) {
-                    if (idx < targetIndex) {
-                        item.writer.showCharacter();
-                    } else if (idx > targetIndex) {
-                        item.writer.hideCharacter();
-                    }
-                }
-            });
-
-            updateGlobalTimelineUI(targetIndex, false);
-        }
-
-        function updateGlobalTimelineUI(index, updateSlider = true) {
-            if (charactersData.length === 0) return;
-
-            if (updateSlider) {
-                document.getElementById('globalTimeline').value = ((index) / (charactersData.length - 1 || 1)) * 100;
+        // Timeline Slider Progress Sync
+        function updateTimelineProgress() {
+            if (strokeCounts.length === 0) return;
+            const totalStrokes = strokeCounts.reduce((a, b) => a + (b || 1), 0);
+            let accumulatedStrokes = 0;
+            for (let i = 0; i < activeCharIndex; i++) {
+                accumulatedStrokes += (strokeCounts[i] || 1);
             }
+            const progress = (accumulatedStrokes / totalStrokes) * 100;
+            document.getElementById('timelineSlider').value = progress;
         }
 
-        function updatePlayButtonUI() {
-            const playIcon = document.getElementById('playIcon');
-            const playText = document.getElementById('playText');
+        // Event Listeners
+        document.getElementById('textInput').addEventListener('input', (e) => {
+            currentText = e.target.value;
+            initGrid();
+        });
 
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
             if (isPlaying) {
-                playIcon.className = 'fa-solid fa-pause';
-                playText.innerText = '暫停';
+                stopAnimation();
             } else {
-                playIcon.className = 'fa-solid fa-play';
-                playText.innerText = '播放';
-            }
-        }
-
-        function changeSpeed(val) {
-            playbackSpeed = parseFloat(val);
-            
-            // 動態更新 HanziWriter 實體參數，不中斷目前動畫
-            const computedSpeed = 1.0 * playbackSpeed;
-            const computedDelay = 200 / playbackSpeed;
-
-            charactersData.forEach((item) => {
-                if (item.isChinese && item.writer) {
-                    item.writer.updateOptions({
-                        strokeAnimationSpeed: computedSpeed,
-                        delayBetweenStrokes: computedDelay
-                    });
+                if (activeCharIndex >= writers.length - 1) {
+                    activeCharIndex = 0;
                 }
-            });
-        }
+                startGlobalPlayback();
+            }
+        });
+
+        document.getElementById('speedSelect').addEventListener('change', (e) => {
+            applySpeedChange(e.target.value);
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initGrid();
+        });
     </script>
 </body>
 </html>
