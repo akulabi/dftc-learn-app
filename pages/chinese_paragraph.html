@@ -1,375 +1,459 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="h-full">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>中文筆順習字簿</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HanziWriter CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <style>
-        /* 自訂米紙容器滾動條 */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(184, 115, 51, 0.05);
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(184, 115, 51, 0.25);
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(184, 115, 51, 0.4);
-        }
-        
-        /* 平滑滾動 */
-        .scroll-smooth-vertical {
-            scroll-behavior: smooth;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中文筆順練習 - Chinese Stroke Order Practice</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- HanziWriter CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 
-        /* 防止行動端動態下拉橡皮筋效果 */
-        body {
-            overscroll-behavior-y: none;
-        }
-    </style>
+  <!-- Google Font: Noto Sans TC / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Serif TC', 'Inter', serif;
+      background-color: #f7f3ec;
+      color: #4a3e35;
+      touch-action: manipulation;
+    }
+
+    /* Rice Grid (米字格) SVG background overlay */
+    .rice-grid {
+      background-color: #faf7f2;
+      background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='0' x2='100%25' y2='100%25' stroke='%23e6dcd0' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='100%25' y1='0' x2='0' y2='100%25' stroke='%23e6dcd0' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='50%25' y1='0' x2='50%25' y2='100%25' stroke='%23d3c4b3' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='%23d3c4b3' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='none' stroke='%23cbbbaa' stroke-width='2'/%3E%3C/svg%3E");
+    }
+
+    /* Active Highlight Border */
+    .char-card {
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(92, 73, 60, 0.06);
+    }
+
+    .char-card.active {
+      border-color: #c87a32 !important;
+      box-shadow: 0 0 0 3px rgba(200, 122, 50, 0.35), 0 8px 20px rgba(200, 122, 50, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Custom range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+
+    input[type=range]:focus {
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #e2d7c5;
+      border-radius: 4px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: #c87a32;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.1s ease;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Hide scrollbars smoothly while maintaining scroll functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
 </head>
-<body class="bg-[#f4efe6] h-[100dvh] w-screen flex flex-col font-sans text-stone-800 antialiased overflow-hidden select-none">
 
-    <!-- 頂部輸入列 (固定高度) -->
-    <header class="shrink-0 pt-4 pb-2 px-4 flex justify-center z-20">
-        <div class="w-full max-w-[340px] relative">
-            <input 
-                type="text" 
-                id="textInput" 
-                value="中文筆順練習" 
-                placeholder="請輸入文字..."
-                class="w-full text-center text-lg font-serif bg-[#faf6ee] border-2 border-[#b87333]/30 rounded-full px-5 py-2 text-stone-800 focus:outline-none focus:border-[#b87333] shadow-sm tracking-widest transition-all"
-            />
-        </div>
-    </header>
+<body class="min-h-screen flex flex-col justify-between items-center max-w-md mx-auto shadow-2xl bg-[#f7f3ec] border-x border-[#e8dfd1] relative overflow-hidden">
 
-    <!-- 主視圖區域：可滾動的宣紙字格網格 -->
-    <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
-        <div 
-            id="viewportBox" 
-            class="w-full max-w-[340px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
+  <!-- Header & Input Area -->
+  <header class="w-full px-5 pt-6 pb-4 flex flex-col items-center shrink-0 space-y-4">
+    <!-- Styled Pill Title Button -->
+    <div class="w-full max-w-xs bg-[#f2ebd9] border border-[#d8caaf] text-[#5c493c] py-2 px-6 rounded-full text-center text-lg font-bold shadow-sm tracking-widest">
+      中文筆順練習
+    </div>
+
+    <!-- Text Input Box -->
+    <div class="w-full relative">
+      <input 
+        id="textInput" 
+        type="text" 
+        value="中文筆順練習" 
+        placeholder="請輸入中文字..."
+        maxlength="30"
+        class="w-full bg-[#faf7f2] border-2 border-[#dbcca6] text-[#4a3e35] text-center text-xl font-bold rounded-2xl py-3 px-10 outline-none focus:border-[#c87a32] focus:ring-2 focus:ring-[#c87a32]/20 transition-all placeholder-[#b5a796]"
+      >
+      <button 
+        id="clearBtn"
+        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#e8dfd1] hover:bg-[#d8caaf] text-[#786759] flex items-center justify-center transition"
+        title="清除內容"
+      >
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Middle Main Grid Area -->
+  <main 
+    id="scrollContainer" 
+    class="w-full flex-1 px-4 py-2 overflow-y-auto no-scrollbar flex flex-col items-center justify-start"
+  >
+    <!-- Card Frame Container -->
+    <div class="w-full bg-[#faf5ec] border border-[#e5dac6] rounded-3xl p-5 min-h-[380px] flex flex-col items-center justify-center shadow-inner my-auto">
+      <div 
+        id="gridWrapper" 
+        class="grid grid-cols-2 gap-4 w-full max-w-xs mx-auto justify-items-center items-center"
+      >
+        <!-- Dynamic Character Cards will render here -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Sticky Control Bar -->
+  <footer class="w-full bg-[#eae0d0] border-t border-[#dfd4c1] px-4 py-3 rounded-t-3xl shadow-lg shrink-0">
+    <div class="flex items-center justify-between gap-3 max-w-md mx-auto">
+      
+      <!-- Rewind / Reset Button -->
+      <button 
+        id="rewindBtn" 
+        class="w-11 h-11 rounded-full bg-[#d8caaf] hover:bg-[#c8ba9f] text-[#5c493c] flex items-center justify-center shadow transition active:scale-95 shrink-0"
+        title="重設 / 重頭開始"
+      >
+        <i class="fa-solid fa-rotate-left text-base"></i>
+      </button>
+
+      <!-- Play / Pause Main Button -->
+      <button 
+        id="playPauseBtn" 
+        class="w-13 h-13 min-w-[3.25rem] min-h-[3.25rem] rounded-full bg-[#c87a32] hover:bg-[#b36926] text-white flex items-center justify-center shadow-md transition active:scale-95 shrink-0"
+        title="播放 / 暫停"
+      >
+        <i id="playIcon" class="fa-solid fa-play text-xl ml-0.5"></i>
+      </button>
+
+      <!-- Timeline Seek Bar -->
+      <div class="flex-1 flex flex-col justify-center px-1">
+        <input 
+          id="progressSlider" 
+          type="range" 
+          min="0" 
+          max="100" 
+          value="0" 
+          step="0.1" 
+          class="w-full cursor-pointer"
         >
-            <!-- 宣紙卡片背景 -->
-            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-4 shadow-md relative min-h-full">
-                <!-- 雙欄排列網格容器 -->
-                <div id="characterGrid" class="grid grid-cols-2 gap-3 justify-items-center w-full">
-                    <!-- 動態渲染每個漢字的米字格 -->
-                </div>
-            </div>
-        </div>
-    </main>
+      </div>
 
-    <!-- 底部固定浮動播放控制條 -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
-        <div class="w-full max-w-[340px] flex items-center justify-between gap-3">
-            
-            <!-- 播放 / 暫停 按鈕 -->
-            <button 
-                id="playPauseBtn" 
-                class="w-10 h-10 shrink-0 flex items-center justify-center bg-[#b87333] text-white rounded-full shadow hover:bg-[#a06228] active:scale-95 transition-all focus:outline-none"
-                title="播放 / 暫停"
-            >
-                <svg id="playIcon" class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-                <svg id="pauseIcon" class="w-5 h-5 fill-current hidden" viewBox="0 0 24 24">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-            </button>
+      <!-- Speed Dropdown Selector -->
+      <div class="shrink-0">
+        <select 
+          id="speedSelect" 
+          class="bg-[#f2e9dc] border border-[#d8caaf] text-[#5c493c] text-sm font-semibold rounded-xl px-2.5 py-2 outline-none cursor-pointer hover:bg-[#ece2d4] transition shadow-sm"
+        >
+          <option value="0.25">0.25x</option>
+          <option value="0.5">0.5x</option>
+          <option value="1.0" selected>1.0x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2.0">2.0x</option>
+          <option value="3.0">3.0x</option>
+        </select>
+      </div>
 
-            <!-- 時間軸極簡進度調控條 -->
-            <div class="flex-1 flex items-center px-1">
-                <input 
-                    type="range" 
-                    id="timelineSlider" 
-                    min="0" 
-                    max="100" 
-                    value="0" 
-                    step="0.1"
-                    class="w-full h-2 bg-[#d8c3a5] rounded-lg appearance-none cursor-pointer accent-[#b87333] focus:outline-none"
-                />
-            </div>
+    </div>
+  </footer>
 
-            <!-- 速度切換選單 -->
-            <div class="shrink-0 relative">
-                <select 
-                    id="speedSelect" 
-                    class="bg-[#faf6ee] text-xs font-semibold text-stone-700 border border-[#b87333]/40 rounded-lg px-2 py-2 focus:outline-none focus:border-[#b87333] cursor-pointer shadow-sm"
-                >
-                    <option value="0.5">0.5x</option>
-                    <option value="1.0" selected>1.0x</option>
-                    <option value="1.5">1.5x</option>
-                    <option value="2.0">2.0x</option>
-                </select>
-            </div>
+  <!-- Application Logic -->
+  <script>
+    // DOM Elements
+    const textInput = document.getElementById('textInput');
+    const gridWrapper = document.getElementById('gridWrapper');
+    const scrollContainer = document.getElementById('scrollContainer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const rewindBtn = document.getElementById('rewindBtn');
+    const playIcon = document.getElementById('playIcon');
+    const progressSlider = document.getElementById('progressSlider');
+    const speedSelect = document.getElementById('speedSelect');
+    const clearBtn = document.getElementById('clearBtn');
 
-        </div>
-    </footer>
+    // State Variables
+    let writers = [];           // HanziWriter instances
+    let charList = [];          // Filtered list of Chinese characters
+    let isPlaying = false;
+    let currentSpeed = 1.0;
+    let activeCharIndex = 0;
+    let animToken = 0;          // Prevention token for async race conditions
 
-    <script>
-        // 全局狀態管理
-        let currentText = "中文筆順練習";
-        let writers = [];
-        let activeCharIndex = 0;
-        let isPlaying = false;
-        let speedMultiplier = 1.0;
-        const GRID_SIZE = 130; // 單個字格的尺寸 (px)
+    // Check if character is standard Chinese CJK
+    function isChineseChar(ch) {
+      return /^[\u4e00-\u9fa5]$/.test(ch);
+    }
 
-        // 自訂數據加載器：優先讀取香港本地數據庫，失敗時自動退回 CDN
-        function customCharDataLoader(char, onComplete, onError) {
-            const hkPath = `/hanzi-writer-data-hk/data/${char}.json`;
-            fetch(hkPath)
-                .then(response => {
-                    if (!response.ok) throw new Error('HK Data file not found');
-                    return response.json();
-                })
-                .then(data => onComplete(data))
-                .catch(err => {
-                    const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${char}.json`;
-                    fetch(cdnUrl)
-                        .then(res => {
-                            if (!res.ok) throw new Error('CDN Data fetch failed');
-                            return res.json();
-                        })
-                        .then(data => onComplete(data))
-                        .catch(e => onError(e));
-                });
-        }
+    // Render Grid & Initialize HanziWriter Cards
+    function renderCharacters(text) {
+      gridWrapper.innerHTML = '';
+      writers = [];
+      charList = text.split('').filter(isChineseChar);
 
-        // 使用 HTML5 Canvas 動態繪製經典紅線米字格
-        function drawRiceGrid(canvas) {
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const size = GRID_SIZE;
+      if (charList.length === 0) {
+        gridWrapper.innerHTML = `
+          <div class="col-span-2 text-center text-[#9c8c7c] py-12">
+            <i class="fa-solid fa-pen-nib text-3xl mb-2 opacity-50"></i>
+            <p class="text-sm">請在上方輸入中文字詞</p>
+          </div>`;
+        updateSliderUI(0);
+        return;
+      }
 
-            canvas.width = size * dpr;
-            canvas.height = size * dpr;
-            canvas.style.width = `${size}px`;
-            canvas.style.height = `${size}px`;
-            ctx.scale(dpr, dpr);
+      // Responsive card sizing calculation
+      const containerWidth = Math.min(window.innerWidth - 80, 320);
+      const cardSize = Math.floor((containerWidth - 20) / 2);
 
-            // 米紙背景色填充
-            ctx.fillStyle = '#faf6ee';
-            ctx.fillRect(0, 0, size, size);
+      charList.forEach((char, index) => {
+        // Card Container
+        const cardContainer = document.createElement('div');
+        cardContainer.className = `char-card rice-grid relative rounded-2xl border-2 border-[#d8caaf] cursor-pointer flex items-center justify-center p-2 bg-[#faf7f2]`;
+        cardContainer.style.width = `${cardSize}px`;
+        cardContainer.style.height = `${cardSize}px`;
 
-            // 外邊框
-            ctx.strokeStyle = '#d4bda5';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(1, 1, size - 2, size - 2);
+        // HanziWriter Render Div
+        const writerDiv = document.createElement('div');
+        writerDiv.id = `writer-${index}`;
+        cardContainer.appendChild(writerDiv);
 
-            // 內輔助線（紅虛線米字格）
-            ctx.strokeStyle = '#e8c4c4';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]);
-
-            // 中軸與對角線
-            ctx.beginPath();
-            ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
-            ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
-            ctx.moveTo(0, 0); ctx.lineTo(size, size);
-            ctx.moveTo(size, 0); ctx.lineTo(0, size);
-            ctx.stroke();
-        }
-
-        // 清理所有舊的 HanziWriter 實體（確保記憶體與 DOM 完全卸載）
-        function clearWriters() {
-            writers.forEach(w => {
-                if (w && typeof w.destroy === 'function') {
-                    try { w.destroy(); } catch (e) {}
-                }
-            });
-            writers = [];
-        }
-
-        // 重新構建整段文字的筆順習字簿網格
-        function initGrid() {
-            stopAnimation();
-            clearWriters();
-
-            const gridContainer = document.getElementById('characterGrid');
-            gridContainer.innerHTML = '';
-            activeCharIndex = 0;
-            document.getElementById('timelineSlider').value = 0;
-
-            const chars = Array.from(currentText).filter(c => c.trim() !== '');
-
-            chars.forEach((char, index) => {
-                // 卡片包裝容器
-                const itemEl = document.createElement('div');
-                itemEl.id = `char-item-${index}`;
-                itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
-                itemEl.style.width = `${GRID_SIZE + 10}px`;
-                itemEl.style.height = `${GRID_SIZE + 10}px`;
-                
-                // Canvas 背景層 (米字格)
-                const canvas = document.createElement('canvas');
-                canvas.className = "rounded-lg shadow-inner";
-                drawRiceGrid(canvas);
-                itemEl.appendChild(canvas);
-
-                // HanziWriter 浮動覆蓋層
-                const writerDiv = document.createElement('div');
-                writerDiv.className = "absolute inset-0 flex items-center justify-center";
-                itemEl.appendChild(writerDiv);
-
-                gridContainer.appendChild(itemEl);
-
-                // 單字點擊互動
-                itemEl.addEventListener('click', () => {
-                    focusCharacter(index);
-                    playSingleCharacter(index);
-                });
-
-                // 實例化 HanziWriter
-                const writer = HanziWriter.create(writerDiv, char, {
-                    width: GRID_SIZE - 10,
-                    height: GRID_SIZE - 10,
-                    padding: 5,
-                    strokeColor: '#000000',
-                    radicalColor: null,
-                    showOutline: true,
-                    outlineColor: '#e0d5c1',
-                    strokeAnimationSpeed: 1.0 * speedMultiplier,
-                    delayBetweenStrokes: 150 / speedMultiplier,
-                    charDataLoader: customCharDataLoader
-                });
-
-                writers.push(writer);
-            });
-
-            if (chars.length > 0) {
-                focusCharacter(0);
-            }
-        }
-
-        // 高亮目標字格並實現垂直平滑置中捲動
-        function focusCharacter(index) {
-            if (index < 0 || index >= writers.length) return;
-            
-            document.querySelectorAll('#characterGrid > div').forEach((el, i) => {
-                if (i === index) {
-                    el.classList.add('border-[#b87333]', 'shadow-md', 'bg-amber-50/50');
-                    el.classList.remove('border-transparent');
-                } else {
-                    el.classList.remove('border-[#b87333]', 'shadow-md', 'bg-amber-50/50');
-                    el.classList.add('border-transparent');
-                }
-            });
-
-            activeCharIndex = index;
-
-            const activeEl = document.getElementById(`char-item-${index}`);
-            if (activeEl) {
-                activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        // 播放單個漢字筆順
-        function playSingleCharacter(index) {
-            stopAnimation();
-            isPlaying = true;
-            updatePlayPauseIcon();
-            
-            writers[index].animateCharacter({
-                onComplete: () => {
-                    isPlaying = false;
-                    updatePlayPauseIcon();
-                }
-            });
-        }
-
-        // 全段落連續播放動畫循環 (自動移至下一個字並置中)
-        function startGlobalPlayback() {
-            if (writers.length === 0) return;
-            isPlaying = true;
-            updatePlayPauseIcon();
-
-            function playNext(index) {
-                if (!isPlaying) return;
-                if (index >= writers.length) {
-                    isPlaying = false;
-                    updatePlayPauseIcon();
-                    return;
-                }
-
-                focusCharacter(index);
-                writers[index].animateCharacter({
-                    onComplete: () => {
-                        if (isPlaying) {
-                            playNext(index + 1);
-                        }
-                    }
-                });
-            }
-
-            playNext(activeCharIndex);
-        }
-
-        // 停止當前動畫
-        function stopAnimation() {
-            isPlaying = false;
-            updatePlayPauseIcon();
-            writers.forEach(w => w.cancelAnimation());
-        }
-
-        // 切換 UI 播放與暫停圖示
-        function updatePlayPauseIcon() {
-            const playIcon = document.getElementById('playIcon');
-            const pauseIcon = document.getElementById('pauseIcon');
-            if (isPlaying) {
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-            } else {
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
-        }
-
-        // 即時無縫切換播放倍速
-        function applySpeedChange(newSpeed) {
-            speedMultiplier = parseFloat(newSpeed);
-            writers.forEach(writer => {
-                writer.updateOptions({
-                    strokeAnimationSpeed: 1.0 * speedMultiplier,
-                    delayBetweenStrokes: 150 / speedMultiplier
-                });
-            });
-        }
-
-        // 輸入框文字即時同步反應 (直接觸發更新)
-        document.getElementById('textInput').addEventListener('input', (e) => {
-            currentText = e.target.value;
-            initGrid();
+        // Click Event: Start animating from clicked character
+        cardContainer.addEventListener('click', () => {
+          startFromChar(index);
         });
 
-        // 控制按鈕與下拉選單監聽器
-        document.getElementById('playPauseBtn').addEventListener('click', () => {
-            if (isPlaying) {
-                stopAnimation();
-            } else {
-                if (activeCharIndex >= writers.length - 1) {
-                    activeCharIndex = 0;
-                }
-                startGlobalPlayback();
-            }
+        gridWrapper.appendChild(cardContainer);
+
+        // Initialize HanziWriter Instance
+        const writer = HanziWriter.create(writerDiv.id, char, {
+          width: cardSize - 20,
+          height: cardSize - 20,
+          padding: 5,
+          showOutline: true,
+          outlineColor: '#E5E5E5',
+          strokeColor: '#000000',
+          strokeAnimationSpeed: currentSpeed,
+          delayBetweenStrokes: 150 / currentSpeed
         });
 
-        document.getElementById('speedSelect').addEventListener('change', (e) => {
-            applySpeedChange(e.target.value);
+        writers.push(writer);
+      });
+
+      activeCharIndex = 0;
+      updateSliderUI(0);
+    }
+
+    // UI Highlights & Auto-scroll logic
+    function setActiveCardUI(index) {
+      const cards = gridWrapper.querySelectorAll('.char-card');
+      cards.forEach((card, idx) => {
+        if (idx === index) {
+          card.classList.add('active');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          card.classList.remove('active');
+        }
+      });
+    }
+
+    function removeAllActiveHighlights() {
+      const cards = gridWrapper.querySelectorAll('.char-card');
+      cards.forEach(card => card.classList.remove('active'));
+    }
+
+    // Rewind back to start
+    function rewindToStart() {
+      stopAnimation();
+      resetAllWriters();
+      activeCharIndex = 0;
+      updateSliderUI(0);
+      setActiveCardUI(0);
+    }
+
+    // Toggle Play/Pause
+    function togglePlayPause() {
+      if (writers.length === 0) return;
+
+      if (isPlaying) {
+        pauseAnimation();
+      } else {
+        if (activeCharIndex >= charList.length) {
+          resetAllWriters();
+          activeCharIndex = 0;
+        }
+        startAnimation();
+      }
+    }
+
+    // Start playing from specific index
+    function startFromChar(index) {
+      if (index < 0 || index >= charList.length) return;
+      
+      stopAnimation();
+
+      writers.forEach((w, idx) => {
+        if (idx < index) {
+          w.showCharacter();
+        } else {
+          w.hideCharacter();
+        }
+      });
+
+      activeCharIndex = index;
+      startAnimation();
+    }
+
+    function startAnimation() {
+      isPlaying = true;
+      playIcon.className = 'fa-solid fa-pause text-xl';
+      animToken++;
+      runAnimationSequence(animToken);
+    }
+
+    function pauseAnimation() {
+      isPlaying = false;
+      playIcon.className = 'fa-solid fa-play text-xl ml-0.5';
+      if (writers[activeCharIndex]) {
+        writers[activeCharIndex].pauseAnimation();
+      }
+    }
+
+    function stopAnimation() {
+      animToken++;
+      isPlaying = false;
+      playIcon.className = 'fa-solid fa-play text-xl ml-0.5';
+      writers.forEach(w => w.pauseAnimation());
+    }
+
+    function resetAllWriters() {
+      writers.forEach(w => w.hideCharacter());
+    }
+
+    // Sequential Animation Async Loop
+    async function runAnimationSequence(currentToken) {
+      while (activeCharIndex < charList.length && isPlaying && currentToken === animToken) {
+        const writer = writers[activeCharIndex];
+        setActiveCardUI(activeCharIndex);
+        updateSliderFromProgress();
+
+        await new Promise((resolve) => {
+          writer.animateCharacter({
+            strokeAnimationSpeed: currentSpeed * 1.2,
+            delayBetweenStrokes: 150 / currentSpeed,
+            onComplete: resolve
+          });
         });
 
-        // 頁面加載時初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            initGrid();
-        });
-    </script>
+        if (!isPlaying || currentToken !== animToken) return;
+
+        activeCharIndex++;
+      }
+
+      // Completion of full sequence
+      if (activeCharIndex >= charList.length) {
+        isPlaying = false;
+        playIcon.className = 'fa-solid fa-rotate-right text-xl';
+        updateSliderUI(100);
+        removeAllActiveHighlights();
+      }
+    }
+
+    // Slider Progress Updates
+    function updateSliderFromProgress() {
+      if (charList.length === 0) return;
+      const progressPercent = (activeCharIndex / charList.length) * 100;
+      updateSliderUI(progressPercent);
+    }
+
+    function updateSliderUI(percent) {
+      progressSlider.value = Math.min(100, Math.max(0, percent));
+    }
+
+    // Timeline Drag / Seek
+    function onSliderSeek(percent) {
+      if (charList.length === 0) return;
+
+      const targetCharIndex = Math.min(charList.length - 1, Math.floor((percent / 100) * charList.length));
+      const wasPlaying = isPlaying;
+      stopAnimation();
+
+      activeCharIndex = targetCharIndex;
+
+      writers.forEach((w, idx) => {
+        if (idx < targetCharIndex) {
+          w.showCharacter();
+        } else {
+          w.hideCharacter();
+        }
+      });
+
+      setActiveCardUI(activeCharIndex);
+
+      if (wasPlaying) {
+        startAnimation();
+      }
+    }
+
+    // Event Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCharacters(textInput.value);
+
+      textInput.addEventListener('input', (e) => {
+        stopAnimation();
+        renderCharacters(e.target.value);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        textInput.value = '';
+        stopAnimation();
+        renderCharacters('');
+      });
+
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      rewindBtn.addEventListener('click', rewindToStart);
+
+      speedSelect.addEventListener('change', (e) => {
+        currentSpeed = parseFloat(e.target.value);
+        if (isPlaying && writers[activeCharIndex]) {
+          animToken++;
+          runAnimationSequence(animToken);
+        }
+      });
+
+      progressSlider.addEventListener('input', (e) => {
+        onSliderSeek(parseFloat(e.target.value));
+      });
+    });
+  </script>
 </body>
 </html>
