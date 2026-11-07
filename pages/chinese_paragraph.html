@@ -9,7 +9,7 @@
     <!-- HanziWriter CDN -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
-        /* Custom scrollbar for rice paper container */
+        /* Custom scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -25,12 +25,10 @@
             background: rgba(184, 115, 51, 0.4);
         }
         
-        /* Smooth scrolling */
         .scroll-smooth-vertical {
             scroll-behavior: smooth;
         }
 
-        /* Prevent rubber-band effect on mobile */
         body {
             overscroll-behavior-y: none;
         }
@@ -40,7 +38,7 @@
 
     <!-- Top Input Bar -->
     <header class="shrink-0 pt-3 pb-2 px-4 flex justify-center z-20">
-        <div class="w-full max-w-lg relative">
+        <div class="w-full max-w-[320px] relative">
             <input 
                 type="text" 
                 id="textInput" 
@@ -51,25 +49,25 @@
         </div>
     </header>
 
-    <!-- Main Viewport: Vertical Scrollable Grid Sheet -->
+    <!-- Main Viewport: Vertical Scrollable Container -->
     <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
         <div 
             id="viewportBox" 
-            class="w-full max-w-lg h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
+            class="w-full max-w-[320px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
         >
-            <!-- Xuan Paper Card -->
-            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-4 shadow-md relative min-h-full">
-                <!-- Grid Container: Flexible Auto Row Wrap -->
-                <div id="characterGrid" class="flex flex-wrap gap-4 justify-center">
-                    <!-- Dynamic Character Items Will Be Rendered Here -->
+            <!-- Xuan Paper Card Background -->
+            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-3 shadow-md relative min-h-full">
+                <!-- Grid Container: Displays all characters in rows of 2 -->
+                <div id="characterGrid" class="grid grid-cols-2 gap-3 justify-items-center w-full">
+                    <!-- Character Items Rendered Dynamically Here -->
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Playback Control Toolbar (Fixed Floating Tray) -->
+    <!-- Bottom Fixed Floating Control Tray -->
     <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
-        <div class="w-full max-w-lg flex items-center justify-between gap-3">
+        <div class="w-full max-w-[320px] flex items-center justify-between gap-3">
             
             <!-- Play / Pause Button -->
             <button 
@@ -85,7 +83,7 @@
                 </svg>
             </button>
 
-            <!-- Timeline Scrubber Range -->
+            <!-- Timeline Range Slider -->
             <div class="flex-1 flex items-center px-1">
                 <input 
                     type="range" 
@@ -115,21 +113,20 @@
     </footer>
 
     <script>
-        // Data & State Management
+        // State Management
         let currentText = "中文筆順練習";
         let writers = [];
-        let strokeCounts = [];
         let activeCharIndex = 0;
         let isPlaying = false;
         let speedMultiplier = 1.0;
-        const GRID_SIZE = 125; // Grid size per item
+        const GRID_SIZE = 130; // Standard size per character grid
 
-        // Custom Data Loader: Try local HK dataset first, fallback to CDN
+        // Priority Loader: Try HK local endpoint first, fallback to standard CDN
         function customCharDataLoader(char, onComplete, onError) {
             const hkPath = `/hanzi-writer-data-hk/data/${char}.json`;
             fetch(hkPath)
                 .then(response => {
-                    if (!response.ok) throw new Error('HK Data file not found');
+                    if (!response.ok) throw new Error('HK Data not found');
                     return response.json();
                 })
                 .then(data => onComplete(data))
@@ -145,7 +142,7 @@
                 });
         }
 
-        // Draw Traditional Rice-Grid (米字格) on HTML5 Canvas
+        // Draw Canvas Rice-Grid (米字格)
         function drawRiceGrid(canvas) {
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
@@ -157,7 +154,7 @@
             canvas.style.height = `${size}px`;
             ctx.scale(dpr, dpr);
 
-            // Background Fill
+            // Paper Background Fill
             ctx.fillStyle = '#faf6ee';
             ctx.fillRect(0, 0, size, size);
 
@@ -166,54 +163,40 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(1, 1, size - 2, size - 2);
 
-            // Inner Grid Lines (Dashed Red Lines)
+            // Red Guideline Grids
             ctx.strokeStyle = '#e8c4c4';
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
 
-            // Horizontal Line
+            // Axis & Diagonals
             ctx.beginPath();
-            ctx.moveTo(0, size / 2);
-            ctx.lineTo(size, size / 2);
-            ctx.stroke();
-
-            // Vertical Line
-            ctx.beginPath();
-            ctx.moveTo(size / 2, 0);
-            ctx.lineTo(size / 2, size);
-            ctx.stroke();
-
-            // Diagonals
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(size, size);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(size, 0);
-            ctx.lineTo(0, size);
+            ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
+            ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
+            ctx.moveTo(0, 0); ctx.lineTo(size, size);
+            ctx.moveTo(size, 0); ctx.lineTo(0, size);
             ctx.stroke();
         }
 
-        // Initialize Character Grid Sheet with Auto Row Wrap
+        // Build grid showing ALL characters
         function initGrid() {
             stopAnimation();
             const gridContainer = document.getElementById('characterGrid');
             gridContainer.innerHTML = '';
             writers = [];
-            strokeCounts = [];
             activeCharIndex = 0;
             document.getElementById('timelineSlider').value = 0;
 
             const chars = Array.from(currentText).filter(c => c.trim() !== '');
 
             chars.forEach((char, index) => {
-                // Wrapper item
+                // Wrapper Div
                 const itemEl = document.createElement('div');
                 itemEl.id = `char-item-${index}`;
-                itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1.5 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
+                itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
+                itemEl.style.width = `${GRID_SIZE + 10}px`;
+                itemEl.style.height = `${GRID_SIZE + 10}px`;
                 
-                // Canvas background for grid
+                // Rice Grid Canvas
                 const canvas = document.createElement('canvas');
                 canvas.className = "rounded-lg shadow-inner";
                 drawRiceGrid(canvas);
@@ -222,24 +205,20 @@
                 // HanziWriter Container Overlay
                 const writerDiv = document.createElement('div');
                 writerDiv.className = "absolute inset-0 flex items-center justify-center";
-                writerDiv.style.width = `${GRID_SIZE}px`;
-                writerDiv.style.height = `${GRID_SIZE}px`;
-                writerDiv.style.top = '6px';
-                writerDiv.style.left = '6px';
                 itemEl.appendChild(writerDiv);
 
                 gridContainer.appendChild(itemEl);
 
-                // Click event to focus and animate single character
+                // Click event for manual selection
                 itemEl.addEventListener('click', () => {
                     focusCharacter(index);
                     playSingleCharacter(index);
                 });
 
-                // Instantiate HanziWriter
+                // Create HanziWriter instance
                 const writer = HanziWriter.create(writerDiv, char, {
-                    width: GRID_SIZE - 12,
-                    height: GRID_SIZE - 12,
+                    width: GRID_SIZE - 10,
+                    height: GRID_SIZE - 10,
                     padding: 5,
                     strokeColor: '#000000',
                     radicalColor: null,
@@ -251,12 +230,6 @@
                 });
 
                 writers.push(writer);
-
-                writer._charDataPromise.then(data => {
-                    strokeCounts[index] = data ? data.strokes.length : 1;
-                }).catch(() => {
-                    strokeCounts[index] = 1;
-                });
             });
 
             if (chars.length > 0) {
@@ -264,7 +237,7 @@
             }
         }
 
-        // Focus & Center Target Character Grid
+        // Highlight and center focus on current playing character
         function focusCharacter(index) {
             if (index < 0 || index >= writers.length) return;
             
@@ -286,7 +259,7 @@
             }
         }
 
-        // Play single character
+        // Animate individual character
         function playSingleCharacter(index) {
             stopAnimation();
             isPlaying = true;
@@ -300,7 +273,7 @@
             });
         }
 
-        // Global Playback Loop across all characters
+        // Sequential one-by-one animation for the whole paragraph
         function startGlobalPlayback() {
             if (writers.length === 0) return;
             isPlaying = true;
@@ -327,14 +300,13 @@
             playNext(activeCharIndex);
         }
 
-        // Stop All Animations
+        // Stop current animation loop
         function stopAnimation() {
             isPlaying = false;
             updatePlayPauseIcon();
             writers.forEach(w => w.cancelAnimation());
         }
 
-        // Update Play/Pause UI Button
         function updatePlayPauseIcon() {
             const playIcon = document.getElementById('playIcon');
             const pauseIcon = document.getElementById('pauseIcon');
@@ -347,7 +319,7 @@
             }
         }
 
-        // Apply Speed Adjustment Seamlessly
+        // Live speed modulation
         function applySpeedChange(newSpeed) {
             speedMultiplier = parseFloat(newSpeed);
             writers.forEach(writer => {
@@ -358,7 +330,7 @@
             });
         }
 
-        // Event Listeners
+        // Listeners
         document.getElementById('textInput').addEventListener('input', (e) => {
             currentText = e.target.value;
             initGrid();
@@ -379,7 +351,7 @@
             applySpeedChange(e.target.value);
         });
 
-        // Initialize on load
+        // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
             initGrid();
         });
