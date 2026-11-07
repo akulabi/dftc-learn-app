@@ -9,7 +9,7 @@
     <!-- HanziWriter CDN -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
-        /* Custom scrollbar for rice paper container */
+        /* 自訂米紙容器滾動條 */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -25,11 +25,12 @@
             background: rgba(184, 115, 51, 0.4);
         }
         
+        /* 平滑滾動 */
         .scroll-smooth-vertical {
             scroll-behavior: smooth;
         }
 
-        /* Prevent elastic drag effect on mobile viewports */
+        /* 防止行動端動態下拉橡皮筋效果 */
         body {
             overscroll-behavior-y: none;
         }
@@ -37,7 +38,7 @@
 </head>
 <body class="bg-[#f4efe6] h-[100dvh] w-screen flex flex-col font-sans text-stone-800 antialiased overflow-hidden select-none">
 
-    <!-- Top Input Bar (Fixed header area) -->
+    <!-- 頂部輸入列 (固定高度) -->
     <header class="shrink-0 pt-4 pb-2 px-4 flex justify-center z-20">
         <div class="w-full max-w-[340px] relative">
             <input 
@@ -50,27 +51,27 @@
         </div>
     </header>
 
-    <!-- Main Viewport: Vertical Scrollable Container -->
+    <!-- 主視圖區域：可滾動的宣紙字格網格 -->
     <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
         <div 
             id="viewportBox" 
             class="w-full max-w-[340px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
         >
-            <!-- Xuan Paper Card Canvas background -->
+            <!-- 宣紙卡片背景 -->
             <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-4 shadow-md relative min-h-full">
-                <!-- Grid Container: 2 Columns Layout -->
+                <!-- 雙欄排列網格容器 -->
                 <div id="characterGrid" class="grid grid-cols-2 gap-3 justify-items-center w-full">
-                    <!-- Dynamic Character Items Rendered Here -->
+                    <!-- 動態渲染每個漢字的米字格 -->
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Fixed Floating Control Toolbar -->
+    <!-- 底部固定浮動播放控制條 -->
     <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
         <div class="w-full max-w-[340px] flex items-center justify-between gap-3">
             
-            <!-- Play / Pause Button -->
+            <!-- 播放 / 暫停 按鈕 -->
             <button 
                 id="playPauseBtn" 
                 class="w-10 h-10 shrink-0 flex items-center justify-center bg-[#b87333] text-white rounded-full shadow hover:bg-[#a06228] active:scale-95 transition-all focus:outline-none"
@@ -84,7 +85,7 @@
                 </svg>
             </button>
 
-            <!-- Timeline Slider Control -->
+            <!-- 時間軸極簡進度調控條 -->
             <div class="flex-1 flex items-center px-1">
                 <input 
                     type="range" 
@@ -97,7 +98,7 @@
                 />
             </div>
 
-            <!-- Speed Control Selector -->
+            <!-- 速度切換選單 -->
             <div class="shrink-0 relative">
                 <select 
                     id="speedSelect" 
@@ -114,15 +115,15 @@
     </footer>
 
     <script>
-        // Application State & Globals
+        // 全局狀態管理
         let currentText = "中文筆順練習";
         let writers = [];
         let activeCharIndex = 0;
         let isPlaying = false;
         let speedMultiplier = 1.0;
-        const GRID_SIZE = 130; // Grid dimensions per character box
+        const GRID_SIZE = 130; // 單個字格的尺寸 (px)
 
-        // Custom DataLoader with Priority HK Local Endpoint and CDN Fallback
+        // 自訂數據加載器：優先讀取香港本地數據庫，失敗時自動退回 CDN
         function customCharDataLoader(char, onComplete, onError) {
             const hkPath = `/hanzi-writer-data-hk/data/${char}.json`;
             fetch(hkPath)
@@ -143,7 +144,7 @@
                 });
         }
 
-        // HTML5 Canvas Rice Grid (米字格) Drawing Function
+        // 使用 HTML5 Canvas 動態繪製經典紅線米字格
         function drawRiceGrid(canvas) {
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
@@ -155,21 +156,21 @@
             canvas.style.height = `${size}px`;
             ctx.scale(dpr, dpr);
 
-            // Paper Background
+            // 米紙背景色填充
             ctx.fillStyle = '#faf6ee';
             ctx.fillRect(0, 0, size, size);
 
-            // Outer Border
+            // 外邊框
             ctx.strokeStyle = '#d4bda5';
             ctx.lineWidth = 2;
             ctx.strokeRect(1, 1, size - 2, size - 2);
 
-            // Red Guideline Grids
+            // 內輔助線（紅虛線米字格）
             ctx.strokeStyle = '#e8c4c4';
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
 
-            // Axis & Diagonals
+            // 中軸與對角線
             ctx.beginPath();
             ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
             ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
@@ -178,7 +179,7 @@
             ctx.stroke();
         }
 
-        // Clean up previous instances before rebuilding
+        // 清理所有舊的 HanziWriter 實體（確保記憶體與 DOM 完全卸載）
         function clearWriters() {
             writers.forEach(w => {
                 if (w && typeof w.destroy === 'function') {
@@ -188,7 +189,7 @@
             writers = [];
         }
 
-        // Build character grid for entire paragraph string
+        // 重新構建整段文字的筆順習字簿網格
         function initGrid() {
             stopAnimation();
             clearWriters();
@@ -201,33 +202,33 @@
             const chars = Array.from(currentText).filter(c => c.trim() !== '');
 
             chars.forEach((char, index) => {
-                // Outer wrapper div
+                // 卡片包裝容器
                 const itemEl = document.createElement('div');
                 itemEl.id = `char-item-${index}`;
                 itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
                 itemEl.style.width = `${GRID_SIZE + 10}px`;
                 itemEl.style.height = `${GRID_SIZE + 10}px`;
                 
-                // Rice grid canvas element
+                // Canvas 背景層 (米字格)
                 const canvas = document.createElement('canvas');
                 canvas.className = "rounded-lg shadow-inner";
                 drawRiceGrid(canvas);
                 itemEl.appendChild(canvas);
 
-                // HanziWriter DOM target
+                // HanziWriter 浮動覆蓋層
                 const writerDiv = document.createElement('div');
                 writerDiv.className = "absolute inset-0 flex items-center justify-center";
                 itemEl.appendChild(writerDiv);
 
                 gridContainer.appendChild(itemEl);
 
-                // Single character click interaction
+                // 單字點擊互動
                 itemEl.addEventListener('click', () => {
                     focusCharacter(index);
                     playSingleCharacter(index);
                 });
 
-                // Instantiate HanziWriter instance
+                // 實例化 HanziWriter
                 const writer = HanziWriter.create(writerDiv, char, {
                     width: GRID_SIZE - 10,
                     height: GRID_SIZE - 10,
@@ -249,7 +250,7 @@
             }
         }
 
-        // Highlight and center view on current target character
+        // 高亮目標字格並實現垂直平滑置中捲動
         function focusCharacter(index) {
             if (index < 0 || index >= writers.length) return;
             
@@ -271,7 +272,7 @@
             }
         }
 
-        // Play individual character animation
+        // 播放單個漢字筆順
         function playSingleCharacter(index) {
             stopAnimation();
             isPlaying = true;
@@ -285,7 +286,7 @@
             });
         }
 
-        // Sequential auto-play loop across full paragraph
+        // 全段落連續播放動畫循環 (自動移至下一個字並置中)
         function startGlobalPlayback() {
             if (writers.length === 0) return;
             isPlaying = true;
@@ -312,14 +313,14 @@
             playNext(activeCharIndex);
         }
 
-        // Stop active animation loops
+        // 停止當前動畫
         function stopAnimation() {
             isPlaying = false;
             updatePlayPauseIcon();
             writers.forEach(w => w.cancelAnimation());
         }
 
-        // Toggle UI Play/Pause Icons
+        // 切換 UI 播放與暫停圖示
         function updatePlayPauseIcon() {
             const playIcon = document.getElementById('playIcon');
             const pauseIcon = document.getElementById('pauseIcon');
@@ -332,7 +333,7 @@
             }
         }
 
-        // Seamless Live Speed Updates across instances
+        // 即時無縫切換播放倍速
         function applySpeedChange(newSpeed) {
             speedMultiplier = parseFloat(newSpeed);
             writers.forEach(writer => {
@@ -343,17 +344,13 @@
             });
         }
 
-        // Input Reactivity with Debounce
-        let debounceTimer;
+        // 輸入框文字即時同步反應 (直接觸發更新)
         document.getElementById('textInput').addEventListener('input', (e) => {
             currentText = e.target.value;
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                initGrid();
-            }, 300);
+            initGrid();
         });
 
-        // Controls Event Listeners
+        // 控制按鈕與下拉選單監聽器
         document.getElementById('playPauseBtn').addEventListener('click', () => {
             if (isPlaying) {
                 stopAnimation();
@@ -369,7 +366,7 @@
             applySpeedChange(e.target.value);
         });
 
-        // Initialize App on DOM Ready
+        // 頁面加載時初始化
         window.addEventListener('DOMContentLoaded', () => {
             initGrid();
         });
