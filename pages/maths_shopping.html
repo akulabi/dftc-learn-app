@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>港幣購物小達人 🇭🇰 HKD Money Master</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      touch-action: manipulation;
+    }
+    html, body {
+      height: 100%;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Zen Maru Gothic', 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fbcfe8 100%);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 3D Button Styling */
+    .btn-3d {
+      transition: all 0.1s ease;
+      box-shadow: 0 5px 0 0 rgba(0, 0, 0, 0.2);
+    }
+    .btn-3d:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* Coin and Note Hover/Touch Animation */
+    .money-item {
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.15s ease;
+      cursor: pointer;
+    }
+    .money-item:hover {
+      transform: scale(1.06) translateY(-2px);
+      filter: brightness(1.05);
+    }
+    .money-item:active {
+      transform: scale(0.95);
+    }
+
+    /* HKD $1 Round Silver Coin (Solid Outline) */
+    .coin-1 {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #cbd5e1 60%, #64748b 100%);
+      border: 3px solid #64748b;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.25);
+    }
+
+    /* HKD $2 Silver Coin (Dotted Outline Inner Border) */
+    .coin-2 {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 60%, #475569 100%);
+      border: 2.5 solid #475569;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.3), 0 3px 6px rgba(0,0,0,0.25);
+      position: relative;
+    }
+    .coin-2::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      border: 2px dotted #475569;
+      pointer-events: none;
+    }
+
+    /* HKD $5 Thick Round Silver Coin with deep border */
+    .coin-5 {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #94a3b8 70%, #334155 100%);
+      border: 5px solid #cbd5e1;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.4), 0 4px 7px rgba(0,0,0,0.3);
+    }
+
+    /* HKD $10 Bimetallic Coin */
+    .coin-10 {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #f1f5f9 0%, #94a3b8 100%);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 0 4px 7px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .coin-10-inner {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fef08a 0%, #eab308 70%, #ca8a04 100%);
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    }
+
+    /* HKD $20 Blue Note */
+    .note-20 {
+      width: 105px;
+      height: 54px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+      border: 2px solid #7dd3fc;
+      box-shadow: 0 4px 6px rgba(2, 132, 199, 0.35);
+      flex-shrink: 0;
+    }
+
+    /* HKD $50 Green Note */
+    .note-50 {
+      width: 115px;
+      height: 58px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #4ade80 0%, #16a34a 60%, #15803d 100%);
+      border: 2px solid #86efac;
+      box-shadow: 0 4px 6px rgba(22, 163, 74, 0.35);
+      flex-shrink: 0;
+    }
+
+    /* Realistic 3D Ceramic/Metal Plate Tray */
+    .plate-3d {
+      background: radial-gradient(ellipse at center, #ffffff 0%, #f1f5f9 60%, #e2e8f0 100%);
+      border-radius: 2rem;
+      border: 8px solid #cbd5e1;
+      box-shadow: 
+        inset 0 6px 12px rgba(0, 0, 0, 0.15),
+        inset 0 -4px 8px rgba(255, 255, 255, 0.8),
+        0 12px 20px -4px rgba(0, 0, 0, 0.25),
+        0 4px 6px -2px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transform: perspective(600px) rotateX(8deg);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .plate-3d.drag-over {
+      border-color: #3b82f6;
+      background: radial-gradient(ellipse at center, #eff6ff 0%, #dbeafe 100%);
+      transform: perspective(600px) rotateX(4deg) scale(1.01);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between overflow-hidden">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white/80 backdrop-blur border-b-4 border-amber-300 px-4 py-2 flex-none z-20">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-2xl md:text-3xl">🇭🇰</span>
+        <div>
+          <h1 class="text-lg md:text-xl font-black text-amber-600 leading-none">港幣購物小達人</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-sound" onclick="toggleSound()" class="p-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full transition" title="聲音">
+          <i id="sound-icon" class="fas fa-volume-up text-base"></i>
+        </button>
+        <button id="btn-leaderboard" onclick="openLeaderboard()" class="p-2 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-full transition" title="龍虎榜">
+          <i class="fas fa-trophy text-base"></i>
+        </button>
+        <button id="btn-exit" onclick="confirmExit()" class="hidden px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-xs md:text-sm btn-3d">
+          <i class="fas fa-door-open mr-1"></i> 退出
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-grow flex items-center justify-center p-2 md:p-4 overflow-hidden relative">
+    <div class="w-full max-w-4xl h-full flex flex-col justify-center">
+
+      <!-- ================= SCREEN 1: START ================= -->
+      <div id="screen-start" class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-200 text-center max-w-md mx-auto my-auto w-full">
+        <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-4xl mb-3 shadow-inner">
+          🛍️
+        </div>
+        <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">港幣付錢大挑戰</h2>
+        <p class="text-slate-500 font-bold text-xs mb-4">
+          共 5 關！數好港幣金額付款吧！
+        </p>
+
+        <!-- Player Name Input -->
+        <div class="mb-4 text-left">
+          <label for="player-name" class="block text-xs font-black text-slate-400 uppercase mb-1">玩家名字</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3.5 top-3.5 text-amber-400"></i>
+            <input type="text" id="player-name" maxlength="10" placeholder="聰明小玩家" value="聰明小玩家"
+              class="w-full pl-10 pr-4 py-2.5 border-2 border-amber-200 rounded-xl focus:border-amber-400 focus:outline-none font-bold text-slate-700 bg-amber-50/50 text-sm">
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <button onclick="startGame()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-black rounded-2xl btn-3d flex items-center justify-center space-x-2">
+            <i class="fas fa-play"></i>
+            <span>開始遊戲</span>
+          </button>
+          
+          <button onclick="openLeaderboard()" class="w-full py-2.5 bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold rounded-2xl transition text-sm flex items-center justify-center space-x-2">
+            <i class="fas fa-trophy"></i>
+            <span>龍虎榜</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SCREEN 2: GAMEPLAY ================= -->
+      <div id="screen-game" class="hidden flex-grow flex flex-col justify-between h-full max-h-[88vh] space-y-2">
+
+        <!-- Status Header Bar -->
+        <div class="bg-white/90 backdrop-blur rounded-2xl px-4 py-1.5 shadow-sm border border-amber-200 flex items-center justify-between flex-none">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-black text-slate-400">關卡：</span>
+            <div class="flex space-x-1" id="round-dots"></div>
+          </div>
+
+          <div class="bg-amber-100 text-amber-900 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1.5">
+            <i class="fas fa-bullseye text-amber-600"></i>
+            <span>嘗試次數：<strong id="attempt-counter" class="text-sm text-amber-700">0</strong></span>
+          </div>
+        </div>
+
+        <!-- Shop Floor: Item & Tray Display Area -->
+        <div class="bg-white rounded-3xl p-3 md:p-4 shadow-lg border-4 border-amber-200 flex-grow grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch min-h-0 overflow-hidden">
+          
+          <!-- Left: Shopping Item Card -->
+          <div class="md:col-span-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-2 md:p-3 border-2 border-amber-100 flex flex-col items-center justify-center relative">
+            <div class="absolute top-2 left-2 bg-amber-200 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full">
+              第 <span id="item-number">1</span> 關
+            </div>
+            
+            <div id="item-emoji" class="text-5xl md:text-6xl my-1 filter drop-shadow-md transform transition duration-300 hover:scale-105">
+              🧸
+            </div>
+            
+            <div id="item-name" class="font-black text-slate-700 text-sm md:text-base mb-1">
+              熊公仔
+            </div>
+
+            <!-- Target Price Tag -->
+            <div class="bg-rose-500 text-white px-3.5 py-1 rounded-2xl shadow border-2 border-white flex items-baseline space-x-1">
+              <span class="text-xs font-black opacity-90">售價:</span>
+              <span class="text-xl md:text-2xl font-black tracking-wide" id="target-price">$25</span>
+            </div>
+          </div>
+
+          <!-- Right: Payment Tray -->
+          <div class="md:col-span-8 flex flex-col justify-between space-y-2 min-h-0">
+            <div class="flex items-center justify-between px-1 flex-none">
+              <span class="text-xs font-black text-slate-500 flex items-center gap-1">
+                <i class="fas fa-hand-holding-usd text-amber-500"></i> 付款盤（可拖放或點擊加入 / 拿走）
+              </span>
+              <button onclick="clearTray()" class="text-xs text-rose-500 font-bold hover:underline flex items-center gap-1">
+                <i class="fas fa-trash-alt"></i> 清空
+              </button>
+            </div>
+
+            <!-- 3D Plate Tray Drop Area -->
+            <div id="tray" 
+              ondragover="allowDrop(event)" 
+              ondragleave="handleDragLeave(event)" 
+              ondrop="handleDrop(event)"
+              class="plate-3d flex-grow p-4 flex flex-wrap items-center justify-start content-start gap-3 overflow-y-auto min-h-[130px]">
+              <p id="tray-empty-hint" class="absolute inset-0 flex items-center justify-center text-slate-400 font-bold text-xs pointer-events-none">
+                拖拉或點擊下方錢幣，放到這個 3D 盤子裡面
+              </p>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex items-center justify-end pt-1 flex-none">
+              <button onclick="submitPayment()" class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl btn-3d flex items-center space-x-2">
+                <i class="fas fa-check-circle"></i>
+                <span>付款 (提交)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback Alert Banner -->
+        <div id="feedback-banner" class="hidden p-2 rounded-2xl text-center font-bold text-xs transition-all border-2 flex items-center justify-center space-x-2 flex-none">
+          <i id="feedback-icon" class="text-lg"></i>
+          <span id="feedback-text"></span>
+        </div>
+
+        <!-- HKD Currency Selector Tray (Coins and Notes - Non-Overlapping Palette) -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl p-2 md:p-3 shadow-md border-2 border-amber-100 flex-none overflow-x-auto">
+          <div class="flex items-center justify-around gap-2 min-w-max md:min-w-0">
+            
+            <!-- HKD $1 (Solid Outline Silver) -->
+            <div onclick="addMoney(1)" draggable="true" ondragstart="handleDragStart(event, 1)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="coin-1 flex items-center justify-center text-slate-700 font-black text-sm">
+                $1
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$1</span>
+            </div>
+
+            <!-- HKD $2 (Silver Coin with Dotted Outline) -->
+            <div onclick="addMoney(2)" draggable="true" ondragstart="handleDragStart(event, 2)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="coin-2 flex items-center justify-center text-slate-800 font-black text-base">
+                $2
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$2</span>
+            </div>
+
+            <!-- HKD $5 -->
+            <div onclick="addMoney(5)" draggable="true" ondragstart="handleDragStart(event, 5)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="coin-5 flex items-center justify-center text-slate-800 font-black text-base">
+                $5
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$5</span>
+            </div>
+
+            <!-- HKD $10 -->
+            <div onclick="addMoney(10)" draggable="true" ondragstart="handleDragStart(event, 10)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="coin-10">
+                <div class="coin-10-inner flex items-center justify-center text-amber-900 font-black text-xs">
+                  $10
+                </div>
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$10</span>
+            </div>
+
+            <!-- HKD $20 -->
+            <div onclick="addMoney(20)" draggable="true" ondragstart="handleDragStart(event, 20)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="note-20 flex flex-col justify-between p-1 text-white font-black">
+                <div class="flex justify-between items-center text-[9px] opacity-80">
+                  <span>HKD</span>
+                  <span>20</span>
+                </div>
+                <div class="text-center text-base tracking-wider">$20</div>
+                <div class="text-[8px] text-sky-100 opacity-75">香港貳拾元</div>
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$20</span>
+            </div>
+
+            <!-- HKD $50 -->
+            <div onclick="addMoney(50)" draggable="true" ondragstart="handleDragStart(event, 50)" class="money-item flex flex-col items-center flex-shrink-0 cursor-grab active:cursor-grabbing">
+              <div class="note-50 flex flex-col justify-between p-1 text-white font-black">
+                <div class="flex justify-between items-center text-[9px] opacity-80">
+                  <span>HKD</span>
+                  <span>50</span>
+                </div>
+                <div class="text-center text-base tracking-wider">$50</div>
+                <div class="text-[8px] text-emerald-100 opacity-75">香港伍拾元</div>
+              </div>
+              <span class="text-[10px] font-black text-slate-600 mt-0.5">$50</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= SCREEN 3: GAME SUMMARY ================= -->
+      <div id="screen-summary" class="hidden bg-white rounded-3xl p-6 shadow-2xl border-4 border-amber-300 text-center max-w-md mx-auto my-auto w-full">
+        <div class="text-5xl mb-2">🎉🏆🎉</div>
+        <h2 class="text-2xl font-black text-amber-600 mb-1">恭喜完成購物挑戰！</h2>
+        <p class="text-slate-500 font-bold text-xs mb-4">你太棒了！成功算對所有港幣！</p>
+
+        <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-200 mb-5 space-y-2 text-sm">
+          <div class="flex justify-between items-center border-b border-amber-200 pb-1.5">
+            <span class="text-slate-600 font-bold">小玩家:</span>
+            <span id="summary-name" class="font-black text-amber-800 text-base">聰明小玩家</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-amber-200 pb-1.5">
+            <span class="text-slate-600 font-bold">完成關數:</span>
+            <span class="font-black text-slate-800">5 / 5 關</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-600 font-bold">總共付款嘗試次數:</span>
+            <span id="summary-attempts" class="font-black text-emerald-600 text-xl">5</span>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <button onclick="startGame()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-base font-black rounded-2xl btn-3d flex items-center justify-center space-x-2">
+            <i class="fas fa-redo"></i>
+            <span>再玩一次</span>
+          </button>
+          <button onclick="openLeaderboard()" class="w-full py-2.5 bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold rounded-2xl text-sm transition">
+            查看龍虎榜
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- LEADERBOARD MODAL -->
+  <div id="modal-leaderboard" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border-4 border-purple-200">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xl font-black text-purple-700 flex items-center gap-2">
+          <i class="fas fa-trophy text-amber-400"></i> 英雄榜 (龍虎榜)
+        </h3>
+        <button onclick="closeLeaderboard()" class="text-slate-400 hover:text-slate-600 p-1 text-lg font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-400 font-bold mb-3">次數越少代表越厲害喔！</p>
+
+      <div class="max-h-52 overflow-y-auto rounded-xl border border-slate-100 mb-4">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-purple-50 text-purple-900 font-black sticky top-0">
+            <tr>
+              <th class="p-2.5 text-center">名次</th>
+              <th class="p-2.5">玩家名字</th>
+              <th class="p-2.5 text-center">總嘗試次數</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-rows" class="divide-y divide-slate-100 font-bold text-slate-700"></tbody>
+        </table>
+      </div>
+
+      <div class="flex space-x-2">
+        <button onclick="clearLeaderboard()" class="px-3 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded-xl text-xs transition">
+          重設紀錄
+        </button>
+        <button onclick="closeLeaderboard()" class="flex-grow py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl text-xs transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXIT CONFIRMATION MODAL -->
+  <div id="modal-exit" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border-4 border-rose-200 text-center">
+      <div class="text-4xl mb-2">🚪</div>
+      <h3 class="text-xl font-black text-slate-800 mb-1">確定要退出遊戲嗎？</h3>
+      <p class="text-slate-500 font-bold text-xs mb-5">目前的遊戲進度將會遺失喔。</p>
+      
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="closeExitModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+          繼續遊玩
+        </button>
+        <button onclick="exitToHome()" class="py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl text-xs btn-3d">
+          確認退出
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sound Synth and Game Mechanics -->
+  <script>
+    // --- Web Audio Synth Sound Effects ---
+    class SoundEffects {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      }
+      playCoin() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1800, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playRemove() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+      playSuccess() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.3, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.2);
+        });
+      }
+      playError() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.setValueAtTime(170, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+    }
+
+    const sfx = new SoundEffects();
+
+    function toggleSound() {
+      sfx.enabled = !sfx.enabled;
+      const icon = document.getElementById('sound-icon');
+      icon.className = sfx.enabled ? 'fas fa-volume-up text-base' : 'fas fa-volume-mute text-base text-rose-500';
+    }
+
+    // Dynamic Items List (A new item for every single round)
+    const SHOP_ITEMS = [
+      { name: "熊公仔", emoji: "🧸" },
+      { name: "珍珠奶茶", emoji: "🧋" },
+      { name: "美味蛋糕", emoji: "🍰" },
+      { name: "智能機器人", emoji: "🤖" },
+      { name: "草莓雪糕", emoji: "🍦" },
+      { name: "彩色畫筆", emoji: "🎨" },
+      { name: "玩具火箭", emoji: "🚀" },
+      { name: "掌上遊戲機", emoji: "🎮" },
+      { name: "新鮮蘋果", emoji: "🍎" },
+      { name: "兒童滑板車", emoji: "🛴" },
+      { name: "遙控賽車", emoji: "🏎️" },
+      { name: "可愛漢堡包", emoji: "🍔" },
+      { name: "兒童手錶", emoji: "⌚" },
+      { name: "驚喜盲盒", emoji: "🎁" },
+      { name: "乒乓球拍", emoji: "🏓" }
+    ];
+
+    // Game Variables
+    let playerName = "聰明小玩家";
+    let currentRound = 1;
+    const maxRounds = 5;
+    let targetPrice = 0;
+    let trayItems = []; // Contains denoms placed in tray
+    let totalAttempts = 0;
+    let dragData = null; // { source: 'wallet'|'tray', denom: number, index?: number }
+    let usedItemIndices = [];
+
+    function startGame() {
+      const nameInput = document.getElementById('player-name').value.trim();
+      playerName = nameInput || "聰明小玩家";
+      currentRound = 1;
+      totalAttempts = 0;
+      usedItemIndices = [];
+
+      document.getElementById('screen-start').classList.add('hidden');
+      document.getElementById('screen-summary').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('btn-exit').classList.remove('hidden');
+
+      setupRound();
+    }
+
+    function setupRound() {
+      trayItems = [];
+      updateTrayUI();
+      hideFeedback();
+
+      // Random price between 1 and 100
+      targetPrice = Math.floor(Math.random() * 100) + 1;
+      document.getElementById('target-price').textContent = `$${targetPrice}`;
+
+      // Pick a unique item for this round
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * SHOP_ITEMS.length);
+      } while (usedItemIndices.includes(randomIndex) && usedItemIndices.length < SHOP_ITEMS.length);
+      
+      usedItemIndices.push(randomIndex);
+      const currentItem = SHOP_ITEMS[randomIndex];
+
+      document.getElementById('item-emoji').textContent = currentItem.emoji;
+      document.getElementById('item-name').textContent = currentItem.name;
+      document.getElementById('item-number').textContent = currentRound;
+      document.getElementById('attempt-counter').textContent = totalAttempts;
+
+      renderRoundDots();
+    }
+
+    function renderRoundDots() {
+      const dotsContainer = document.getElementById('round-dots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= maxRounds; i++) {
+        const dot = document.createElement('div');
+        if (i < currentRound) {
+          dot.className = 'w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold';
+          dot.innerHTML = '<i class="fas fa-check"></i>';
+        } else if (i === currentRound) {
+          dot.className = 'w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-black ring-2 ring-amber-300';
+          dot.textContent = i;
+        } else {
+          dot.className = 'w-5 h-5 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center text-[10px] font-bold';
+          dot.textContent = i;
+        }
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    // Money Tray Operations
+    function addMoney(denom) {
+      trayItems.push(denom);
+      sfx.playCoin();
+      updateTrayUI();
+      hideFeedback();
+    }
+
+    function removeMoney(index) {
+      if (index >= 0 && index < trayItems.length) {
+        trayItems.splice(index, 1);
+        sfx.playRemove();
+        updateTrayUI();
+        hideFeedback();
+      }
+    }
+
+    function clearTray() {
+      if (trayItems.length > 0) {
+        trayItems = [];
+        sfx.playRemove();
+        updateTrayUI();
+        hideFeedback();
+      }
+    }
+
+    function calculateTraySum() {
+      return trayItems.reduce((acc, val) => acc + val, 0);
+    }
+
+    function updateTrayUI() {
+      const trayContainer = document.getElementById('tray');
+      const emptyHint = document.getElementById('tray-empty-hint');
+
+      trayContainer.querySelectorAll('.tray-rendered-item').forEach(el => el.remove());
+
+      if (trayItems.length === 0) {
+        emptyHint.classList.remove('hidden');
+      } else {
+        emptyHint.classList.add('hidden');
+        trayItems.forEach((denom, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'tray-rendered-item money-item cursor-grab active:cursor-grabbing';
+          wrapper.setAttribute('draggable', 'true');
+          
+          // Drag item out of tray
+          wrapper.ondragstart = (e) => {
+            dragData = { source: 'tray', denom: denom, index: index };
+            e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+          };
+
+          // Click to remove item from tray
+          wrapper.onclick = (e) => {
+            e.stopPropagation();
+            removeMoney(index);
+          };
+          
+          wrapper.innerHTML = createMoneySVG(denom);
+          trayContainer.appendChild(wrapper);
+        });
+      }
+    }
+
+    // Generates rendered DOM elements inside payment tray without overlaps
+    function createMoneySVG(denom) {
+      switch (denom) {
+        case 1:
+          return `<div class="coin-1 flex items-center justify-center text-slate-700 font-black text-xs flex-shrink-0" title="點擊或拖走拿走">$1</div>`;
+        case 2:
+          return `<div class="coin-2 flex items-center justify-center text-slate-800 font-black text-xs flex-shrink-0" title="點擊或拖走拿走">$2</div>`;
+        case 5:
+          return `<div class="coin-5 flex items-center justify-center text-slate-800 font-black text-xs flex-shrink-0" title="點擊或拖走拿走">$5</div>`;
+        case 10:
+          return `<div class="coin-10 flex-shrink-0" title="點擊或拖走拿走"><div class="coin-10-inner flex items-center justify-center text-amber-900 font-black text-[10px]">$10</div></div>`;
+        case 20:
+          return `<div class="note-20 flex flex-col justify-between p-1 text-white font-black scale-95 flex-shrink-0" title="點擊或拖走拿走">
+                    <div class="flex justify-between text-[8px]"><span>HKD</span><span>20</span></div>
+                    <div class="text-center text-sm font-bold">$20</div>
+                  </div>`;
+        case 50:
+          return `<div class="note-50 flex flex-col justify-between p-1 text-white font-black scale-95 flex-shrink-0" title="點擊或拖走拿走">
+                    <div class="flex justify-between text-[8px]"><span>HKD</span><span>50</span></div>
+                    <div class="text-center text-sm font-bold">$50</div>
+                  </div>`;
+        default: return '';
+      }
+    }
+
+    // Enhanced Drag and Drop Logic
+    function handleDragStart(e, denom) {
+      dragData = { source: 'wallet', denom: denom };
+      e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+    }
+
+    function allowDrop(e) { 
+      e.preventDefault(); 
+      document.getElementById('tray').classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      document.getElementById('tray').classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('tray').classList.remove('drag-over');
+      
+      if (!dragData) {
+        try {
+          const raw = e.dataTransfer.getData('text/plain');
+          if (raw) dragData = JSON.parse(raw);
+        } catch (err) {}
+      }
+
+      if (dragData && dragData.source === 'wallet') {
+        addMoney(dragData.denom);
+      }
+      dragData = null;
+    }
+
+    // Allow dragging items OUT of the tray onto document body to remove them
+    document.body.ondragover = (e) => e.preventDefault();
+    document.body.ondrop = (e) => {
+      e.preventDefault();
+      const tray = document.getElementById('tray');
+      if (dragData && dragData.source === 'tray' && !tray.contains(e.target)) {
+        removeMoney(dragData.index);
+      }
+      dragData = null;
+    };
+
+    // Submit Logic (Calculates total ONLY upon Submit)
+    function submitPayment() {
+      const currentSum = calculateTraySum();
+      totalAttempts++;
+      document.getElementById('attempt-counter').textContent = totalAttempts;
+
+      if (currentSum === targetPrice) {
+        sfx.playSuccess();
+        triggerConfetti();
+        showFeedback("success", `🎉 正確！你剛好付了 $${targetPrice}！太棒了！`);
+
+        setTimeout(() => {
+          if (currentRound < maxRounds) {
+            currentRound++;
+            setupRound();
+          } else {
+            finishGame();
+          }
+        }, 1500);
+
+      } else if (currentSum > targetPrice) {
+        sfx.playError();
+        showFeedback("error", `給太多錢了！請拿走一些硬幣或紙幣再試試。`);
+      } else {
+        sfx.playError();
+        showFeedback("warning", `錢不夠喔！請再多付一點金額。`);
+      }
+    }
+
+    function showFeedback(type, text) {
+      const banner = document.getElementById('feedback-banner');
+      const icon = document.getElementById('feedback-icon');
+      const textEl = document.getElementById('feedback-text');
+
+      banner.classList.remove('hidden', 'bg-emerald-100', 'border-emerald-300', 'text-emerald-800', 
+                              'bg-rose-100', 'border-rose-300', 'text-rose-800', 
+                              'bg-amber-100', 'border-amber-300', 'text-amber-800');
+
+      if (type === 'success') {
+        banner.classList.add('bg-emerald-100', 'border-emerald-300', 'text-emerald-800');
+        icon.className = 'fas fa-star text-amber-500 text-xl';
+      } else if (type === 'error') {
+        banner.classList.add('bg-rose-100', 'border-rose-300', 'text-rose-800');
+        icon.className = 'fas fa-arrow-down text-rose-500 text-xl';
+      } else {
+        banner.classList.add('bg-amber-100', 'border-amber-300', 'text-amber-800');
+        icon.className = 'fas fa-arrow-up text-amber-600 text-xl';
+      }
+
+      textEl.textContent = text;
+    }
+
+    function hideFeedback() {
+      document.getElementById('feedback-banner').classList.add('hidden');
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      }
+    }
+
+    function finishGame() {
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('btn-exit').classList.add('hidden');
+      document.getElementById('screen-summary').classList.remove('hidden');
+
+      document.getElementById('summary-name').textContent = playerName;
+      document.getElementById('summary-attempts').textContent = totalAttempts;
+
+      saveToLeaderboard(playerName, totalAttempts);
+    }
+
+    function saveToLeaderboard(name, attempts) {
+      let leaderboard = JSON.parse(localStorage.getItem('hkd_money_leaderboard') || '[]');
+      leaderboard.push({ name: name, attempts: attempts });
+      leaderboard.sort((a, b) => a.attempts - b.attempts);
+      leaderboard = leaderboard.slice(0, 10);
+      localStorage.setItem('hkd_money_leaderboard', JSON.stringify(leaderboard));
+    }
+
+    function openLeaderboard() {
+      const tbody = document.getElementById('leaderboard-rows');
+      tbody.innerHTML = '';
+
+      const leaderboard = JSON.parse(localStorage.getItem('hkd_money_leaderboard') || '[]');
+
+      if (leaderboard.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-slate-400 font-semibold">尚無紀錄，快來挑戰第一個吧！</td></tr>`;
+      } else {
+        leaderboard.forEach((entry, idx) => {
+          const tr = document.createElement('tr');
+          let rankBadge = `${idx + 1}`;
+          if (idx === 0) rankBadge = '🥇';
+          else if (idx === 1) rankBadge = '🥈';
+          else if (idx === 2) rankBadge = '🥉';
+
+          tr.innerHTML = `
+            <td class="p-2 text-center text-sm">${rankBadge}</td>
+            <td class="p-2 font-bold">${escapeHtml(entry.name)}</td>
+            <td class="p-2 text-center text-purple-700 font-black">${entry.attempts} 次</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('modal-leaderboard').classList.remove('hidden');
+    }
+
+    function closeLeaderboard() {
+      document.getElementById('modal-leaderboard').classList.add('hidden');
+    }
+
+    function clearLeaderboard() {
+      localStorage.removeItem('hkd_money_leaderboard');
+      openLeaderboard();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function confirmExit() {
+      document.getElementById('modal-exit').classList.remove('hidden');
+    }
+
+    function closeExitModal() {
+      document.getElementById('modal-exit').classList.add('hidden');
+    }
+
+    function exitToHome() {
+      closeExitModal();
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-summary').classList.add('hidden');
+      document.getElementById('btn-exit').classList.add('hidden');
+      document.getElementById('screen-start').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
