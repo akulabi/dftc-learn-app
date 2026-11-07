@@ -146,18 +146,18 @@
       let currentSpeed = 1.0;
       let animationSessionToken = 0;
 
-      // Cantonese Text-To-Speech (語音發音: zh-HK)
+      // Cantonese Text-To-Speech (粵語發音: zh-HK)
       function speakCantonese(char) {
         if (!('speechSynthesis' in window) || !isHanzi(char)) return;
         
-        // Cancel any active speech utterance
+        // Cancel any active speech utterance immediately
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(char);
         utterance.lang = 'zh-HK';
         utterance.rate = Math.min(Math.max(currentSpeed * 0.9, 0.5), 1.5);
 
-        // Explicitly set Cantonese voice target if available
+        // Explicitly target Cantonese voices if available
         const voices = window.speechSynthesis.getVoices();
         const cantoneseVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK' || v.lang === 'yue-HK') ||
                                voices.find(v => v.lang.startsWith('zh-HK'));
@@ -273,7 +273,8 @@
           if (card) {
             if (idx === index) {
               card.classList.add('card-active');
-              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              // Auto-scrolls card into center of screen
+              card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             } else {
               card.classList.remove('card-active');
             }
@@ -292,7 +293,7 @@
         highlightCard(currentIndex);
         const charToSpeak = charList[currentIndex];
         
-        // Trigger Cantonese pronunciation (語音發音)
+        // Cantonese voice playback
         speakCantonese(charToSpeak);
 
         const currentWriter = writers[currentIndex];
