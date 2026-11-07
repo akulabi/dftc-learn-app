@@ -48,7 +48,8 @@
 
   <!-- TOP HEADER / INPUT SECTION -->
   <header class="flex-none w-full max-w-5xl mx-auto pt-3 px-3 flex flex-col items-center gap-2">
-    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-4 py-1.5 shadow-sm text-center">
+    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-4 py-1.5 shadow-sm text-center flex items-center justify-center gap-2">
+      <i class="fa-solid fa-pen-nib text-[#C88A4B]"></i>
       <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆劃練習</h1>
     </div>
 
@@ -58,13 +59,13 @@
         type="text" 
         id="textInput" 
         value="中文筆劃練習" 
-        placeholder="請輸入中文單字或句子..."
+        placeholder="請輸入文字..."
         class="w-full px-4 py-2 sm:py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
       />
     </div>
   </header>
 
-  <!-- MIDDLE CHARACTER GRID (Responsive auto-wrap, 1.5x larger cards, minimal padding, perfectly centered content) -->
+  <!-- MIDDLE CHARACTER GRID -->
   <main class="flex-1 min-h-0 w-full max-w-5xl mx-auto px-2 sm:px-3 my-2 overflow-hidden flex flex-col">
     <div 
       id="gridContainer" 
@@ -74,7 +75,7 @@
     </div>
   </main>
 
-  <!-- BOTTOM CONTROL BAR (Mobile browser safe area friendly) -->
+  <!-- BOTTOM CONTROL BAR -->
   <footer class="flex-none w-full max-w-5xl mx-auto px-2 sm:px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sticky bottom-0 z-50">
     <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-md">
       
@@ -114,13 +115,13 @@
           id="speedSelect" 
           class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs sm:text-sm focus:outline-none cursor-pointer shadow-sm"
         >
-          <option value="0.25">0.25x</option>
-          <option value="0.5">0.5x</option>
-          <option value="0.8">0.8x</option>
-          <option value="1.0" selected>1.0x</option>
-          <option value="1.5">1.5x</option>
-          <option value="2.0">2.0x</option>
-          <option value="3.0">3.0x</option>
+          <option value="0.25">0.25x 慢速</option>
+          <option value="0.5">0.5x 慢速</option>
+          <option value="0.8">0.8x 慢速</option>
+          <option value="1.0" selected>1.0x 標準</option>
+          <option value="1.5">1.5x 快速</option>
+          <option value="2.0">2.0x 快速</option>
+          <option value="3.0">3.0x 快速</option>
         </select>
       </div>
 
@@ -139,54 +140,48 @@
       const speedSelect = document.getElementById('speedSelect');
 
       let charList = [];
-      let writers = []; // Array storing HanziWriter instances or null (for punctuation)
+      let writers = []; 
       let currentIndex = 0;
       let isPlaying = false;
       let currentSpeed = 1.0;
-      let animationSessionToken = 0; // Async playback token
+      let animationSessionToken = 0;
 
-      // Web Speech API Synthesis function
-      function speakCharacter(char) {
-        if (!('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel(); // Stop any ongoing speech
+      // Cantonese Text-To-Speech (語音發音: zh-HK)
+      function speakCantonese(char) {
+        if (!('speechSynthesis' in window) || !isHanzi(char)) return;
+        
+        // Cancel any active speech utterance
+        window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(char);
+        utterance.lang = 'zh-HK';
         utterance.rate = Math.min(Math.max(currentSpeed * 0.9, 0.5), 1.5);
 
-        // Try to get Cantonese or Traditional Chinese voice
+        // Explicitly set Cantonese voice target if available
         const voices = window.speechSynthesis.getVoices();
-        const zhVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK') ||
-                        voices.find(v => v.lang.startsWith('zh-HK')) ||
-                        voices.find(v => v.lang.startsWith('zh-TW')) ||
-                        voices.find(v => v.lang.startsWith('zh'));
-        if (zhVoice) {
-          utterance.voice = zhVoice;
-          utterance.lang = zhVoice.lang;
-        } else {
-          utterance.lang = 'zh-HK';
+        const cantoneseVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK' || v.lang === 'yue-HK') ||
+                               voices.find(v => v.lang.startsWith('zh-HK'));
+        if (cantoneseVoice) {
+          utterance.voice = cantoneseVoice;
         }
 
         window.speechSynthesis.speak(utterance);
       }
 
-      // Check if character is a Chinese Hanzi (stroke data capable)
       function isHanzi(char) {
         return /[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]/.test(char);
       }
 
-      // Create an individual HanziWriter instance inside target container or display punctuation mark
       function createWriterForChar(char, targetId) {
         const container = document.getElementById(targetId);
-        container.innerHTML = ''; // Clear container element
+        container.innerHTML = '';
 
         if (!isHanzi(char)) {
-          // Render punctuation mark directly as formatted larger text centered in card
           container.className = 'w-full h-full flex items-center justify-center text-6xl sm:text-7xl font-serif text-[#000000]';
           container.innerText = char;
           return null;
         }
 
-        // Determine larger character size relative to card width with minimal internal padding
         const parentCard = container.parentElement;
         const cardSize = parentCard ? parentCard.clientWidth : 144;
         const writerSize = Math.max(125, cardSize - 4);
@@ -196,7 +191,7 @@
           height: writerSize,
           padding: 2,
           showOutline: true,
-          strokeColor: '#000000', // Pure black stroke
+          strokeColor: '#000000',
           outlineColor: '#E0E0E0',
           drawingColor: '#000000',
           strokeAnimationSpeed: currentSpeed, 
@@ -212,7 +207,6 @@
               })
               .then(onComplete)
               .catch(() => {
-                // Fallback to standard CDN if local HK dataset is not found or fails
                 fetch(cdnUrl)
                   .then(res => {
                     if (!res.ok) throw new Error('CDN data fetch failed');
@@ -228,7 +222,6 @@
         });
       }
 
-      // Render character grid cards
       function renderGrid() {
         stopAnimation();
         gridContainer.innerHTML = '';
@@ -239,7 +232,7 @@
         if (charList.length === 0) {
           gridContainer.innerHTML = `
             <div class="col-span-full py-16 text-center text-[#9E8B7D] font-medium">
-              請在上方輸入欄輸入中文字符
+              請在上方輸入欄輸入文字...
             </div>
           `;
           seekBar.max = 0;
@@ -253,7 +246,6 @@
 
         charList.forEach((char, idx) => {
           const card = document.createElement('div');
-          // Fully centered flexbox container with larger character rendering
           card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-xl p-0.5 flex items-center justify-center cursor-pointer transition-all duration-200 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 relative shadow-sm hover:border-[#C88A4B] shrink-0 overflow-hidden';
           card.id = `card-${idx}`;
           
@@ -275,7 +267,6 @@
         highlightCard(currentIndex);
       }
 
-      // Highlight focused card & scroll smoothly into center view
       function highlightCard(index) {
         writers.forEach((_, idx) => {
           const card = document.getElementById(`card-${idx}`);
@@ -291,7 +282,6 @@
         seekBar.value = index;
       }
 
-      // Play character strokes recursively
       function playCurrentSequence(sessionToken) {
         if (!isPlaying || sessionToken !== animationSessionToken) return;
         if (currentIndex >= writers.length) {
@@ -301,13 +291,12 @@
 
         highlightCard(currentIndex);
         const charToSpeak = charList[currentIndex];
-        if (charToSpeak) {
-          speakCharacter(charToSpeak);
-        }
+        
+        // Trigger Cantonese pronunciation (語音發音)
+        speakCantonese(charToSpeak);
 
         const currentWriter = writers[currentIndex];
 
-        // If character is a punctuation mark (writer === null), skip directly to next character after brief delay
         if (!currentWriter) {
           setTimeout(() => {
             if (isPlaying && sessionToken === animationSessionToken) {
@@ -339,7 +328,6 @@
         });
       }
 
-      // Start playback
       function startAnimation() {
         if (writers.length === 0) return;
         if (currentIndex >= writers.length) currentIndex = 0;
@@ -350,7 +338,6 @@
         playCurrentSequence(animationSessionToken);
       }
 
-      // Stop / Pause playback
       function stopAnimation() {
         isPlaying = false;
         playIcon.className = 'fa-solid fa-play ml-0.5';
@@ -361,12 +348,10 @@
         writers.forEach(w => w && w.pauseAnimation());
       }
 
-      // Jump to specific index
       function jumpToCharacter(index, startPlaying = false) {
         stopAnimation();
         currentIndex = index;
         
-        // Update stroke visibility
         writers.forEach((w, idx) => {
           if (idx < index && w) {
             w.showCharacter();
@@ -383,7 +368,6 @@
         }
       }
 
-      // Rewind back to 0
       function rewind() {
         stopAnimation();
         currentIndex = 0;
@@ -391,18 +375,15 @@
         highlightCard(0);
       }
 
-      // Recreate all HanziWriter instances with current speed
       function recreateWritersAndResume() {
         const werePlaying = isPlaying;
         stopAnimation();
 
-        // Destroy and recreate each writer
         writers = charList.map((char, idx) => {
           const targetId = `writer-target-${idx}`;
           return createWriterForChar(char, targetId);
         });
 
-        // Restore stroke states up to currentIndex
         writers.forEach((w, idx) => {
           if (idx < currentIndex && w) {
             w.showCharacter();
@@ -417,7 +398,6 @@
         }
       }
 
-      // Event Listeners
       textInput.addEventListener('input', () => renderGrid());
 
       playPauseBtn.addEventListener('click', () => {
@@ -434,13 +414,11 @@
         jumpToCharacter(parseInt(e.target.value, 10), isPlaying);
       });
 
-      // Destroy and recreate writers when speed option is changed
       speedSelect.addEventListener('change', (e) => {
         currentSpeed = parseFloat(e.target.value);
         recreateWritersAndResume();
       });
 
-      // Handle resize to adjust centered HanziWriter bounding box
       let resizeTimeout;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
@@ -449,14 +427,12 @@
         }, 200);
       });
 
-      // Pre-load voices for browsers like Chrome
       if ('speechSynthesis' in window) {
         window.speechSynthesis.onvoiceschanged = () => {
           window.speechSynthesis.getVoices();
         };
       }
 
-      // Initialize on load
       renderGrid();
     });
   </script>
