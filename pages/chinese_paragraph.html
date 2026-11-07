@@ -145,6 +145,30 @@
       let currentSpeed = 1.0;
       let animationSessionToken = 0; // Async playback token
 
+      // Web Speech API Synthesis function
+      function speakCharacter(char) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); // Stop any ongoing speech
+
+        const utterance = new SpeechSynthesisUtterance(char);
+        utterance.rate = Math.min(Math.max(currentSpeed * 0.9, 0.5), 1.5);
+
+        // Try to get Cantonese or Traditional Chinese voice
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK') ||
+                        voices.find(v => v.lang.startsWith('zh-HK')) ||
+                        voices.find(v => v.lang.startsWith('zh-TW')) ||
+                        voices.find(v => v.lang.startsWith('zh'));
+        if (zhVoice) {
+          utterance.voice = zhVoice;
+          utterance.lang = zhVoice.lang;
+        } else {
+          utterance.lang = 'zh-HK';
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+
       // Check if character is a Chinese Hanzi (stroke data capable)
       function isHanzi(char) {
         return /[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]/.test(char);
@@ -276,6 +300,11 @@
         }
 
         highlightCard(currentIndex);
+        const charToSpeak = charList[currentIndex];
+        if (charToSpeak) {
+          speakCharacter(charToSpeak);
+        }
+
         const currentWriter = writers[currentIndex];
 
         // If character is a punctuation mark (writer === null), skip directly to next character after brief delay
@@ -326,6 +355,9 @@
         isPlaying = false;
         playIcon.className = 'fa-solid fa-play ml-0.5';
         animationSessionToken++;
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
         writers.forEach(w => w && w.pauseAnimation());
       }
 
@@ -416,6 +448,13 @@
           recreateWritersAndResume();
         }, 200);
       });
+
+      // Pre-load voices for browsers like Chrome
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.getVoices();
+        };
+      }
 
       // Initialize on load
       renderGrid();
