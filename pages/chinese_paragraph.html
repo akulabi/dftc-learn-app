@@ -26,7 +26,7 @@
             color: #2c2416;
         }
 
-        /* 隱藏原生滾動條 */
+        /* 隱藏原生滾動條以維護習字簿美觀 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -42,7 +42,7 @@
 </head>
 <body class="h-screen w-screen flex flex-col justify-between select-none overflow-hidden p-0 m-0">
 
-    <!-- 頂部：極簡單一文字輸入框 (固定高度，不隨頁面滾動) -->
+    <!-- 頂部：極簡單一文字輸入框 (固定高度，防壓迫) -->
     <header class="w-full py-3 px-6 flex justify-center z-10 shrink-0">
         <div class="w-full max-w-xl">
             <input 
@@ -50,35 +50,32 @@
                 id="textInput" 
                 oninput="onInputTextChange(this.value)"
                 placeholder="請輸入文字..." 
-                value="中文筆順習字簿"
+                value="中文筆順練習"
                 class="w-full px-5 py-2.5 rounded-full border-2 border-red-900/30 bg-[#faf7f0]/90 focus:bg-[#faf7f0] focus:border-red-800 text-stone-900 placeholder-stone-400 outline-none transition text-lg font-serif shadow-sm text-center tracking-widest"
             />
         </div>
     </header>
 
-    <!-- 主要內容區 (Canvas 習字簿：依剩餘空間彈性縮放，確保底部控制條 100% 可見) -->
+    <!-- 主要內容區 (直向滾動 每行 2 個字格習字簿) -->
     <main class="flex-1 w-full px-4 py-2 flex items-center justify-center overflow-hidden min-h-0 shrink">
         
-        <!-- 淺黃宣紙外框視窗 -->
-        <div class="relative bg-[#fbf8f1] border-4 border-amber-900/30 rounded-3xl p-3 shadow-2xl overflow-hidden flex items-center justify-center max-h-full shrink">
-            
-            <!-- 視窗容器 (寬度 880px，4 個 220px 米字格) -->
+        <!-- 淺黃宣紙外框視窗 (支援垂直滾動) -->
+        <div 
+            id="viewportBox" 
+            class="relative bg-[#fbf8f1] border-4 border-amber-900/30 rounded-3xl p-4 shadow-2xl overflow-y-auto no-scrollbar scroll-smooth max-h-full border-t-2 border-l-2 border-red-800/60 shadow-inner flex justify-center"
+        >
+            <!-- 每行固定 2 個字格 (2 Column Grid) -->
             <div 
-                id="viewportBox" 
-                class="w-[880px] max-w-[90vw] h-[220px] max-h-full overflow-x-auto no-scrollbar scroll-smooth border-t-2 border-l-2 border-red-800/60 shadow-inner flex flex-row flex-nowrap shrink-0"
+                id="characterGrid" 
+                class="grid grid-cols-2 gap-0 justify-items-center items-center max-w-[320px] border-r-2 border-b-2 border-red-800/60"
             >
-                <div 
-                    id="characterGrid" 
-                    class="flex flex-row flex-nowrap gap-0"
-                >
-                    <!-- 動態生成字格 (米字格 Canvas 背景 + HanziWriter SVG) -->
-                </div>
+                <!-- 動態生成字格 (米字格 Canvas 背景 + HanziWriter SVG) -->
             </div>
 
         </div>
     </main>
 
-    <!-- 底部極簡播放控制條 (固定底部，防擠壓，確保完全可見) -->
+    <!-- 底部極簡播放控制條 (固定底部，防擠壓) -->
     <footer class="w-full bg-[#ede5d3]/95 border-t border-amber-900/20 shadow-lg px-6 py-3 backdrop-blur z-50 shrink-0">
         <div class="max-w-3xl mx-auto flex items-center justify-between gap-4">
             
@@ -106,11 +103,11 @@
         </div>
     </footer>
 
-    <!-- 腳本區域 -->
+    <!-- 邏輯與動畫控制腳本 -->
     <script>
         let charactersData = [];
         const STROKE_COLOR = '#000000'; // 純黑墨跡
-        const GRID_SIZE = 220;           // 米字格尺寸 (220px * 220px)
+        const GRID_SIZE = 150;           // 每字格 150px * 150px
         
         let playbackSpeed = 1.0;
         let isPlaying = false;
@@ -170,7 +167,7 @@
             ctx.lineTo(GRID_SIZE, GRID_SIZE / 2);
             ctx.stroke();
 
-            // 右與下邊界實線 (組成米字格網格)
+            // 左與上邊界實線 (組成米字格網格)
             ctx.setLineDash([]);
             ctx.strokeStyle = 'rgba(185, 28, 28, 0.6)';
             ctx.lineWidth = 2;
@@ -205,15 +202,14 @@
             const targetEl = document.getElementById(targetId);
             if (targetEl) targetEl.innerHTML = '';
             
-            // 基礎速度 1.0，乘以當前選定的 speedMultiplier
             const baseSpeed = 1.0;
             const computedSpeed = baseSpeed * playbackSpeed;
             const computedDelay = 200 / playbackSpeed;
 
             return HanziWriter.create(targetId, charStr, {
-                width: 200,
-                height: 200,
-                padding: 10,
+                width: GRID_SIZE - 10,
+                height: GRID_SIZE - 10,
+                padding: 5,
                 showOutline: true,
                 strokeColor: STROKE_COLOR,
                 outlineColor: '#dcd3c1',
@@ -238,7 +234,7 @@
             chars.forEach((ch, index) => {
                 const isHanzi = isChineseChar(ch);
 
-                // 單個字格卡片
+                // 單個字格卡片 (150px * 150px)
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `relative flex items-center justify-center m-0 p-0 cursor-pointer select-none box-border shrink-0`;
                 cardDiv.style.width = `${GRID_SIZE}px`;
@@ -277,7 +273,7 @@
                         console.error(err);
                     }
                 } else {
-                    writerDiv.innerHTML = `<span class="text-8xl text-black font-serif leading-none">${ch}</span>`;
+                    writerDiv.innerHTML = `<span class="text-6xl text-black font-serif leading-none">${ch}</span>`;
                 }
             });
 
@@ -296,7 +292,7 @@
             }
         }
 
-        // 當前字自動平滑滾動至中間視角
+        // 當前字自動平滑垂直滾動至中間視角
         function focusCharacter(index) {
             if (index < 0 || index >= charactersData.length) return;
             activeCharIndex = index;
@@ -308,8 +304,8 @@
                         card.classList.add('ring-4', 'ring-red-800', 'ring-inset', 'z-20');
                         card.scrollIntoView({
                             behavior: 'smooth',
-                            block: 'nearest',
-                            inline: 'center'
+                            block: 'center',
+                            inline: 'nearest'
                         });
                     } else {
                         card.classList.remove('ring-4', 'ring-red-800', 'ring-inset', 'z-20');
@@ -430,7 +426,7 @@
         function changeSpeed(val) {
             playbackSpeed = parseFloat(val);
             
-            // Dynamically update existing HanziWriter options without destroying instances or resetting state
+            // 動態更新 HanziWriter 實體參數，不中斷目前動畫
             const computedSpeed = 1.0 * playbackSpeed;
             const computedDelay = 200 / playbackSpeed;
 
