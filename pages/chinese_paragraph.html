@@ -40,7 +40,7 @@
 
     <!-- Top Input Bar -->
     <header class="shrink-0 pt-3 pb-2 px-4 flex justify-center z-20">
-        <div class="w-full max-w-md relative">
+        <div class="w-full max-w-lg relative">
             <input 
                 type="text" 
                 id="textInput" 
@@ -55,11 +55,11 @@
     <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
         <div 
             id="viewportBox" 
-            class="w-full max-w-md h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
+            class="w-full max-w-lg h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
         >
             <!-- Xuan Paper Card -->
             <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-4 shadow-md relative min-h-full">
-                <!-- Grid Container: Auto Wrap Flex Layout -->
+                <!-- Grid Container: Flexible Auto Row Wrap -->
                 <div id="characterGrid" class="flex flex-wrap gap-4 justify-center">
                     <!-- Dynamic Character Items Will Be Rendered Here -->
                 </div>
@@ -69,7 +69,7 @@
 
     <!-- Bottom Playback Control Toolbar (Fixed Floating Tray) -->
     <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
-        <div class="w-full max-w-md flex items-center justify-between gap-3">
+        <div class="w-full max-w-lg flex items-center justify-between gap-3">
             
             <!-- Play / Pause Button -->
             <button 
@@ -122,7 +122,7 @@
         let activeCharIndex = 0;
         let isPlaying = false;
         let speedMultiplier = 1.0;
-        const GRID_SIZE = 130; // 130px size per grid item for ideal flexible wrapping
+        const GRID_SIZE = 125; // Grid size per item
 
         // Custom Data Loader: Try local HK dataset first, fallback to CDN
         function customCharDataLoader(char, onComplete, onError) {
