@@ -165,7 +165,31 @@
           outlineColor: '#E0E0E0',
           drawingColor: '#000000',
           strokeAnimationSpeed: currentSpeed, 
-          delayBetweenStrokes: 200 / currentSpeed
+          delayBetweenStrokes: 200 / currentSpeed,
+          charDataLoader: (charToLoad, onComplete, onError) => {
+            const hkUrl = `/hanzi-writer-data-hk/data/${charToLoad}.json`;
+            const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${charToLoad}.json`;
+
+            fetch(hkUrl)
+              .then(res => {
+                if (!res.ok) throw new Error('HK data fetch failed');
+                return res.json();
+              })
+              .then(onComplete)
+              .catch(() => {
+                // Fallback to standard CDN if local HK dataset is not found or fails
+                fetch(cdnUrl)
+                  .then(res => {
+                    if (!res.ok) throw new Error('CDN data fetch failed');
+                    return res.json();
+                  })
+                  .then(onComplete)
+                  .catch(err => {
+                    if (onError) onError(err);
+                    container.innerHTML = `<span class="text-gray-400 text-xs">${charToLoad}</span>`;
+                  });
+              });
+          }
         });
       }
 
