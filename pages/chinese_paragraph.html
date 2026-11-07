@@ -1,184 +1,122 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中文筆順練習 - Chinese Stroke Order Practice</title>
-  
+  <title>中文筆順練習</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- HanziWriter CDN -->
+  <!-- Hanzi Writer -->
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-
-  <!-- Google Font: Noto Sans TC / Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     body {
-      font-family: 'Noto Serif TC', 'Inter', serif;
-      background-color: #f7f3ec;
-      color: #4a3e35;
-      touch-action: manipulation;
+      background-color: #F8F3ED;
+      color: #4A3E3D;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-
-    /* Rice Grid (米字格) SVG background overlay */
-    .rice-grid {
-      background-color: #faf7f2;
-      background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' y1='0' x2='100%25' y2='100%25' stroke='%23e6dcd0' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='100%25' y1='0' x2='0' y2='100%25' stroke='%23e6dcd0' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='50%25' y1='0' x2='50%25' y2='100%25' stroke='%23d3c4b3' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='%23d3c4b3' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='none' stroke='%23cbbbaa' stroke-width='2'/%3E%3C/svg%3E");
+    
+    /* Custom Scrollbar for container */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
     }
-
-    /* Active Highlight Border */
-    .char-card {
-      transition: all 0.25s ease;
-      box-shadow: 0 4px 10px rgba(92, 73, 60, 0.06);
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1E8DF;
+      border-radius: 4px;
     }
-
-    .char-card.active {
-      border-color: #c87a32 !important;
-      box-shadow: 0 0 0 3px rgba(200, 122, 50, 0.35), 0 8px 20px rgba(200, 122, 50, 0.15);
-      transform: translateY(-2px);
-    }
-
-    /* Custom range slider styling */
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-    }
-
-    input[type=range]:focus {
-      outline: none;
-    }
-
-    input[type=range]::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 8px;
-      cursor: pointer;
-      background: #e2d7c5;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D5C2B1;
       border-radius: 4px;
     }
 
-    input[type=range]::-webkit-slider-thumb {
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: #c87a32;
-      cursor: pointer;
-      -webkit-appearance: none;
-      margin-top: -6px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      transition: transform 0.1s ease;
+    /* Rice Grid (米字格) SVG background */
+    .rice-grid-bg {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%3C%23FAF6F0'/%3E%3Cline x1='0' y1='0' x2='100' y2='100' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3Cline x1='100' y1='0' x2='0' y2='100' stroke='%3C%23E5D8CC' stroke-width='1' stroke-dasharray='3,3'/%3E%3Cline x1='50' y1='0' x2='50' y2='100' stroke='%3C%23D8C4B4' stroke-width='1.5' stroke-dasharray='4,4'/%3E%3Cline x1='0' y1='50' x2='100' y2='50' stroke='%3C%23D8C4B4' stroke-width='1.5' stroke-dasharray='4,4'/%3E%3Crect x='1' y='1' width='98' height='98' fill='none' stroke='%3C%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
+      background-size: cover;
     }
 
-    input[type=range]::-webkit-slider-thumb:hover {
-      transform: scale(1.15);
-    }
-
-    /* Hide scrollbars smoothly while maintaining scroll functionality */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    /* Active highlighted character card */
+    .card-active {
+      box-shadow: 0 0 0 4px #C88A4B, 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      transform: scale(1.02);
     }
   </style>
 </head>
+<body class="h-screen flex flex-col justify-between overflow-hidden select-none">
 
-<body class="min-h-screen flex flex-col justify-between items-center max-w-md mx-auto shadow-2xl bg-[#f7f3ec] border-x border-[#e8dfd1] relative overflow-hidden">
-
-  <!-- Header & Input Area -->
-  <header class="w-full px-5 pt-6 pb-4 flex flex-col items-center shrink-0 space-y-4">
-    <!-- Styled Pill Title Button -->
-    <div class="w-full max-w-xs bg-[#f2ebd9] border border-[#d8caaf] text-[#5c493c] py-2 px-6 rounded-full text-center text-lg font-bold shadow-sm tracking-widest">
-      中文筆順練習
+  <!-- TOP HEADER / INPUT SECTION -->
+  <header class="w-full max-w-xl mx-auto pt-4 px-4 flex flex-col items-center gap-3">
+    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-6 py-2 shadow-sm text-center">
+      <h1 class="text-xl font-medium tracking-wide text-[#5C4033]">中文筆順練習</h1>
     </div>
 
-    <!-- Text Input Box -->
+    <!-- Text input box -->
     <div class="w-full relative">
       <input 
-        id="textInput" 
         type="text" 
+        id="textInput" 
         value="中文筆順練習" 
-        placeholder="請輸入中文字..."
-        maxlength="30"
-        class="w-full bg-[#faf7f2] border-2 border-[#dbcca6] text-[#4a3e35] text-center text-xl font-bold rounded-2xl py-3 px-10 outline-none focus:border-[#c87a32] focus:ring-2 focus:ring-[#c87a32]/20 transition-all placeholder-[#b5a796]"
-      >
-      <button 
-        id="clearBtn"
-        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#e8dfd1] hover:bg-[#d8caaf] text-[#786759] flex items-center justify-center transition"
-        title="清除內容"
-      >
-        <i class="fa-solid fa-xmark text-sm"></i>
-      </button>
+        placeholder="請輸入中文單字或句子..."
+        class="w-full px-4 py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-lg shadow-inner text-[#4A3E3D]"
+      />
     </div>
   </header>
 
-  <!-- Middle Main Grid Area -->
-  <main 
-    id="scrollContainer" 
-    class="w-full flex-1 px-4 py-2 overflow-y-auto no-scrollbar flex flex-col items-center justify-start"
-  >
-    <!-- Card Frame Container -->
-    <div class="w-full bg-[#faf5ec] border border-[#e5dac6] rounded-3xl p-5 min-h-[380px] flex flex-col items-center justify-center shadow-inner my-auto">
-      <div 
-        id="gridWrapper" 
-        class="grid grid-cols-2 gap-4 w-full max-w-xs mx-auto justify-items-center items-center"
-      >
-        <!-- Dynamic Character Cards will render here -->
-      </div>
+  <!-- MIDDLE CHARACTER GRID (Auto-scrolls) -->
+  <main class="flex-1 w-full max-w-xl mx-auto px-4 my-4 overflow-hidden flex flex-col">
+    <div 
+      id="gridContainer" 
+      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-4 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-4 auto-rows-max shadow-inner"
+    >
+      <!-- Hanzi Writer cards generated dynamically here -->
     </div>
   </main>
 
-  <!-- Bottom Sticky Control Bar -->
-  <footer class="w-full bg-[#eae0d0] border-t border-[#dfd4c1] px-4 py-3 rounded-t-3xl shadow-lg shrink-0">
-    <div class="flex items-center justify-between gap-3 max-w-md mx-auto">
+  <!-- BOTTOM CONTROL BAR -->
+  <footer class="w-full max-w-xl mx-auto px-4 pb-6">
+    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md">
       
       <!-- Rewind / Reset Button -->
       <button 
         id="rewindBtn" 
-        class="w-11 h-11 rounded-full bg-[#d8caaf] hover:bg-[#c8ba9f] text-[#5c493c] flex items-center justify-center shadow transition active:scale-95 shrink-0"
-        title="重設 / 重頭開始"
+        class="w-12 h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-lg transition active:scale-95 shadow"
+        title="重置"
       >
-        <i class="fa-solid fa-rotate-left text-base"></i>
+        <i class="fa-solid fa-rotate-left"></i>
       </button>
 
-      <!-- Play / Pause Main Button -->
+      <!-- Play / Pause Button -->
       <button 
         id="playPauseBtn" 
-        class="w-13 h-13 min-w-[3.25rem] min-h-[3.25rem] rounded-full bg-[#c87a32] hover:bg-[#b36926] text-white flex items-center justify-center shadow-md transition active:scale-95 shrink-0"
-        title="播放 / 暫停"
+        class="w-12 h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-xl transition active:scale-95 shadow"
+        title="播放/暫停"
       >
-        <i id="playIcon" class="fa-solid fa-play text-xl ml-0.5"></i>
+        <i class="fa-solid fa-play" id="playIcon"></i>
       </button>
 
-      <!-- Timeline Seek Bar -->
-      <div class="flex-1 flex flex-col justify-center px-1">
+      <!-- Timeline Seek Slider -->
+      <div class="flex-1 px-2">
         <input 
-          id="progressSlider" 
           type="range" 
+          id="seekBar" 
           min="0" 
-          max="100" 
           value="0" 
-          step="0.1" 
-          class="w-full cursor-pointer"
-        >
+          step="1" 
+          class="w-full h-2 bg-[#D5C2B1] rounded-lg appearance-none cursor-pointer accent-[#C88A4B]" 
+        />
       </div>
 
-      <!-- Speed Dropdown Selector -->
-      <div class="shrink-0">
+      <!-- Speed Control Dropdown -->
+      <div class="relative">
         <select 
           id="speedSelect" 
-          class="bg-[#f2e9dc] border border-[#d8caaf] text-[#5c493c] text-sm font-semibold rounded-xl px-2.5 py-2 outline-none cursor-pointer hover:bg-[#ece2d4] transition shadow-sm"
+          class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2.5 py-1.5 text-sm focus:outline-none cursor-pointer shadow-sm"
         >
           <option value="0.25">0.25x</option>
           <option value="0.5">0.5x</option>
+          <option value="0.8">0.8x</option>
           <option value="1.0" selected>1.0x</option>
           <option value="1.5">1.5x</option>
           <option value="2.0">2.0x</option>
@@ -189,271 +127,236 @@
     </div>
   </footer>
 
-  <!-- Application Logic -->
+  <!-- SCRIPT LOGIC -->
   <script>
-    // DOM Elements
     const textInput = document.getElementById('textInput');
-    const gridWrapper = document.getElementById('gridWrapper');
-    const scrollContainer = document.getElementById('scrollContainer');
+    const gridContainer = document.getElementById('gridContainer');
     const playPauseBtn = document.getElementById('playPauseBtn');
-    const rewindBtn = document.getElementById('rewindBtn');
     const playIcon = document.getElementById('playIcon');
-    const progressSlider = document.getElementById('progressSlider');
+    const rewindBtn = document.getElementById('rewindBtn');
+    const seekBar = document.getElementById('seekBar');
     const speedSelect = document.getElementById('speedSelect');
-    const clearBtn = document.getElementById('clearBtn');
 
-    // State Variables
-    let writers = [];           // HanziWriter instances
-    let charList = [];          // Filtered list of Chinese characters
+    let charList = [];
+    let writers = []; // Holds references to HanziWriter instances
+    let currentIndex = 0;
     let isPlaying = false;
     let currentSpeed = 1.0;
-    let activeCharIndex = 0;
-    let animToken = 0;          // Prevention token for async race conditions
+    let animationSessionToken = 0; // Ensures clean async sequence control
 
-    // Check if character is standard Chinese CJK
-    function isChineseChar(ch) {
-      return /^[\u4e00-\u9fa5]$/.test(ch);
+    // Create a individual HanziWriter instance inside a card container
+    function createWriterForChar(char, targetId) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = ''; // Clear container element
+
+      return HanziWriter.create(targetId, char, {
+        width: 140,
+        height: 140,
+        padding: 10,
+        showOutline: true,
+        strokeColor: '#000000', // Pure black stroke
+        outlineColor: '#E0E0E0',
+        drawingColor: '#000000',
+        strokeAnimationSpeed: currentSpeed, 
+        delayBetweenStrokes: 200 / currentSpeed,
+        charDataLoader: (char, onComplete) => {
+          fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${char}.json`)
+            .then(res => res.json())
+            .then(onComplete)
+            .catch(() => {
+              container.innerHTML = `<span class="text-gray-400 text-xs">${char}</span>`;
+            });
+        }
+      });
     }
 
-    // Render Grid & Initialize HanziWriter Cards
-    function renderCharacters(text) {
-      gridWrapper.innerHTML = '';
+    // Render character grid cards
+    function renderGrid() {
+      stopAnimation();
+      gridContainer.innerHTML = '';
       writers = [];
-      charList = text.split('').filter(isChineseChar);
+      
+      const rawText = textInput.value.trim();
+      // Filter out non-Chinese characters where possible
+      charList = rawText.split('');
 
       if (charList.length === 0) {
-        gridWrapper.innerHTML = `
-          <div class="col-span-2 text-center text-[#9c8c7c] py-12">
-            <i class="fa-solid fa-pen-nib text-3xl mb-2 opacity-50"></i>
-            <p class="text-sm">請在上方輸入中文字詞</p>
-          </div>`;
-        updateSliderUI(0);
+        seekBar.max = 0;
+        seekBar.value = 0;
         return;
       }
 
-      // Responsive card sizing calculation
-      const containerWidth = Math.min(window.innerWidth - 80, 320);
-      const cardSize = Math.floor((containerWidth - 20) / 2);
+      seekBar.max = charList.length - 1;
+      seekBar.value = 0;
+      currentIndex = 0;
 
-      charList.forEach((char, index) => {
-        // Card Container
-        const cardContainer = document.createElement('div');
-        cardContainer.className = `char-card rice-grid relative rounded-2xl border-2 border-[#d8caaf] cursor-pointer flex items-center justify-center p-2 bg-[#faf7f2]`;
-        cardContainer.style.width = `${cardSize}px`;
-        cardContainer.style.height = `${cardSize}px`;
+      charList.forEach((char, idx) => {
+        const card = document.createElement('div');
+        card.className = 'rice-grid-bg border-2 border-[#E2D2C1] rounded-2xl p-2 flex items-center justify-center cursor-pointer transition-all duration-200 aspect-square relative shadow-sm hover:border-[#C88A4B]';
+        card.id = `card-${idx}`;
+        
+        const targetDiv = document.createElement('div');
+        targetDiv.id = `writer-target-${idx}`;
+        card.appendChild(targetDiv);
 
-        // HanziWriter Render Div
-        const writerDiv = document.createElement('div');
-        writerDiv.id = `writer-${index}`;
-        cardContainer.appendChild(writerDiv);
-
-        // Click Event: Start animating from clicked character
-        cardContainer.addEventListener('click', () => {
-          startFromChar(index);
+        card.addEventListener('click', () => {
+          jumpToCharacter(idx, true);
         });
 
-        gridWrapper.appendChild(cardContainer);
+        gridContainer.appendChild(card);
 
-        // Initialize HanziWriter Instance
-        const writer = HanziWriter.create(writerDiv.id, char, {
-          width: cardSize - 20,
-          height: cardSize - 20,
-          padding: 5,
-          showOutline: true,
-          outlineColor: '#E5E5E5',
-          strokeColor: '#000000',
-          strokeAnimationSpeed: currentSpeed,
-          delayBetweenStrokes: 150 / currentSpeed
-        });
-
+        const writer = createWriterForChar(char, targetDiv.id);
         writers.push(writer);
       });
 
-      activeCharIndex = 0;
-      updateSliderUI(0);
+      highlightCard(currentIndex);
     }
 
-    // UI Highlights & Auto-scroll logic
-    function setActiveCardUI(index) {
-      const cards = gridWrapper.querySelectorAll('.char-card');
-      cards.forEach((card, idx) => {
-        if (idx === index) {
-          card.classList.add('active');
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        } else {
-          card.classList.remove('active');
+    // Highlight focused card & scroll smoothly into center view
+    function highlightCard(index) {
+      writers.forEach((_, idx) => {
+        const card = document.getElementById(`card-${idx}`);
+        if (card) {
+          if (idx === index) {
+            card.classList.add('card-active');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } else {
+            card.classList.remove('card-active');
+          }
         }
       });
+      seekBar.value = index;
     }
 
-    function removeAllActiveHighlights() {
-      const cards = gridWrapper.querySelectorAll('.char-card');
-      cards.forEach(card => card.classList.remove('active'));
-    }
-
-    // Rewind back to start
-    function rewindToStart() {
-      stopAnimation();
-      resetAllWriters();
-      activeCharIndex = 0;
-      updateSliderUI(0);
-      setActiveCardUI(0);
-    }
-
-    // Toggle Play/Pause
-    function togglePlayPause() {
-      if (writers.length === 0) return;
-
-      if (isPlaying) {
-        pauseAnimation();
-      } else {
-        if (activeCharIndex >= charList.length) {
-          resetAllWriters();
-          activeCharIndex = 0;
-        }
-        startAnimation();
+    // Play character strokes recursively
+    function playCurrentSequence(sessionToken) {
+      if (!isPlaying || sessionToken !== animationSessionToken) return;
+      if (currentIndex >= writers.length) {
+        stopAnimation();
+        return;
       }
-    }
 
-    // Start playing from specific index
-    function startFromChar(index) {
-      if (index < 0 || index >= charList.length) return;
-      
-      stopAnimation();
+      highlightCard(currentIndex);
+      const currentWriter = writers[currentIndex];
 
-      writers.forEach((w, idx) => {
-        if (idx < index) {
-          w.showCharacter();
-        } else {
-          w.hideCharacter();
+      if (!currentWriter) {
+        currentIndex++;
+        playCurrentSequence(sessionToken);
+        return;
+      }
+
+      currentWriter.animateCharacter({
+        strokeAnimationSpeed: currentSpeed,
+        delayBetweenStrokes: 200 / currentSpeed,
+        onComplete: () => {
+          if (isPlaying && sessionToken === animationSessionToken) {
+            currentIndex++;
+            if (currentIndex < writers.length) {
+              playCurrentSequence(sessionToken);
+            } else {
+              stopAnimation();
+            }
+          }
         }
       });
-
-      activeCharIndex = index;
-      startAnimation();
     }
 
+    // Start playback
     function startAnimation() {
+      if (writers.length === 0) return;
+      if (currentIndex >= writers.length) currentIndex = 0;
+
       isPlaying = true;
-      playIcon.className = 'fa-solid fa-pause text-xl';
-      animToken++;
-      runAnimationSequence(animToken);
+      playIcon.className = 'fa-solid fa-pause';
+      animationSessionToken++;
+      playCurrentSequence(animationSessionToken);
     }
 
-    function pauseAnimation() {
-      isPlaying = false;
-      playIcon.className = 'fa-solid fa-play text-xl ml-0.5';
-      if (writers[activeCharIndex]) {
-        writers[activeCharIndex].pauseAnimation();
-      }
-    }
-
+    // Stop / Pause playback
     function stopAnimation() {
-      animToken++;
       isPlaying = false;
-      playIcon.className = 'fa-solid fa-play text-xl ml-0.5';
-      writers.forEach(w => w.pauseAnimation());
+      playIcon.className = 'fa-solid fa-play';
+      animationSessionToken++;
+      writers.forEach(w => w && w.pauseAnimation());
     }
 
-    function resetAllWriters() {
-      writers.forEach(w => w.hideCharacter());
-    }
-
-    // Sequential Animation Async Loop
-    async function runAnimationSequence(currentToken) {
-      while (activeCharIndex < charList.length && isPlaying && currentToken === animToken) {
-        const writer = writers[activeCharIndex];
-        setActiveCardUI(activeCharIndex);
-        updateSliderFromProgress();
-
-        await new Promise((resolve) => {
-          writer.animateCharacter({
-            strokeAnimationSpeed: currentSpeed * 1.2,
-            delayBetweenStrokes: 150 / currentSpeed,
-            onComplete: resolve
-          });
-        });
-
-        if (!isPlaying || currentToken !== animToken) return;
-
-        activeCharIndex++;
-      }
-
-      // Completion of full sequence
-      if (activeCharIndex >= charList.length) {
-        isPlaying = false;
-        playIcon.className = 'fa-solid fa-rotate-right text-xl';
-        updateSliderUI(100);
-        removeAllActiveHighlights();
-      }
-    }
-
-    // Slider Progress Updates
-    function updateSliderFromProgress() {
-      if (charList.length === 0) return;
-      const progressPercent = (activeCharIndex / charList.length) * 100;
-      updateSliderUI(progressPercent);
-    }
-
-    function updateSliderUI(percent) {
-      progressSlider.value = Math.min(100, Math.max(0, percent));
-    }
-
-    // Timeline Drag / Seek
-    function onSliderSeek(percent) {
-      if (charList.length === 0) return;
-
-      const targetCharIndex = Math.min(charList.length - 1, Math.floor((percent / 100) * charList.length));
-      const wasPlaying = isPlaying;
+    // Jump to specific index
+    function jumpToCharacter(index, startPlaying = false) {
       stopAnimation();
-
-      activeCharIndex = targetCharIndex;
-
+      currentIndex = index;
+      
+      // Hide all strokes for upcoming characters
       writers.forEach((w, idx) => {
-        if (idx < targetCharIndex) {
-          w.showCharacter();
-        } else {
+        if (idx >= index && w) {
           w.hideCharacter();
         }
       });
 
-      setActiveCardUI(activeCharIndex);
+      highlightCard(currentIndex);
 
-      if (wasPlaying) {
+      if (startPlaying) {
         startAnimation();
       }
     }
 
-    // Event Initialization
-    window.addEventListener('DOMContentLoaded', () => {
-      renderCharacters(textInput.value);
+    // Rewind back to 0
+    function rewind() {
+      stopAnimation();
+      currentIndex = 0;
+      writers.forEach(w => w && w.hideCharacter());
+      highlightCard(0);
+    }
 
-      textInput.addEventListener('input', (e) => {
-        stopAnimation();
-        renderCharacters(e.target.value);
+    // Recreate all HanziWriter instances with current speed
+    function recreateWritersAndResume() {
+      const werePlaying = isPlaying;
+      stopAnimation();
+
+      // Destroy and recreate each writer
+      writers = charList.map((char, idx) => {
+        const targetId = `writer-target-${idx}`;
+        return createWriterForChar(char, targetId);
       });
 
-      clearBtn.addEventListener('click', () => {
-        textInput.value = '';
-        stopAnimation();
-        renderCharacters('');
-      });
-
-      playPauseBtn.addEventListener('click', togglePlayPause);
-      rewindBtn.addEventListener('click', rewindToStart);
-
-      speedSelect.addEventListener('change', (e) => {
-        currentSpeed = parseFloat(e.target.value);
-        if (isPlaying && writers[activeCharIndex]) {
-          animToken++;
-          runAnimationSequence(animToken);
+      // Restore stroke states up to currentIndex
+      writers.forEach((w, idx) => {
+        if (idx < currentIndex && w) {
+          w.showCharacter();
+        } else if (w) {
+          w.hideCharacter();
         }
       });
 
-      progressSlider.addEventListener('input', (e) => {
-        onSliderSeek(parseFloat(e.target.value));
-      });
+      if (werePlaying) {
+        startAnimation();
+      }
+    }
+
+    // Event Listeners
+    textInput.addEventListener('input', () => renderGrid());
+
+    playPauseBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        stopAnimation();
+      } else {
+        startAnimation();
+      }
     });
+
+    rewindBtn.addEventListener('click', rewind);
+
+    seekBar.addEventListener('input', (e) => {
+      jumpToCharacter(parseInt(e.target.value, 10), isPlaying);
+    });
+
+    // Destroy and recreate writers when speed option is changed
+    speedSelect.addEventListener('change', (e) => {
+      currentSpeed = parseFloat(e.target.value);
+      recreateWritersAndResume();
+    });
+
+    // Initialize on load
+    renderGrid();
   </script>
 </body>
 </html>
