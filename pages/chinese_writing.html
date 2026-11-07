@@ -461,7 +461,7 @@
         loadWordIndex(AppState.currentWordIndex);
       }
 
-      async function loadWordIndex(idx) {
+            async function loadWordIndex(idx) {
         AppState.currentWord = AppState.currentWordList[idx] || '大';
         document.getElementById('target-word-display').textContent = AppState.currentWord;
         document.getElementById('round-progress').textContent = `第 ${idx + 1} / ${AppState.currentWordList.length} 題`;
@@ -472,10 +472,21 @@
         for (const char of AppState.currentWord) {
           if (!AppState.characterDataCache[char]) {
             try {
-              const data = await HanziWriter.loadCharacterData(char);
-              AppState.characterDataCache[char] = data;
+              // 1. Try fetching from local directory first
+              const localRes = await fetch(`/hanzi-writer-data-hk/data/${encodeURIComponent(char)}.json`);
+              if (localRes.ok) {
+                AppState.characterDataCache[char] = await localRes.json();
+              } else {
+                throw new Error('Local character file not found');
+              }
             } catch(e) {
-              AppState.characterDataCache[char] = null;
+              // 2. Fallback to original HanziWriter CDN loader
+              try {
+                const data = await HanziWriter.loadCharacterData(char);
+                AppState.characterDataCache[char] = data;
+              } catch(fallbackErr) {
+                AppState.characterDataCache[char] = null;
+              }
             }
           }
         }
@@ -522,12 +533,29 @@
             strokeAnimationSpeed: 1.2,
             delayBetweenStrokes: 180,
             strokeColor: '#FF884D',
-            radicalColor: '#FF6B6B'
+            radicalColor: '#FF6B6B',
+            // Custom charDataLoader configuration for HanziWriter.create()
+            charDataLoader: (currentChar, onComplete, onError) => {
+              const localUrl = `/hanzi-writer-data-hk/data/${encodeURIComponent(currentChar)}.json`;
+              fetch(localUrl)
+                .then(res => {
+                  if (!res.ok) throw new Error('Local file missing');
+                  return res.json();
+                })
+                .then(data => onComplete(data))
+                .catch(() => {
+                  // Fallback to default HanziWriter loader if local fetch fails
+                  HanziWriter.loadCharacterData(currentChar)
+                    .then(data => onComplete(data))
+                    .catch(err => onError(err));
+                });
+            }
           });
 
           AppState.writerInstances.push(writer);
         });
       }
+
 
       function toggleWatermark() {
         AppState.showWatermark = !AppState.showWatermark;
