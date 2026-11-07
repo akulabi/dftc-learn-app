@@ -2,8 +2,8 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中文筆順練習</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>中文筆劃練習</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -33,7 +33,7 @@
 
     /* 九宮格 (3x3 Grid) SVG background */
     .jiugong-grid-bg {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FAF6F0'/%3E%3Cline x1='33.33' y1='0' x2='33.33' y2='100' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='66.66' y1='0' x2='66.66' y2='100' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='33.33' x2='100' y2='33.33' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='66.66' x2='100' y2='66.66' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Crect x='1' y='1' width='98' height='98' fill='none' stroke='%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23FAF6F0'/%3E%3Cline x1='40' y1='0' x2='40' y2='120' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='80' y1='0' x2='80' y2='120' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='40' x2='120' y2='40' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='80' x2='120' y2='80' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='0' x2='120' y2='120' stroke='%23EADCD0' stroke-width='1' stroke-dasharray='2,2'/%3E%3Cline x1='120' y1='0' x2='0' y2='120' stroke='%23EADCD0' stroke-width='1' stroke-dasharray='2,2'/%3E%3Crect x='1' y='1' width='118' height='118' fill='none' stroke='%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
       background-size: cover;
     }
 
@@ -44,12 +44,12 @@
     }
   </style>
 </head>
-<body class="h-dvh min-h-[100vh] flex flex-col justify-between overflow-hidden select-none bg-[#F8F3ED] text-[#4A3E3D]">
+<body class="h-dvh min-h-[100vh] w-full flex flex-col justify-between overflow-hidden select-none bg-[#F8F3ED] text-[#4A3E3D]">
 
   <!-- TOP HEADER / INPUT SECTION -->
-  <header class="w-full max-w-xl mx-auto pt-3 px-4 flex flex-col items-center gap-2 flex-none">
-    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-5 py-1.5 shadow-sm text-center">
-      <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆順練習</h1>
+  <header class="flex-none w-full max-w-5xl mx-auto pt-3 px-3 flex flex-col items-center gap-2">
+    <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-4 py-1.5 shadow-sm text-center">
+      <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆劃練習</h1>
     </div>
 
     <!-- Text input box -->
@@ -57,26 +57,26 @@
       <input 
         type="text" 
         id="textInput" 
-        value="中文筆順練習" 
-        placeholder="請輸入中文單字、句子或標點符號..."
-        class="w-full px-4 py-2 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
+        value="中文筆劃練習" 
+        placeholder="請輸入中文單字或句子..."
+        class="w-full px-4 py-2 sm:py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
       />
     </div>
   </header>
 
-  <!-- MIDDLE CHARACTER GRID (Auto-scrolls, Flexibly scales inside dynamic viewport) -->
-  <main class="flex-1 w-full max-w-xl mx-auto px-3 sm:px-4 my-2 overflow-hidden flex flex-col min-h-0">
+  <!-- MIDDLE CHARACTER GRID (Responsive auto-wrap, 1.5x larger cards, minimal padding, perfectly centered content) -->
+  <main class="flex-1 min-h-0 w-full max-w-5xl mx-auto px-2 sm:px-3 my-2 overflow-hidden flex flex-col">
     <div 
       id="gridContainer" 
-      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-3 sm:p-4 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-3 sm:gap-4 auto-rows-max shadow-inner place-items-center"
+      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-2.5 sm:p-4 overflow-y-auto custom-scrollbar flex flex-wrap gap-2 sm:gap-3 content-start justify-center shadow-inner"
     >
       <!-- Hanzi Writer cards generated dynamically here -->
     </div>
   </main>
 
-  <!-- BOTTOM CONTROL BAR (Fixed/Sticky for Android Chrome dynamic address bar) -->
-  <footer class="w-full max-w-xl mx-auto px-3 sm:px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-1 flex-none sticky bottom-0 z-50">
-    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-3 shadow-lg">
+  <!-- BOTTOM CONTROL BAR (Mobile browser safe area friendly) -->
+  <footer class="flex-none w-full max-w-5xl mx-auto px-2 sm:px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sticky bottom-0 z-50">
+    <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-md">
       
       <!-- Play / Pause Button -->
       <button 
@@ -139,33 +139,38 @@
       const speedSelect = document.getElementById('speedSelect');
 
       let charList = [];
-      let writers = []; // Holds references to HanziWriter instances or null for punctuation
+      let writers = []; // Array storing HanziWriter instances or null (for punctuation)
       let currentIndex = 0;
       let isPlaying = false;
       let currentSpeed = 1.0;
-      let animationSessionToken = 0; // Ensures clean async sequence control
+      let animationSessionToken = 0; // Async playback token
 
       // Check if character is a Chinese Hanzi (stroke data capable)
       function isHanzi(char) {
         return /[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]/.test(char);
       }
 
-      // Create an individual HanziWriter instance inside a card container or display punctuation mark
+      // Create an individual HanziWriter instance inside target container or display punctuation mark
       function createWriterForChar(char, targetId) {
         const container = document.getElementById(targetId);
         container.innerHTML = ''; // Clear container element
 
         if (!isHanzi(char)) {
-          // Render punctuation mark directly as formatted text
-          container.className = 'w-full h-full flex items-center justify-center text-5xl font-serif text-[#000000]';
+          // Render punctuation mark directly as formatted larger text centered in card
+          container.className = 'w-full h-full flex items-center justify-center text-6xl sm:text-7xl font-serif text-[#000000]';
           container.innerText = char;
           return null;
         }
 
+        // Determine larger character size relative to card width with minimal internal padding
+        const parentCard = container.parentElement;
+        const cardSize = parentCard ? parentCard.clientWidth : 144;
+        const writerSize = Math.max(125, cardSize - 4);
+
         return HanziWriter.create(targetId, char, {
-          width: 140,
-          height: 140,
-          padding: 8,
+          width: writerSize,
+          height: writerSize,
+          padding: 2,
           showOutline: true,
           strokeColor: '#000000', // Pure black stroke
           outlineColor: '#E0E0E0',
@@ -224,7 +229,8 @@
 
         charList.forEach((char, idx) => {
           const card = document.createElement('div');
-          card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-2xl p-2 flex items-center justify-center cursor-pointer transition-all duration-200 w-[150px] h-[150px] relative shadow-sm hover:border-[#C88A4B]';
+          // Fully centered flexbox container with larger character rendering
+          card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-xl p-0.5 flex items-center justify-center cursor-pointer transition-all duration-200 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 relative shadow-sm hover:border-[#C88A4B] shrink-0 overflow-hidden';
           card.id = `card-${idx}`;
           
           const targetDiv = document.createElement('div');
@@ -400,6 +406,15 @@
       speedSelect.addEventListener('change', (e) => {
         currentSpeed = parseFloat(e.target.value);
         recreateWritersAndResume();
+      });
+
+      // Handle resize to adjust centered HanziWriter bounding box
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          recreateWritersAndResume();
+        }, 200);
       });
 
       // Initialize on load
