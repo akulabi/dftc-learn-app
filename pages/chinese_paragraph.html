@@ -9,7 +9,7 @@
     <!-- HanziWriter CDN -->
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
     <style>
-        /* Custom scrollbar */
+        /* Custom scrollbar for rice paper container */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -29,6 +29,7 @@
             scroll-behavior: smooth;
         }
 
+        /* Prevent elastic drag effect on mobile viewports */
         body {
             overscroll-behavior-y: none;
         }
@@ -36,9 +37,9 @@
 </head>
 <body class="bg-[#f4efe6] h-[100dvh] w-screen flex flex-col font-sans text-stone-800 antialiased overflow-hidden select-none">
 
-    <!-- Top Input Bar -->
-    <header class="shrink-0 pt-3 pb-2 px-4 flex justify-center z-20">
-        <div class="w-full max-w-[320px] relative">
+    <!-- Top Input Bar (Fixed header area) -->
+    <header class="shrink-0 pt-4 pb-2 px-4 flex justify-center z-20">
+        <div class="w-full max-w-[340px] relative">
             <input 
                 type="text" 
                 id="textInput" 
@@ -53,21 +54,21 @@
     <main class="flex-1 min-h-0 w-full flex justify-center px-4 overflow-hidden relative">
         <div 
             id="viewportBox" 
-            class="w-full max-w-[320px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
+            class="w-full max-w-[340px] h-full overflow-y-auto custom-scrollbar scroll-smooth-vertical pb-28 pt-2"
         >
-            <!-- Xuan Paper Card Background -->
-            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-3 shadow-md relative min-h-full">
-                <!-- Grid Container: Displays all characters in rows of 2 -->
+            <!-- Xuan Paper Card Canvas background -->
+            <div class="bg-[#faf6ee] border-2 border-[#b87333]/40 rounded-2xl p-4 shadow-md relative min-h-full">
+                <!-- Grid Container: 2 Columns Layout -->
                 <div id="characterGrid" class="grid grid-cols-2 gap-3 justify-items-center w-full">
-                    <!-- Character Items Rendered Dynamically Here -->
+                    <!-- Dynamic Character Items Rendered Here -->
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Fixed Floating Control Tray -->
+    <!-- Bottom Fixed Floating Control Toolbar -->
     <footer class="fixed bottom-0 left-0 right-0 bg-[#ebdcc9]/95 backdrop-blur-md border-t border-[#b87333]/30 px-4 py-3 z-50 flex justify-center shadow-lg">
-        <div class="w-full max-w-[320px] flex items-center justify-between gap-3">
+        <div class="w-full max-w-[340px] flex items-center justify-between gap-3">
             
             <!-- Play / Pause Button -->
             <button 
@@ -83,7 +84,7 @@
                 </svg>
             </button>
 
-            <!-- Timeline Range Slider -->
+            <!-- Timeline Slider Control -->
             <div class="flex-1 flex items-center px-1">
                 <input 
                     type="range" 
@@ -113,20 +114,20 @@
     </footer>
 
     <script>
-        // State Management
+        // Application State & Globals
         let currentText = "中文筆順練習";
         let writers = [];
         let activeCharIndex = 0;
         let isPlaying = false;
         let speedMultiplier = 1.0;
-        const GRID_SIZE = 130; // Standard size per character grid
+        const GRID_SIZE = 130; // Grid dimensions per character box
 
-        // Priority Loader: Try HK local endpoint first, fallback to standard CDN
+        // Custom DataLoader with Priority HK Local Endpoint and CDN Fallback
         function customCharDataLoader(char, onComplete, onError) {
             const hkPath = `/hanzi-writer-data-hk/data/${char}.json`;
             fetch(hkPath)
                 .then(response => {
-                    if (!response.ok) throw new Error('HK Data not found');
+                    if (!response.ok) throw new Error('HK Data file not found');
                     return response.json();
                 })
                 .then(data => onComplete(data))
@@ -142,7 +143,7 @@
                 });
         }
 
-        // Draw Canvas Rice-Grid (米字格)
+        // HTML5 Canvas Rice Grid (米字格) Drawing Function
         function drawRiceGrid(canvas) {
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
@@ -154,7 +155,7 @@
             canvas.style.height = `${size}px`;
             ctx.scale(dpr, dpr);
 
-            // Paper Background Fill
+            // Paper Background
             ctx.fillStyle = '#faf6ee';
             ctx.fillRect(0, 0, size, size);
 
@@ -177,45 +178,56 @@
             ctx.stroke();
         }
 
-        // Build grid showing ALL characters
+        // Clean up previous instances before rebuilding
+        function clearWriters() {
+            writers.forEach(w => {
+                if (w && typeof w.destroy === 'function') {
+                    try { w.destroy(); } catch (e) {}
+                }
+            });
+            writers = [];
+        }
+
+        // Build character grid for entire paragraph string
         function initGrid() {
             stopAnimation();
+            clearWriters();
+
             const gridContainer = document.getElementById('characterGrid');
             gridContainer.innerHTML = '';
-            writers = [];
             activeCharIndex = 0;
             document.getElementById('timelineSlider').value = 0;
 
             const chars = Array.from(currentText).filter(c => c.trim() !== '');
 
             chars.forEach((char, index) => {
-                // Wrapper Div
+                // Outer wrapper div
                 const itemEl = document.createElement('div');
                 itemEl.id = `char-item-${index}`;
                 itemEl.className = `relative cursor-pointer transition-all rounded-xl p-1 flex flex-col items-center justify-center border-2 ${index === 0 ? 'border-[#b87333] shadow-md bg-amber-50/50' : 'border-transparent hover:border-[#b87333]/30'}`;
                 itemEl.style.width = `${GRID_SIZE + 10}px`;
                 itemEl.style.height = `${GRID_SIZE + 10}px`;
                 
-                // Rice Grid Canvas
+                // Rice grid canvas element
                 const canvas = document.createElement('canvas');
                 canvas.className = "rounded-lg shadow-inner";
                 drawRiceGrid(canvas);
                 itemEl.appendChild(canvas);
 
-                // HanziWriter Container Overlay
+                // HanziWriter DOM target
                 const writerDiv = document.createElement('div');
                 writerDiv.className = "absolute inset-0 flex items-center justify-center";
                 itemEl.appendChild(writerDiv);
 
                 gridContainer.appendChild(itemEl);
 
-                // Click event for manual selection
+                // Single character click interaction
                 itemEl.addEventListener('click', () => {
                     focusCharacter(index);
                     playSingleCharacter(index);
                 });
 
-                // Create HanziWriter instance
+                // Instantiate HanziWriter instance
                 const writer = HanziWriter.create(writerDiv, char, {
                     width: GRID_SIZE - 10,
                     height: GRID_SIZE - 10,
@@ -237,7 +249,7 @@
             }
         }
 
-        // Highlight and center focus on current playing character
+        // Highlight and center view on current target character
         function focusCharacter(index) {
             if (index < 0 || index >= writers.length) return;
             
@@ -259,7 +271,7 @@
             }
         }
 
-        // Animate individual character
+        // Play individual character animation
         function playSingleCharacter(index) {
             stopAnimation();
             isPlaying = true;
@@ -273,7 +285,7 @@
             });
         }
 
-        // Sequential one-by-one animation for the whole paragraph
+        // Sequential auto-play loop across full paragraph
         function startGlobalPlayback() {
             if (writers.length === 0) return;
             isPlaying = true;
@@ -300,13 +312,14 @@
             playNext(activeCharIndex);
         }
 
-        // Stop current animation loop
+        // Stop active animation loops
         function stopAnimation() {
             isPlaying = false;
             updatePlayPauseIcon();
             writers.forEach(w => w.cancelAnimation());
         }
 
+        // Toggle UI Play/Pause Icons
         function updatePlayPauseIcon() {
             const playIcon = document.getElementById('playIcon');
             const pauseIcon = document.getElementById('pauseIcon');
@@ -319,7 +332,7 @@
             }
         }
 
-        // Live speed modulation
+        // Seamless Live Speed Updates across instances
         function applySpeedChange(newSpeed) {
             speedMultiplier = parseFloat(newSpeed);
             writers.forEach(writer => {
@@ -330,12 +343,17 @@
             });
         }
 
-        // Listeners
+        // Input Reactivity with Debounce
+        let debounceTimer;
         document.getElementById('textInput').addEventListener('input', (e) => {
             currentText = e.target.value;
-            initGrid();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                initGrid();
+            }, 300);
         });
 
+        // Controls Event Listeners
         document.getElementById('playPauseBtn').addEventListener('click', () => {
             if (isPlaying) {
                 stopAnimation();
@@ -351,7 +369,7 @@
             applySpeedChange(e.target.value);
         });
 
-        // Initialize App
+        // Initialize App on DOM Ready
         window.addEventListener('DOMContentLoaded', () => {
             initGrid();
         });
