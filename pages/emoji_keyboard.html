@@ -11,6 +11,12 @@
       font-family: 'Fredoka', cursive, sans-serif;
     }
     
+    /* Ensure clean rendering of multi-byte & color emojis across platforms */
+    .emoji-text {
+      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 'Android Emoji', 'EmojiOne Color', sans-serif;
+      line-height: 1.1;
+    }
+
     /* Custom Keyframe Animations */
     @keyframes popBounce {
       0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
@@ -151,7 +157,7 @@
 
       <!-- Large Animated Emoji -->
       <div id="emojiDisplayWrapper" class="relative cursor-pointer group p-2 rounded-full transition-all duration-300 hover:bg-purple-50/50" title="Click to speak emoji name again!">
-        <div id="emojiDisplay" class="text-6xl sm:text-7xl select-none animate-pulse-glow transition-transform duration-300 group-hover:scale-110">
+        <div id="emojiDisplay" class="emoji-text text-6xl sm:text-7xl select-none animate-pulse-glow transition-transform duration-300 group-hover:scale-110">
           🎉
         </div>
       </div>
@@ -260,7 +266,7 @@
           { char: '🦊', names: { 'en-US': 'Fox', 'zh-HK': '狐狸', 'zh-CN': '狐狸', 'es-ES': 'Zorro', 'fr-FR': 'Renard', 'ja-JP': 'きつね', 'de-DE': 'Fuchs' } },
           { char: '🐻', names: { 'en-US': 'Bear', 'zh-HK': '大熊', 'zh-CN': '大熊', 'es-ES': 'Oso', 'fr-FR': 'Ours', 'ja-JP': 'くま', 'de-DE': 'Bär' } },
           { char: '🐼', names: { 'en-US': 'Panda', 'zh-HK': '熊貓', 'zh-CN': '熊猫', 'es-ES': 'Oso Panda', 'fr-FR': 'Panda', 'ja-JP': 'パンダ', 'de-DE': 'Panda' } },
-          { char: 'KOALA', names: { 'en-US': 'Koala', 'zh-HK': '樹熊', 'zh-CN': '考拉', 'es-ES': 'Coala', 'fr-FR': 'Koala', 'ja-JP': 'コアラ', 'de-DE': 'Koala' } },
+          { char: '🐨', names: { 'en-US': 'Koala', 'zh-HK': '樹熊', 'zh-CN': '考拉', 'es-ES': 'Coala', 'fr-FR': 'Koala', 'ja-JP': 'コアラ', 'de-DE': 'Koala' } },
           { char: '🐯', names: { 'en-US': 'Tiger', 'zh-HK': '老虎', 'zh-CN': '老虎', 'es-ES': 'Tigre', 'fr-FR': 'Tigre', 'ja-JP': 'トラ', 'de-DE': 'Tiger' } },
           { char: '🦁', names: { 'en-US': 'Lion', 'zh-HK': '獅子', 'zh-CN': '狮子', 'es-ES': 'León', 'fr-FR': 'Lion', 'ja-JP': 'ライオン', 'de-DE': 'Löwe' } },
           { char: '🐮', names: { 'en-US': 'Cow', 'zh-HK': '乳牛', 'zh-CN': '奶牛', 'es-ES': 'Vaca', 'fr-FR': 'Vache', 'ja-JP': '牛', 'de-DE': 'Kuh' } },
@@ -508,7 +514,7 @@
 
         pageItems.forEach(item => {
           const btn = document.createElement('button');
-          btn.className = 'aspect-square flex items-center justify-center text-2xl sm:text-3xl bg-slate-50 hover:bg-purple-100 rounded-xl border border-slate-200 hover:border-purple-300 shadow-sm hover:shadow active:scale-90 transition-all cursor-pointer select-none';
+          btn.className = 'emoji-text aspect-square flex items-center justify-center text-2xl sm:text-3xl bg-slate-50 hover:bg-purple-100 rounded-xl border border-slate-200 hover:border-purple-300 shadow-sm hover:shadow active:scale-90 transition-all cursor-pointer select-none';
           btn.textContent = item.char;
           btn.title = getEmojiName(item);
 
