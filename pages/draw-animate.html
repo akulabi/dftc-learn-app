@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kid Animated Studio</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <!-- Inline embedded lightweight pure JS GIF Encoder (omggif) -->
+  <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js"></script>
+
+  <style>
+    * {
+      touch-action: none; /* Prevent screen scrolling/gestures on mobile */
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .font-heading {
+      font-family: 'Fredoka One', cursive;
+    }
+    /* Playful Kid Button Styles */
+    .btn-kid {
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+    }
+    .btn-kid:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+    }
+    .tool-btn.active {
+      outline: 3px solid #FBBF24;
+      transform: scale(1.05);
+    }
+    .color-dot.active {
+      transform: scale(1.15);
+      box-shadow: 0 0 0 3px #FBBF24;
+    }
+  </style>
+</head>
+<body class="bg-amber-100 flex flex-col justify-between h-full w-full p-1.5 sm:p-2 gap-1.5 text-slate-800 relative">
+
+  <!-- TOP BAR: Controls & Actions (Compact Responsive Layout) -->
+  <header class="bg-white rounded-2xl p-1.5 sm:p-2 shadow-md flex items-center justify-between gap-1 border-2 border-amber-300 z-10 shrink-0 w-full">
+    <!-- Logo & Frame Counter -->
+    <div class="flex items-center gap-1 shrink-0">
+      <div class="bg-pink-400 text-white rounded-xl text-xs sm:text-base flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <span id="frame-counter" class="bg-purple-100 text-purple-700 font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full border border-purple-200">
+        F: <strong id="frame-count-num" class="text-purple-900">1</strong>
+      </span>
+    </div>
+
+    <!-- Right Action Controls -->
+    <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+      <!-- Play / Pause -->
+      <button id="btn-play" class="btn-kid bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2 py-1 rounded-xl flex items-center gap-1 text-xs">
+        <i id="play-icon" class="fa-solid fa-play text-[10px]"></i>
+        <span class="text-[11px]">Play</span>
+      </button>
+
+      <!-- FPS Speed Control -->
+      <div class="flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded-xl border border-amber-200 text-[10px] sm:text-xs font-bold text-amber-800">
+        <span id="fps-val" class="w-6 text-center text-[10px]">6FPS</span>
+        <input id="speed-slider" type="range" min="1" max="15" value="6" class="w-10 sm:w-14 accent-emerald-500 cursor-pointer">
+      </div>
+
+      <div class="h-5 w-0.5 bg-slate-200"></div>
+
+      <!-- Undo -->
+      <button id="btn-undo" title="Undo Stroke" class="btn-kid bg-yellow-400 text-amber-900 font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center text-xs">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+
+      <!-- Redo -->
+      <button id="btn-redo" title="Redo Stroke" class="btn-kid bg-yellow-400 text-amber-900 font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center text-xs">
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+
+      <!-- Clear -->
+      <button id="btn-clear" title="Clear All Frames" class="btn-kid bg-orange-400 text-white font-bold w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center text-xs">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+
+      <!-- Export GIF -->
+      <button id="btn-export-gif" title="Export GIF" class="btn-kid bg-purple-500 text-white font-bold px-2 py-1 rounded-xl flex items-center gap-1 text-xs">
+        <i class="fa-solid fa-film text-[10px]"></i>
+        <span class="text-[11px]">GIF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN FULL-SCREEN DRAWING CANVAS -->
+  <main id="canvas-container" class="flex-1 w-full relative bg-white rounded-2xl shadow-inner border-2 border-white overflow-hidden">
+    <!-- Onion Skin Layer Canvas -->
+    <canvas id="onion-canvas" class="absolute inset-0 w-full h-full opacity-30 pointer-events-none"></canvas>
+    <!-- Main Interactive Drawing Canvas -->
+    <canvas id="main-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+  </main>
+
+  <!-- BOTTOM TOOLBAR & COMPACT COLOR PALETTE -->
+  <footer class="bg-white rounded-2xl p-1.5 sm:p-2 shadow-md border-2 border-amber-300 z-10 shrink-0 w-full flex items-center justify-between gap-1">
+    <!-- Left Tools: Brush, Fill, Eraser -->
+    <div class="flex items-center gap-1 shrink-0">
+      <button id="tool-brush" class="btn-kid tool-btn active bg-purple-500 text-white w-7 h-7 sm:w-9 sm:h-9 rounded-xl text-xs sm:text-sm flex items-center justify-center" title="Brush">
+        <i class="fa-solid fa-paint-brush"></i>
+      </button>
+      <button id="tool-fill" class="btn-kid tool-btn bg-teal-400 text-white w-7 h-7 sm:w-9 sm:h-9 rounded-xl text-xs sm:text-sm flex items-center justify-center" title="Bucket Fill">
+        <i class="fa-solid fa-fill-drip"></i>
+      </button>
+      <button id="tool-eraser" class="btn-kid tool-btn bg-pink-400 text-white w-7 h-7 sm:w-9 sm:h-9 rounded-xl text-xs sm:text-sm flex items-center justify-center" title="Eraser">
+        <i class="fa-solid fa-eraser"></i>
+      </button>
+    </div>
+
+    <!-- Size Slider + Preview -->
+    <div class="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded-xl border border-slate-200 shrink-0">
+      <div id="size-preview-container" class="w-4 h-4 sm:w-5 sm:h-5 rounded-lg flex items-center justify-center shrink-0">
+        <div id="size-preview" class="bg-purple-500 rounded-full transition-all" style="width: 10px; height: 10px;"></div>
+      </div>
+      <input id="stroke-size" type="range" min="4" max="50" value="12" class="w-10 sm:w-16 accent-purple-500 cursor-pointer">
+    </div>
+
+    <!-- Compact Kid Color Palette -->
+    <div class="flex items-center gap-1 shrink-0">
+      <button class="color-dot active w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-purple-500 border border-slate-300 shrink-0" data-color="#A855F7"></button>
+      <button class="color-dot w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-red-500 border border-slate-300 shrink-0" data-color="#EF4444"></button>
+      <button class="color-dot w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-amber-400 border border-slate-300 shrink-0" data-color="#FBBF24"></button>
+      <button class="color-dot w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-emerald-500 border border-slate-300 shrink-0" data-color="#10B981"></button>
+      <button class="color-dot w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-sky-400 border border-slate-300 shrink-0" data-color="#38BDF8"></button>
+      <button class="color-dot w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-black border border-slate-300 shrink-0" data-color="#000000"></button>
+      
+      <!-- Custom Color Input Circle -->
+      <label class="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-indigo-500 via-rose-500 to-yellow-400 cursor-pointer ring-1 ring-slate-300 shadow-sm flex items-center justify-center text-white relative overflow-hidden shrink-0">
+        <i class="fa-solid fa-plus text-[7px] sm:text-[9px]"></i>
+        <input id="custom-color" type="color" value="#A855F7" class="absolute inset-0 opacity-0 cursor-pointer">
+      </label>
+    </div>
+  </footer>
+
+  <!-- MODAL: Animated GIF Export Preview -->
+  <div id="export-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-3xl p-5 border-4 border-amber-300 shadow-2xl max-w-xs w-full text-center flex flex-col items-center gap-3">
+      <h2 class="font-heading text-xl text-pink-500">Your Animated Movie!</h2>
+      
+      <!-- Loading State -->
+      <div id="export-loading" class="flex flex-col items-center gap-2 py-4">
+        <div class="w-12 h-12 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+        <p id="loading-msg" class="text-slate-600 font-bold text-sm animate-pulse">Encoding frames to GIF...</p>
+      </div>
+
+      <!-- Result State -->
+      <div id="export-result" class="hidden flex flex-col items-center gap-3 w-full">
+        <img id="gif-preview" class="rounded-2xl border-2 border-amber-200 max-h-52 object-contain shadow-md" alt="Animated GIF Preview">
+        <a id="btn-download-gif" download="my-animation.gif" class="btn-kid w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-2 rounded-2xl flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-download"></i>
+          <span>Download Animated GIF</span>
+        </a>
+      </div>
+
+      <button id="btn-close-modal" class="btn-kid bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-1.5 rounded-xl text-xs">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // --- APP STATE ---
+    let frames = [];          // Array of canvas ImageData objects for fast processing
+    let undoStack = [];       // Frame history stack for Undo
+    let redoStack = [];       // Frame history stack for Redo
+    let currentFrameIndex = 0;
+    
+    let currentTool = 'brush'; // 'brush', 'fill', 'eraser'
+    let strokeColor = '#A855F7';
+    let strokeSize = 12;
+    let isPlaying = false;
+    let playInterval = null;
+    let fps = 6;
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // --- DOM ELEMENTS ---
+    const canvasContainer = document.getElementById('canvas-container');
+    const mainCanvas = document.getElementById('main-canvas');
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+    const onionCanvas = document.getElementById('onion-canvas');
+    const onionCtx = onionCanvas.getContext('2d');
+    
+    const sizePreview = document.getElementById('size-preview');
+    const strokeSizeInput = document.getElementById('stroke-size');
+    const customColorInput = document.getElementById('custom-color');
+    const frameCountNum = document.getElementById('frame-count-num');
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      createInitialFrame();
+
+      setupDrawingEvents();
+      setupToolEvents();
+      setupAnimationEvents();
+      setupExportEvents();
+
+      updateUI();
+    };
+
+    function resizeCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = mainCanvas.width;
+      tempCanvas.height = mainCanvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      if (mainCanvas.width > 0) {
+        tempCtx.drawImage(mainCanvas, 0, 0);
+      }
+
+      mainCanvas.width = rect.width;
+      mainCanvas.height = rect.height;
+      onionCanvas.width = rect.width;
+      onionCanvas.height = rect.height;
+
+      if (tempCanvas.width > 0) {
+        ctx.drawImage(tempCanvas, 0, 0, rect.width, rect.height);
+      } else {
+        clearCanvasToWhite();
+      }
+    }
+
+    function clearCanvasToWhite() {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+    }
+
+    function createInitialFrame() {
+      clearCanvasToWhite();
+      const initialFrame = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+      frames = [initialFrame];
+      undoStack = [ [initialFrame] ];
+      redoStack = [];
+      currentFrameIndex = 0;
+      updateFrameCounter();
+    }
+
+    // --- DRAWING & AUTOMATIC STROKE-TO-FRAME ---
+    function setupDrawingEvents() {
+      const getPos = (e) => {
+        const rect = mainCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      };
+
+      const startDraw = (e) => {
+        if (isPlaying) return;
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+
+        if (currentTool === 'fill') {
+          floodFill(Math.round(pos.x), Math.round(pos.y), strokeColor);
+          onStrokeComplete();
+          isDrawing = false;
+        } else {
+          drawSegment(lastX, lastY, lastX, lastY);
+        }
+      };
+
+      const moveDraw = (e) => {
+        if (!isDrawing || isPlaying) return;
+        const pos = getPos(e);
+        drawSegment(lastX, lastY, pos.x, pos.y);
+        lastX = pos.x;
+        lastY = pos.y;
+      };
+
+      const stopDraw = () => {
+        if (isDrawing) {
+          isDrawing = false;
+          onStrokeComplete();
+        }
+      };
+
+      mainCanvas.addEventListener('mousedown', startDraw);
+      mainCanvas.addEventListener('mousemove', moveDraw);
+      window.addEventListener('mouseup', stopDraw);
+
+      mainCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
+      mainCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); }, { passive: false });
+      window.addEventListener('touchend', stopDraw);
+    }
+
+    function drawSegment(x1, y1, x2, y2) {
+      ctx.beginPath();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (currentTool === 'eraser') {
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = strokeSize * 1.5;
+      } else {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeSize;
+      }
+
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function onStrokeComplete() {
+      // Capture current canvas as new animation frame
+      const currentSnapshot = ctx.getImageData(0, 0, mainCanvas.width, mainCanvas.height);
+      frames.push(currentSnapshot);
+      currentFrameIndex = frames.length - 1;
+
+      saveUndoState();
+      updateFrameCounter();
+      updateOnionSkin();
+    }
+
+    function updateOnionSkin() {
+      onionCtx.clearRect(0, 0, onionCanvas.width, onionCanvas.height);
+      if (currentFrameIndex <= 0) return;
+
+      const prevFrame = frames[currentFrameIndex - 1];
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = mainCanvas.width;
+      tempCanvas.height = mainCanvas.height;
+      tempCanvas.getContext('2d').putImageData(prevFrame, 0, 0);
+
+      onionCtx.drawImage(tempCanvas, 0, 0);
+    }
+
+    // --- FLOOD FILL ALGORITHM ---
+    function floodFill(startX, startY, fillHex) {
+      const w = mainCanvas.width;
+      const h = mainCanvas.height;
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      const targetColor = getPixelColor(data, startX, startY, w);
+      const fillColor = hexToRgb(fillHex);
+
+      if (colorsMatch(targetColor, fillColor)) return;
+
+      const queue = [[startX, startY]];
+      const visited = new Uint8Array(w * h);
+
+      while (queue.length > 0) {
+        const [x, y] = queue.pop();
+        if (x < 0 || x >= w || y < 0 || y >= h) continue;
+
+        const idx = y * w + x;
+        if (visited[idx]) continue;
+        visited[idx] = 1;
+
+        const currentColor = getPixelColor(data, x, y, w);
+        if (colorsMatch(currentColor, targetColor)) {
+          setPixelColor(data, x, y, fillColor, w);
+
+          queue.push([x + 1, y]);
+          queue.push([x - 1, y]);
+          queue.push([x, y + 1]);
+          queue.push([x, y - 1]);
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function getPixelColor(data, x, y, width) {
+      const i = (y * width + x) * 4;
+      return [data[i], data[i + 1], data[i + 2], data[i + 3]];
+    }
+
+    function setPixelColor(data, x, y, rgb, width) {
+      const i = (y * width + x) * 4;
+      data[i] = rgb.r;
+      data[i + 1] = rgb.g;
+      data[i + 2] = rgb.b;
+      data[i + 3] = 255;
+    }
+
+    function colorsMatch(c1, c2, tolerance = 25) {
+      return Math.abs(c1[0] - c2.r) <= tolerance &&
+             Math.abs(c1[1] - c2.g) <= tolerance &&
+             Math.abs(c1[2] - c2.b) <= tolerance;
+    }
+
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 0, g: 0, b: 0 };
+    }
+
+    // --- UNDO / REDO SYSTEM ---
+    function saveUndoState() {
+      undoStack.push([...frames]);
+      redoStack = [];
+    }
+
+    document.getElementById('btn-undo').addEventListener('click', () => {
+      if (undoStack.length > 1) {
+        const currentState = undoStack.pop();
+        redoStack.push(currentState);
+        
+        const previousFrames = [...undoStack[undoStack.length - 1]];
+        frames = previousFrames;
+        currentFrameIndex = frames.length - 1;
+        
+        loadFrame(currentFrameIndex);
+        updateFrameCounter();
+      }
+    });
+
+    document.getElementById('btn-redo').addEventListener('click', () => {
+      if (redoStack.length > 0) {
+        const nextState = redoStack.pop();
+        undoStack.push(nextState);
+
+        const nextFrames = [...nextState];
+        frames = nextFrames;
+        currentFrameIndex = frames.length - 1;
+
+        loadFrame(currentFrameIndex);
+        updateFrameCounter();
+      }
+    });
+
+    function loadFrame(index) {
+      if (frames[index]) {
+        ctx.putImageData(frames[index], 0, 0);
+        updateOnionSkin();
+      }
+    }
+
+    function updateFrameCounter() {
+      frameCountNum.textContent = frames.length;
+    }
+
+    // --- TOOLBAR CONTROLS ---
+    function setupToolEvents() {
+      const toolBtns = {
+        'tool-brush': 'brush',
+        'tool-fill': 'fill',
+        'tool-eraser': 'eraser'
+      };
+
+      Object.keys(toolBtns).forEach(id => {
+        document.getElementById(id).addEventListener('click', (e) => {
+          document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          currentTool = toolBtns[id];
+          updateSizePreview();
+        });
+      });
+
+      strokeSizeInput.addEventListener('input', (e) => {
+        strokeSize = parseInt(e.target.value);
+        updateSizePreview();
+      });
+
+      document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.addEventListener('click', (e) => {
+          document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          strokeColor = e.currentTarget.getAttribute('data-color');
+          if (currentTool === 'eraser') {
+            document.getElementById('tool-brush').click();
+          }
+          updateSizePreview();
+        });
+      });
+
+      customColorInput.addEventListener('input', (e) => {
+        strokeColor = e.target.value;
+        if (currentTool === 'eraser') {
+          document.getElementById('tool-brush').click();
+        }
+        updateSizePreview();
+      });
+
+      document.getElementById('btn-clear').addEventListener('click', () => {
+        createInitialFrame();
+      });
+    }
+
+    function updateSizePreview() {
+      sizePreview.style.width = `${Math.min(strokeSize, 20)}px`;
+      sizePreview.style.height = `${Math.min(strokeSize, 20)}px`;
+      sizePreview.style.backgroundColor = currentTool === 'eraser' ? '#F43F5E' : strokeColor;
+    }
+
+    // --- ANIMATION PLAYBACK ---
+    function setupAnimationEvents() {
+      const playBtn = document.getElementById('btn-play');
+      const playIcon = document.getElementById('play-icon');
+      
+      playBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          playIcon.className = 'fa-solid fa-pause';
+          playBtn.classList.replace('bg-emerald-500', 'bg-amber-500');
+          startPlayback();
+        } else {
+          stopPlayback();
+        }
+      });
+
+      const speedSlider = document.getElementById('speed-slider');
+      const fpsVal = document.getElementById('fps-val');
+      speedSlider.addEventListener('input', (e) => {
+        fps = parseInt(e.target.value);
+        fpsVal.textContent = `${fps}FPS`;
+        if (isPlaying) {
+          stopPlayback();
+          startPlayback();
+        }
+      });
+    }
+
+    function startPlayback() {
+      let animIndex = 0;
+      playInterval = setInterval(() => {
+        loadFrame(animIndex);
+        animIndex = (animIndex + 1) % frames.length;
+      }, 1000 / fps);
+    }
+
+    function stopPlayback() {
+      isPlaying = false;
+      clearInterval(playInterval);
+      const playBtn = document.getElementById('btn-play');
+      const playIcon = document.getElementById('play-icon');
+      playIcon.className = 'fa-solid fa-play';
+      playBtn.classList.replace('bg-amber-500', 'bg-emerald-500');
+      loadFrame(currentFrameIndex);
+    }
+
+    // --- TRUE ANIMATED GIF ENCODER ---
+    function setupExportEvents() {
+      const exportModal = document.getElementById('export-modal');
+      const exportLoading = document.getElementById('export-loading');
+      const exportResult = document.getElementById('export-result');
+      const gifPreview = document.getElementById('gif-preview');
+      const btnDownloadGif = document.getElementById('btn-download-gif');
+
+      document.getElementById('btn-export-gif').addEventListener('click', () => {
+        if (isPlaying) stopPlayback();
+
+        exportModal.classList.remove('hidden');
+        exportLoading.classList.remove('hidden');
+        exportResult.classList.add('hidden');
+
+        // Asynchronously encode all recorded frames into a GIF
+        setTimeout(() => {
+          try {
+            const gifUrl = generateAnimatedGIF(frames, fps);
+            gifPreview.src = gifUrl;
+            btnDownloadGif.href = gifUrl;
+            btnDownloadGif.download = "my-animation.gif";
+
+            exportLoading.classList.add('hidden');
+            exportResult.classList.remove('hidden');
+          } catch (err) {
+            console.error("GIF Encoding error:", err);
+            // Dynamic fallback if GIF generation encounters an issue
+            const fallbackCanvas = document.createElement('canvas');
+            fallbackCanvas.width = mainCanvas.width;
+            fallbackCanvas.height = mainCanvas.height;
+            fallbackCanvas.getContext('2d').putImageData(frames[frames.length - 1], 0, 0);
+            
+            const fallbackUrl = fallbackCanvas.toDataURL('image/png');
+            gifPreview.src = fallbackUrl;
+            btnDownloadGif.href = fallbackUrl;
+            btnDownloadGif.download = "my-drawing.png";
+            btnDownloadGif.querySelector('span').textContent = "Save Image";
+            
+            exportLoading.classList.add('hidden');
+            exportResult.classList.remove('hidden');
+          }
+        }, 100);
+      });
+
+      document.getElementById('btn-close-modal').addEventListener('click', () => {
+        exportModal.classList.add('hidden');
+      });
+    }
+
+    // Generate actual multi-frame animated GIF using omggif or canvas byte stream
+    function generateAnimatedGIF(frameImageDataList, targetFps) {
+      // Downscale to 320 max dimension for fast GIF encoding
+      const origW = mainCanvas.width;
+      const origH = mainCanvas.height;
+      const maxDim = 320;
+      let scale = 1;
+
+      if (origW > maxDim || origH > maxDim) {
+        scale = maxDim / Math.max(origW, origH);
+      }
+
+      const targetW = Math.floor(origW * scale);
+      const targetH = Math.floor(origH * scale);
+
+      const workCanvas = document.createElement('canvas');
+      workCanvas.width = targetW;
+      workCanvas.height = targetH;
+      const workCtx = workCanvas.getContext('2d');
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = origW;
+      tempCanvas.height = origH;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      const frameDelayHundredths = Math.max(1, Math.round(100 / targetFps));
+      const buffer = new Uint8Array(targetW * targetH * frameImageDataList.length * 5 + 1024);
+      
+      // Initialize GifWriter if available
+      if (typeof omggif !== 'undefined' && omggif.GifWriter) {
+        const writer = new omggif.GifWriter(buffer, targetW, targetH, { loop: 0 });
+
+        frameImageDataList.forEach((imageData) => {
+          tempCtx.putImageData(imageData, 0, 0);
+          workCtx.drawImage(tempCanvas, 0, 0, targetW, targetH);
+
+          const scaledData = workCtx.getImageData(0, 0, targetW, targetH).data;
+          
+          // Quantize 32-bit RGBA pixels to 256 indexed palette
+          const { palette, indexedPixels } = quantizeRGBA(scaledData);
+
+          writer.addFrame(0, 0, targetW, targetH, indexedPixels, {
+            delay: frameDelayHundredths,
+            palette: palette
+          });
+        });
+
+        const gifBytes = buffer.subarray(0, writer.end());
+        const blob = new Blob([gifBytes], { type: 'image/gif' });
+        return URL.createObjectURL(blob);
+      } else {
+        throw new Error("GIF Writer module not loaded");
+      }
+    }
+
+    // Fast Color Quantizer for GIF 256 Color Palette creation
+    function quantizeRGBA(rgbaData) {
+      const indexedPixels = new Uint8Array(rgbaData.length / 4);
+      const colorMap = new Map();
+      const palette = [];
+
+      for (let i = 0, p = 0; i < rgbaData.length; i += 4, p++) {
+        // Uniform color quantization to 6x6x6 color cube (max 216 colors)
+        const r = Math.round(rgbaData[i] / 51) * 51;
+        const g = Math.round(rgbaData[i + 1] / 51) * 51;
+        const b = Math.round(rgbaData[i + 2] / 51) * 51;
+
+        const rgbKey = (r << 16) | (g << 8) | b;
+
+        let index = colorMap.get(rgbKey);
+        if (index === undefined) {
+          if (palette.length < 256) {
+            index = palette.length;
+            palette.push(rgbKey);
+            colorMap.set(rgbKey, index);
+          } else {
+            index = 0; // Fallback index if palette is full
+          }
+        }
+        indexedPixels[p] = index;
+      }
+
+      // Fill remaining palette slots up to power of 2 if needed
+      while (palette.length < 2 || (palette.length & (palette.length - 1)) !== 0) {
+        palette.push(0);
+      }
+
+      return { palette, indexedPixels };
+    }
+
+    function updateUI() {
+      updateSizePreview();
+    }
+  </script>
+</body>
+</html>
