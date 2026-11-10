@@ -283,10 +283,11 @@
     let puzzleImage = new Image();
     let soundEnabled = true;
 
-    // Grid Parameters & Spacing
+    // Grid Parameters, Padding & Spacing
     let GRID_SIZE = 4;
     let TOTAL_PIECES = 16;
-    let GRID_GAP = 6; // Physical spacing between puzzle cells
+    let GRID_GAP = 6;           // Physical spacing between puzzle cells
+    let BOARD_PADDING = 20;     // Outer margin space on canvas so side tabs are never trimmed
     let pieceWidth = 0;
     let pieceHeight = 0;
     let canvasWidth = 0;
@@ -531,7 +532,6 @@
       for (let r = 0; r < GRID_SIZE; r++) {
         edges.horizontal[r] = [];
         for (let c = 0; c < GRID_SIZE - 1; c++) {
-          // 1 = right piece gets socket (-1), left piece gets tab (+1)
           edges.horizontal[r][c] = Math.random() < 0.5 ? 1 : -1;
         }
       }
@@ -540,47 +540,35 @@
       for (let r = 0; r < GRID_SIZE - 1; r++) {
         edges.vertical[r] = [];
         for (let c = 0; c < GRID_SIZE; c++) {
-          // 1 = top piece gets tab (+1), bottom piece gets socket (-1)
           edges.vertical[r][c] = Math.random() < 0.5 ? 1 : -1;
         }
       }
     }
 
-    // DRAW PERFECT COMPLEMENTARY JIGSAW PATH WITH BEZIER LOCK TABS
-    function drawPiecePath(ctxPath, r, c, w, h, tSize) {
-      // Top edge: neighbor above (r-1, c) shares vertical[r-1][c]
-      // If vertical[r-1][c] is +1 (downwards tab for top piece), this bottom piece receives -1 (upwards socket).
+    // DRAW COMPLEMENTARY JIGSAW PATH FOR A SPECIFIC PIECE IDENTITY
+    function drawPiecePathByIdentity(ctxPath, piece, w, h, tSize) {
+      const { row: r, col: c } = piece;
+
       const topTab = r > 0 ? -edges.vertical[r - 1][c] : 0;
-      
-      // Right edge: shares horizontal[r][c]
-      // If +1, tab points right (+x). If -1, socket points left (-x).
       const rightTab = c < GRID_SIZE - 1 ? edges.horizontal[r][c] : 0;
-      
-      // Bottom edge: shares vertical[r][c]
-      // If +1, tab points down (+y). If -1, socket points up (-y).
       const bottomTab = r < GRID_SIZE - 1 ? edges.vertical[r][c] : 0;
-      
-      // Left edge: neighbor to left (r, c-1) shares horizontal[r][c-1]
-      // If horizontal[r][c-1] is +1 (rightwards tab for left piece), this piece receives -1 (leftwards socket).
       const leftTab = c > 0 ? -edges.horizontal[r][c - 1] : 0;
 
       ctxPath.beginPath();
       ctxPath.moveTo(0, 0);
 
-      // 1. Top Edge: (0, 0) -> (w, 0)
-      // Positive dir (+1) = outward (up / -y), Negative dir (-1) = inward (down / +y)
+      // 1. Top Edge
       if (topTab === 0) {
         ctxPath.lineTo(w, 0);
       } else {
-        const dir = -topTab; // -1 extends up (-y), +1 extends down (+y)
+        const dir = -topTab;
         ctxPath.lineTo(w * 0.35, 0);
         ctxPath.bezierCurveTo(w * 0.35, dir * tSize, w * 0.44, dir * tSize * 1.35, w * 0.5, dir * tSize * 1.35);
         ctxPath.bezierCurveTo(w * 0.56, dir * tSize * 1.35, w * 0.65, dir * tSize, w * 0.65, 0);
         ctxPath.lineTo(w, 0);
       }
 
-      // 2. Right Edge: (w, 0) -> (w, h)
-      // Positive dir (+1) = outward (right / +x), Negative dir (-1) = inward (left / -x)
+      // 2. Right Edge
       if (rightTab === 0) {
         ctxPath.lineTo(w, h);
       } else {
@@ -591,8 +579,7 @@
         ctxPath.lineTo(w, h);
       }
 
-      // 3. Bottom Edge: (w, h) -> (0, h)
-      // Positive dir (+1) = outward (down / +y), Negative dir (-1) = inward (up / -y)
+      // 3. Bottom Edge
       if (bottomTab === 0) {
         ctxPath.lineTo(0, h);
       } else {
@@ -603,12 +590,11 @@
         ctxPath.lineTo(0, h);
       }
 
-      // 4. Left Edge: (0, h) -> (0, 0)
-      // Positive dir (+1) = outward (left / -x), Negative dir (-1) = inward (right / +x)
+      // 4. Left Edge
       if (leftTab === 0) {
         ctxPath.lineTo(0, 0);
       } else {
-        const dir = -leftTab; // -1 extends left (-x), +1 extends right (+x)
+        const dir = -leftTab;
         ctxPath.lineTo(0, h * 0.65);
         ctxPath.bezierCurveTo(dir * tSize, h * 0.65, dir * tSize * 1.35, h * 0.56, dir * tSize * 1.35, h * 0.5);
         ctxPath.bezierCurveTo(dir * tSize * 1.35, h * 0.44, dir * tSize, h * 0.35, 0, h * 0.35);
@@ -618,19 +604,17 @@
       ctxPath.closePath();
     }
 
-    // HELPER TO GET PIECE CANVAS COORDINATES WITH GAP SPACING
+    // HELPER TO GET PIECE CANVAS COORDINATES WITH BOARD PADDING AND GAP SPACING
     function getSlotPosition(r, c) {
-      const totalGapW = (GRID_SIZE - 1) * GRID_GAP;
-      const totalGapH = (GRID_SIZE - 1) * GRID_GAP;
-      const x = c * pieceWidth + c * GRID_GAP + (canvasWidth - (GRID_SIZE * pieceWidth + totalGapW)) / 2;
-      const y = r * pieceHeight + r * GRID_GAP + (canvasHeight - (GRID_SIZE * pieceHeight + totalGapH)) / 2;
+      const x = BOARD_PADDING + c * pieceWidth + c * GRID_GAP;
+      const y = BOARD_PADDING + r * pieceHeight + r * GRID_GAP;
       return { x, y };
     }
 
     // SETUP PUZZLE BOARD & CANVASES
     function setupPuzzle() {
-      const wrapperW = canvasWrapper.clientWidth - 4;
-      const wrapperH = canvasWrapper.clientHeight - 4;
+      const wrapperW = canvasWrapper.clientWidth - 8;
+      const wrapperH = canvasWrapper.clientHeight - 8;
       
       const maxW = Math.max(wrapperW, 200);
       const maxH = Math.max(wrapperH, 200);
@@ -647,8 +631,12 @@
       puzzleCanvas.width = canvasWidth;
       puzzleCanvas.height = canvasHeight;
 
-      const availableW = canvasWidth - (GRID_SIZE - 1) * GRID_GAP;
-      const availableH = canvasHeight - (GRID_SIZE - 1) * GRID_GAP;
+      // BOARD_PADDING prevents side/outer tabs from being trimmed off canvas
+      const innerW = canvasWidth - BOARD_PADDING * 2;
+      const innerH = canvasHeight - BOARD_PADDING * 2;
+
+      const availableW = innerW - (GRID_SIZE - 1) * GRID_GAP;
+      const availableH = innerH - (GRID_SIZE - 1) * GRID_GAP;
 
       pieceWidth = availableW / GRID_SIZE;
       pieceHeight = availableH / GRID_SIZE;
@@ -660,19 +648,18 @@
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
           const id = r * GRID_SIZE + c;
+          const pieceObj = { id, row: r, col: c };
 
           const pCanvas = document.createElement('canvas');
-          const margin = tabSize * 1.5;
+          const margin = tabSize * 1.6;
           pCanvas.width = pieceWidth + margin * 2;
           pCanvas.height = pieceHeight + margin * 2;
           const pCtx = pCanvas.getContext('2d');
 
-          // Translate to center piece path within canvas with margin padding
           pCtx.translate(margin, margin);
-          drawPiecePath(pCtx, r, c, pieceWidth, pieceHeight, tabSize);
+          drawPiecePathByIdentity(pCtx, pieceObj, pieceWidth, pieceHeight, tabSize);
           pCtx.clip();
 
-          // Calculate image source rectangle including tab margin padding
           const scaleX = puzzleImage.width / availableW;
           const scaleY = puzzleImage.height / availableH;
 
@@ -681,21 +668,20 @@
           const srcW = (pieceWidth + margin * 2) * scaleX;
           const srcH = (pieceHeight + margin * 2) * scaleY;
 
-          // Draw image cropped to full tab region so tabs contain true image pixels
           pCtx.drawImage(
             puzzleImage,
             srcX, srcY, srcW, srcH,
             -margin, -margin, pieceWidth + margin * 2, pieceHeight + margin * 2
           );
 
-          pCtx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+          pCtx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
           pCtx.lineWidth = 2;
           pCtx.stroke();
 
           pieces.push({
             id: id,
-            correctRow: r,
-            correctCol: c,
+            row: r,
+            col: c,
             canvas: pCanvas,
             margin: margin
           });
@@ -738,7 +724,7 @@
       return lockCount;
     }
 
-    // RENDER CANVAS WITH PIECE SPACING
+    // RENDER CANVAS WITH PIECE SPACING AND DYNAMIC MOVING TABS
     function renderBoard() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
@@ -751,19 +737,13 @@
           ctx.fillStyle = (r + c) % 2 === 0 ? '#f8fafc' : '#e2e8f0';
           ctx.fillRect(x, y, pieceWidth, pieceHeight);
 
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.strokeStyle = '#cbd5e1';
-          ctx.lineWidth = 1.5;
-          drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
-          ctx.stroke();
-          ctx.restore();
-
           if (lockedSlots[slotIndex]) {
+            const pieceId = boardState[slotIndex];
+            const piece = pieces[pieceId];
             ctx.save();
             ctx.translate(x, y);
             ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
-            drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
+            drawPiecePathByIdentity(ctx, piece, pieceWidth, pieceHeight, tabSize);
             ctx.fill();
             ctx.strokeStyle = '#10b981';
             ctx.lineWidth = 2.5;
@@ -773,7 +753,7 @@
         }
       }
 
-      // Render Puzzle Pieces
+      // Render Puzzle Pieces dynamically moving with their tabs & image pixels
       for (let slot = 0; slot < TOTAL_PIECES; slot++) {
         const pieceId = boardState[slot];
         if (pieceId === null) continue;
@@ -789,7 +769,7 @@
           ctx.save();
           ctx.translate(slotX, slotY);
           ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
-          drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
+          drawPiecePathByIdentity(ctx, piece, pieceWidth, pieceHeight, tabSize);
           ctx.fill();
           ctx.strokeStyle = '#6366f1';
           ctx.lineWidth = 3.5;
@@ -800,11 +780,11 @@
         ctx.drawImage(piece.canvas, drawX, drawY);
 
         if (lockedSlots[slot]) {
-          const badgeX = slotX + pieceWidth - 12;
-          const badgeY = slotY + 12;
+          const badgeX = slotX + pieceWidth - 10;
+          const badgeY = slotY + 10;
           ctx.fillStyle = '#10b981';
           ctx.beginPath();
-          ctx.arc(badgeX, badgeY, 5, 0, Math.PI * 2);
+          ctx.arc(badgeX, badgeY, 4.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -926,9 +906,11 @@
       winTime.textContent = timerDisplay.textContent;
       winMoves.textContent = `${movesCount} 步`;
 
-      // Full picture reveal on canvas
+      // Full picture reveal on canvas inside inner board region
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      ctx.drawImage(puzzleImage, 0, 0, canvasWidth, canvasHeight);
+      const innerW = canvasWidth - BOARD_PADDING * 2;
+      const innerH = canvasHeight - BOARD_PADDING * 2;
+      ctx.drawImage(puzzleImage, BOARD_PADDING, BOARD_PADDING, innerW, innerH);
 
       confetti({
         particleCount: 90,
