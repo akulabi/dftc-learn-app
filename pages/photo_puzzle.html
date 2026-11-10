@@ -44,10 +44,10 @@
       transform: scale(0.95);
     }
     .tile-selected {
-      outline: 4px solid #6366f1;
+      outline: 3px solid #6366f1;
       outline-offset: -2px;
       z-index: 10;
-      border-radius: 6px;
+      border-radius: 4px;
     }
     .puzzle-tile {
       transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out;
@@ -58,58 +58,58 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen w-screen overflow-hidden flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
 
   <!-- SCREEN 1: START / IMAGE SELECTION SCREEN -->
-  <div id="start-screen" class="h-full w-full flex flex-col justify-between p-4 md:p-6 max-w-4xl mx-auto overflow-hidden">
+  <div id="start-screen" class="h-[100dvh] w-full flex flex-col justify-between p-3 sm:p-5 max-w-4xl mx-auto overflow-hidden">
     
     <!-- Top Header -->
-    <header class="text-center py-2 shrink-0">
-      <div class="inline-flex items-center space-x-2.5 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 mb-2">
-        <div class="p-1.5 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-lg text-white">
-          <i class="fa-solid fa-puzzle-piece text-lg"></i>
+    <header class="text-center py-1 shrink-0">
+      <div class="inline-flex items-center space-x-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200 mb-1">
+        <div class="p-1 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-lg text-white leading-none">
+          <i class="fa-solid fa-puzzle-piece text-xs sm:text-base"></i>
         </div>
-        <span class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-sky-600 bg-clip-text text-transparent">照片拼圖大師</span>
+        <span class="text-sm sm:text-base font-bold bg-gradient-to-r from-indigo-600 to-sky-600 bg-clip-text text-transparent">照片拼圖大師</span>
       </div>
-      <h2 class="text-2xl font-bold text-slate-800 tracking-tight">選擇你的拼圖圖片</h2>
-      <p class="text-xs text-slate-500 mt-1">選擇內建圖片或上傳自己的照片，開始 16 塊拼圖挑戰！</p>
+      <h2 class="text-lg sm:text-2xl font-bold text-slate-800 tracking-tight">選擇拼圖圖片</h2>
+      <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">上傳照片或選擇範例，開始 16 塊拼圖！</p>
     </header>
 
     <!-- Main Selection Area -->
-    <main class="flex-1 my-3 flex flex-col md:flex-row gap-4 items-center justify-center overflow-hidden">
+    <main class="flex-1 my-2 flex flex-col md:flex-row gap-3 items-center justify-center overflow-hidden min-h-0">
       
       <!-- Upload Box & Presets Grid -->
-      <div class="w-full md:w-1/2 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-md flex flex-col gap-3">
+      <div class="w-full md:w-1/2 bg-white rounded-2xl p-3 border border-slate-200/80 shadow-md flex flex-col gap-2 shrink-0">
         
         <!-- Local Upload Input -->
         <div>
-          <label for="image-upload" class="flex flex-col items-center justify-center gap-1.5 w-full py-4 px-3 border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-xl cursor-pointer bg-indigo-50/40 hover:bg-indigo-50/80 transition-all text-xs font-medium text-slate-700">
-            <i class="fa-solid fa-cloud-arrow-up text-indigo-500 text-2xl"></i>
-            <span class="font-semibold text-indigo-600">上傳本機照片</span>
-            <span class="text-[11px] text-slate-400">支援 PNG, JPG, WEBP 格式</span>
+          <label for="image-upload" class="flex flex-col items-center justify-center gap-1 w-full py-2.5 px-2 border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-xl cursor-pointer bg-indigo-50/40 hover:bg-indigo-50/80 transition-all text-xs font-medium text-slate-700">
+            <i class="fa-solid fa-cloud-arrow-up text-indigo-500 text-xl"></i>
+            <span class="font-semibold text-indigo-600 text-xs">上傳本機照片</span>
+            <span class="text-[10px] text-slate-400">支援 PNG, JPG, WEBP</span>
             <input id="image-upload" type="file" accept="image/*" class="hidden" />
           </label>
         </div>
 
-        <div class="flex items-center gap-2 text-slate-400 text-xs">
+        <div class="flex items-center gap-2 text-slate-400 text-[11px]">
           <div class="h-px bg-slate-200 flex-1"></div>
-          <span>或選擇精選範例</span>
+          <span>或選擇範例</span>
           <div class="h-px bg-slate-200 flex-1"></div>
         </div>
 
         <!-- Presets Grid -->
-        <div class="grid grid-cols-4 gap-2" id="preset-container">
+        <div class="grid grid-cols-4 gap-1.5" id="preset-container">
           <!-- Populated by JS -->
         </div>
 
       </div>
 
       <!-- Live Selected Image Preview Panel -->
-      <div class="w-full md:w-1/2 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-md flex flex-col items-center justify-center h-full max-h-[260px] md:max-h-full">
-        <span class="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
+      <div class="w-full md:w-1/2 bg-white rounded-2xl p-3 border border-slate-200/80 shadow-md flex flex-col items-center justify-center flex-1 min-h-0 max-h-[220px] md:max-h-full">
+        <span class="text-[11px] font-semibold text-slate-500 mb-1.5 flex items-center gap-1 shrink-0">
           <i class="fa-solid fa-eye text-indigo-500"></i> 已選擇圖片預覽
         </span>
-        <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center p-2">
+        <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center p-1.5">
           <img id="selected-preview-img" src="" alt="圖片預覽" class="max-h-full max-w-full object-contain rounded-lg shadow-sm">
         </div>
       </div>
@@ -117,8 +117,8 @@
     </main>
 
     <!-- Start Button Action Bar -->
-    <footer class="py-2 shrink-0 flex justify-center">
-      <button id="btn-start-game" class="w-full max-w-sm py-3 px-6 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+    <footer class="py-1 shrink-0 flex justify-center">
+      <button id="btn-start-game" class="w-full max-w-xs py-2.5 px-5 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
         <i class="fa-solid fa-play"></i> 開始拼圖遊戲
       </button>
     </footer>
@@ -126,62 +126,65 @@
   </div>
 
   <!-- SCREEN 2: PUZZLE GAMEPLAY SCREEN -->
-  <div id="game-screen" class="hidden h-full w-full flex-col">
+  <div id="game-screen" class="hidden h-[100dvh] w-full flex-col">
     
     <!-- Game Top Header Bar -->
-    <header class="w-full bg-white border-b border-slate-200 shrink-0 px-4 py-2.5 shadow-sm">
-      <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
-        <div class="flex items-center space-x-2">
-          <button id="btn-back-to-menu" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-200" title="返回選擇頁">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span class="hidden sm:inline">更換照片</span>
+    <header class="w-full bg-white border-b border-slate-200 shrink-0 px-2 sm:px-4 py-1.5 shadow-sm">
+      <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-1.5">
+        
+        <!-- Left: Back Button -->
+        <div class="flex items-center">
+          <button id="btn-back-to-menu" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition-all flex items-center gap-1 border border-slate-200 active:scale-95" title="返回選擇頁">
+            <i class="fa-solid fa-arrow-left text-[11px]"></i>
+            <span class="text-[11px] sm:text-xs">更換照片</span>
           </button>
         </div>
 
-        <!-- Live Stats Display -->
-        <div class="flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
-          <div class="flex items-center space-x-1.5">
+        <!-- Center: Live Stats Display -->
+        <div class="flex items-center space-x-2 sm:space-x-3 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 text-[11px] sm:text-xs">
+          <div class="flex items-center space-x-1">
             <i class="fa-regular fa-clock text-indigo-500"></i>
-            <span id="timer-display" class="font-mono font-bold text-sm text-slate-800">00:00</span>
+            <span id="timer-display" class="font-mono font-bold text-xs text-slate-800">00:00</span>
           </div>
-          <div class="h-3.5 w-px bg-slate-300"></div>
-          <div class="flex items-center space-x-1.5">
+          <div class="h-3 w-px bg-slate-300"></div>
+          <div class="flex items-center space-x-1">
             <i class="fa-solid fa-arrow-rotate-left text-sky-500"></i>
-            <span id="moves-display" class="font-mono font-bold text-sm text-slate-800">0</span>
+            <span id="moves-display" class="font-mono font-bold text-xs text-slate-800">0</span>
           </div>
-          <div class="h-3.5 w-px bg-slate-300"></div>
-          <div class="flex items-center space-x-1.5">
+          <div class="h-3 w-px bg-slate-300"></div>
+          <div class="flex items-center space-x-1">
             <i class="fa-solid fa-bullseye text-emerald-500"></i>
-            <span id="placed-display" class="font-mono font-bold text-sm text-emerald-600">0/16</span>
+            <span id="placed-display" class="font-mono font-bold text-xs text-emerald-600">0/16</span>
           </div>
         </div>
 
         <!-- Right Side Quick Actions -->
-        <div class="flex items-center space-x-1.5">
-          <button id="btn-toggle-ref" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1" title="查看原圖">
-            <i class="fa-solid fa-eye text-indigo-500"></i>
-            <span class="hidden md:inline">查看原圖</span>
+        <div class="flex items-center space-x-1">
+          <button id="btn-toggle-ref" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1 active:scale-95" title="查看原圖">
+            <i class="fa-solid fa-eye text-indigo-500 text-[11px]"></i>
+            <span class="text-[11px] hidden xs:inline sm:inline">原圖</span>
           </button>
 
-          <button id="btn-shuffle" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1" title="打亂重來">
-            <i class="fa-solid fa-shuffle text-sky-500"></i>
+          <button id="btn-shuffle" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1 active:scale-95" title="打亂重來">
+            <i class="fa-solid fa-shuffle text-sky-500 text-[11px]"></i>
           </button>
 
-          <button id="btn-sound" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center">
-            <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-500"></i>
+          <button id="btn-sound" class="p-1 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center active:scale-95">
+            <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-500 text-[11px]"></i>
           </button>
         </div>
+
       </div>
     </header>
 
     <!-- Gameplay Workspace -->
-    <main class="flex-1 w-full max-w-6xl mx-auto p-3 flex flex-col items-center justify-center overflow-hidden">
+    <main class="flex-1 w-full max-w-6xl mx-auto p-2 flex flex-col items-center justify-center overflow-hidden min-h-0">
       
       <!-- Puzzle Board Outer Container -->
       <div class="relative flex items-center justify-center max-w-full max-h-full">
-        <div id="puzzle-board" class="relative bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xl transition-all duration-300 max-w-full max-h-full">
+        <div id="puzzle-board" class="relative bg-white p-1.5 sm:p-2.5 rounded-xl border border-slate-200 shadow-lg transition-all duration-300 max-w-full max-h-full">
           <!-- Inner Tile Grid -->
-          <div id="grid-container" class="grid gap-1 relative select-none">
+          <div id="grid-container" class="grid gap-0.5 sm:gap-1 relative select-none">
             <!-- Rendered by JS -->
           </div>
         </div>
@@ -192,54 +195,54 @@
   </div>
 
   <!-- REFERENCE IMAGE MODAL OVERLAY -->
-  <div id="reference-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-4 max-w-sm w-full border border-slate-200 shadow-2xl relative flex flex-col items-center">
-      <button id="btn-close-ref" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg bg-slate-100 text-xs">
+  <div id="reference-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl p-3 sm:p-4 max-w-xs sm:max-w-sm w-full border border-slate-200 shadow-2xl relative flex flex-col items-center max-h-[85dvh]">
+      <button id="btn-close-ref" class="absolute top-2.5 right-2.5 text-slate-400 hover:text-slate-600 p-1 rounded-lg bg-slate-100 text-xs">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <h3 class="text-slate-800 font-bold text-sm mb-3 flex items-center gap-2">
+      <h3 class="text-slate-800 font-bold text-xs sm:text-sm mb-2 flex items-center gap-1.5">
         <i class="fa-solid fa-image text-indigo-500"></i> 完整參考原圖
       </h3>
-      <div class="w-full max-h-[60vh] flex justify-center items-center overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-1">
-        <img id="reference-img-preview" src="" alt="參考原圖" class="max-h-[55vh] object-contain rounded-lg">
+      <div class="w-full flex-1 min-h-0 flex justify-center items-center overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-1">
+        <img id="reference-img-preview" src="" alt="參考原圖" class="max-h-[60dvh] object-contain rounded-lg">
       </div>
     </div>
   </div>
 
   <!-- VICTORY OVERLAY MODAL (Show Full Completed Picture) -->
-  <div id="win-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-3xl p-5 max-w-md w-full text-center shadow-2xl relative flex flex-col items-center max-h-[90vh]">
+  <div id="win-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-3">
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 max-w-xs sm:max-w-md w-full text-center shadow-2xl relative flex flex-col items-center max-h-[88dvh]">
       
-      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-2 shadow-inner text-xl font-black shrink-0">
+      <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-1 shadow-inner text-lg font-black shrink-0">
         <i class="fa-solid fa-trophy"></i>
       </div>
       
-      <h2 class="text-xl font-bold text-slate-800 mb-0.5">恭喜完成拼圖！</h2>
-      <p class="text-slate-500 text-xs mb-3">太棒了！這是您拼好的完整照片：</p>
+      <h2 class="text-lg font-bold text-slate-800 mb-0.5">恭喜完成拼圖！</h2>
+      <p class="text-slate-500 text-[11px] mb-2">太棒了！這是您拼好的完整照片：</p>
       
       <!-- Full Completed Picture Container -->
-      <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden mb-3 p-1 flex items-center justify-center">
-        <img id="win-full-image" src="" alt="完成照片" class="max-h-[35vh] object-contain rounded-lg shadow-sm">
+      <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden mb-2 p-1 flex items-center justify-center">
+        <img id="win-full-image" src="" alt="完成照片" class="max-h-[30dvh] object-contain rounded-lg shadow-sm">
       </div>
 
       <!-- Stats Summary -->
-      <div class="grid grid-cols-2 gap-3 w-full bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 mb-4 shrink-0">
+      <div class="grid grid-cols-2 gap-2 w-full bg-slate-50 p-2 rounded-xl border border-slate-200/80 mb-3 shrink-0">
         <div class="flex flex-col items-center">
-          <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">耗費時間</span>
-          <span id="win-time" class="text-base font-mono font-bold text-indigo-600">00:00</span>
+          <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">耗費時間</span>
+          <span id="win-time" class="text-sm font-mono font-bold text-indigo-600">00:00</span>
         </div>
         <div class="flex flex-col items-center">
-          <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">移動步數</span>
-          <span id="win-moves" class="text-base font-mono font-bold text-sky-600">0</span>
+          <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">移動步數</span>
+          <span id="win-moves" class="text-sm font-mono font-bold text-sky-600">0</span>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex gap-2 w-full shrink-0">
-        <button id="btn-play-again" class="flex-1 py-2.5 px-3 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-semibold text-xs rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+        <button id="btn-play-again" class="flex-1 py-2 px-2 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-semibold text-xs rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1">
           <i class="fa-solid fa-rotate-right"></i> 再玩一次
         </button>
-        <button id="btn-choose-another" class="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5">
+        <button id="btn-choose-another" class="flex-1 py-2 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1">
           <i class="fa-solid fa-images"></i> 選擇其他圖片
         </button>
       </div>
@@ -543,14 +546,14 @@
 
       gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
       
-      const headerHeight = 60;
-      const paddingMargin = 40;
+      const headerHeight = 52;
+      const paddingMargin = 32;
 
-      const viewportMaxW = Math.min(window.innerWidth - 32, 520);
+      const viewportMaxW = Math.min(window.innerWidth - 24, 500);
       const viewportMaxH = window.innerHeight - headerHeight - paddingMargin;
       
       const imgAspect = currentImage.width / currentImage.height;
-      let boardW = Math.max(260, Math.min(viewportMaxW, viewportMaxH * imgAspect));
+      let boardW = Math.max(220, Math.min(viewportMaxW, viewportMaxH * imgAspect));
       let boardH = boardW / imgAspect;
 
       if (boardH > viewportMaxH) {
