@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>照片拼圖大師 (16塊拼圖)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti for Win Effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      touch-action: manipulation;
+    }
+    .tile-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    }
+    .tile-dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
+    .tile-selected {
+      outline: 4px solid #6366f1;
+      outline-offset: -2px;
+      z-index: 10;
+      border-radius: 6px;
+    }
+    .puzzle-tile {
+      transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out;
+      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.25));
+    }
+    .puzzle-tile:hover {
+      filter: drop-shadow(0px 4px 8px rgba(99, 102, 241, 0.35));
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen w-screen overflow-hidden flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- SCREEN 1: START / IMAGE SELECTION SCREEN -->
+  <div id="start-screen" class="h-full w-full flex flex-col justify-between p-4 md:p-6 max-w-4xl mx-auto overflow-hidden">
+    
+    <!-- Top Header -->
+    <header class="text-center py-2 shrink-0">
+      <div class="inline-flex items-center space-x-2.5 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 mb-2">
+        <div class="p-1.5 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-lg text-white">
+          <i class="fa-solid fa-puzzle-piece text-lg"></i>
+        </div>
+        <span class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-sky-600 bg-clip-text text-transparent">照片拼圖大師</span>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800 tracking-tight">選擇你的拼圖圖片</h2>
+      <p class="text-xs text-slate-500 mt-1">選擇內建圖片或上傳自己的照片，開始 16 塊拼圖挑戰！</p>
+    </header>
+
+    <!-- Main Selection Area -->
+    <main class="flex-1 my-3 flex flex-col md:flex-row gap-4 items-center justify-center overflow-hidden">
+      
+      <!-- Upload Box & Presets Grid -->
+      <div class="w-full md:w-1/2 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-md flex flex-col gap-3">
+        
+        <!-- Local Upload Input -->
+        <div>
+          <label for="image-upload" class="flex flex-col items-center justify-center gap-1.5 w-full py-4 px-3 border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-xl cursor-pointer bg-indigo-50/40 hover:bg-indigo-50/80 transition-all text-xs font-medium text-slate-700">
+            <i class="fa-solid fa-cloud-arrow-up text-indigo-500 text-2xl"></i>
+            <span class="font-semibold text-indigo-600">上傳本機照片</span>
+            <span class="text-[11px] text-slate-400">支援 PNG, JPG, WEBP 格式</span>
+            <input id="image-upload" type="file" accept="image/*" class="hidden" />
+          </label>
+        </div>
+
+        <div class="flex items-center gap-2 text-slate-400 text-xs">
+          <div class="h-px bg-slate-200 flex-1"></div>
+          <span>或選擇精選範例</span>
+          <div class="h-px bg-slate-200 flex-1"></div>
+        </div>
+
+        <!-- Presets Grid -->
+        <div class="grid grid-cols-4 gap-2" id="preset-container">
+          <!-- Populated by JS -->
+        </div>
+
+      </div>
+
+      <!-- Live Selected Image Preview Panel -->
+      <div class="w-full md:w-1/2 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-md flex flex-col items-center justify-center h-full max-h-[260px] md:max-h-full">
+        <span class="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-eye text-indigo-500"></i> 已選擇圖片預覽
+        </span>
+        <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center p-2">
+          <img id="selected-preview-img" src="" alt="圖片預覽" class="max-h-full max-w-full object-contain rounded-lg shadow-sm">
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Start Button Action Bar -->
+    <footer class="py-2 shrink-0 flex justify-center">
+      <button id="btn-start-game" class="w-full max-w-sm py-3 px-6 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-play"></i> 開始拼圖遊戲
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- SCREEN 2: PUZZLE GAMEPLAY SCREEN -->
+  <div id="game-screen" class="hidden h-full w-full flex-col">
+    
+    <!-- Game Top Header Bar -->
+    <header class="w-full bg-white border-b border-slate-200 shrink-0 px-4 py-2.5 shadow-sm">
+      <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+        <div class="flex items-center space-x-2">
+          <button id="btn-back-to-menu" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-200" title="返回選擇頁">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span class="hidden sm:inline">更換照片</span>
+          </button>
+        </div>
+
+        <!-- Live Stats Display -->
+        <div class="flex items-center space-x-3 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-regular fa-clock text-indigo-500"></i>
+            <span id="timer-display" class="font-mono font-bold text-sm text-slate-800">00:00</span>
+          </div>
+          <div class="h-3.5 w-px bg-slate-300"></div>
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-arrow-rotate-left text-sky-500"></i>
+            <span id="moves-display" class="font-mono font-bold text-sm text-slate-800">0</span>
+          </div>
+          <div class="h-3.5 w-px bg-slate-300"></div>
+          <div class="flex items-center space-x-1.5">
+            <i class="fa-solid fa-bullseye text-emerald-500"></i>
+            <span id="placed-display" class="font-mono font-bold text-sm text-emerald-600">0/16</span>
+          </div>
+        </div>
+
+        <!-- Right Side Quick Actions -->
+        <div class="flex items-center space-x-1.5">
+          <button id="btn-toggle-ref" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1" title="查看原圖">
+            <i class="fa-solid fa-eye text-indigo-500"></i>
+            <span class="hidden md:inline">查看原圖</span>
+          </button>
+
+          <button id="btn-shuffle" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1" title="打亂重來">
+            <i class="fa-solid fa-shuffle text-sky-500"></i>
+          </button>
+
+          <button id="btn-sound" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center">
+            <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-500"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Gameplay Workspace -->
+    <main class="flex-1 w-full max-w-6xl mx-auto p-3 flex flex-col items-center justify-center overflow-hidden">
+      
+      <!-- Puzzle Board Outer Container -->
+      <div class="relative flex items-center justify-center max-w-full max-h-full">
+        <div id="puzzle-board" class="relative bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xl transition-all duration-300 max-w-full max-h-full">
+          <!-- Inner Tile Grid -->
+          <div id="grid-container" class="grid gap-1 relative select-none">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- REFERENCE IMAGE MODAL OVERLAY -->
+  <div id="reference-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-4 max-w-sm w-full border border-slate-200 shadow-2xl relative flex flex-col items-center">
+      <button id="btn-close-ref" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg bg-slate-100 text-xs">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h3 class="text-slate-800 font-bold text-sm mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-image text-indigo-500"></i> 完整參考原圖
+      </h3>
+      <div class="w-full max-h-[60vh] flex justify-center items-center overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-1">
+        <img id="reference-img-preview" src="" alt="參考原圖" class="max-h-[55vh] object-contain rounded-lg">
+      </div>
+    </div>
+  </div>
+
+  <!-- VICTORY OVERLAY MODAL (Show Full Completed Picture) -->
+  <div id="win-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-3xl p-5 max-w-md w-full text-center shadow-2xl relative flex flex-col items-center max-h-[90vh]">
+      
+      <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-2 shadow-inner text-xl font-black shrink-0">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      
+      <h2 class="text-xl font-bold text-slate-800 mb-0.5">恭喜完成拼圖！</h2>
+      <p class="text-slate-500 text-xs mb-3">太棒了！這是您拼好的完整照片：</p>
+      
+      <!-- Full Completed Picture Container -->
+      <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden mb-3 p-1 flex items-center justify-center">
+        <img id="win-full-image" src="" alt="完成照片" class="max-h-[35vh] object-contain rounded-lg shadow-sm">
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="grid grid-cols-2 gap-3 w-full bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 mb-4 shrink-0">
+        <div class="flex flex-col items-center">
+          <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">耗費時間</span>
+          <span id="win-time" class="text-base font-mono font-bold text-indigo-600">00:00</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">移動步數</span>
+          <span id="win-moves" class="text-base font-mono font-bold text-sky-600">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 w-full shrink-0">
+        <button id="btn-play-again" class="flex-1 py-2.5 px-3 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-semibold text-xs rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-rotate-right"></i> 再玩一次
+        </button>
+        <button id="btn-choose-another" class="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-images"></i> 選擇其他圖片
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    // App Constants
+    const TOTAL_PIECES = 16;
+    const GRID_SIZE = 4;
+    
+    // Default Preset Images (Updated with highly reliable high-res image sources)
+    const PRESETS = [
+      { id: 'nature', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80', label: '自然風景' },
+      { id: 'city', url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&auto=format&fit=crop&q=80', label: '霓虹城市' },
+      { id: 'animal', url: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&auto=format&fit=crop&q=80', label: '野生動物' },
+      { id: 'art', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=80', label: '抽象藝術' }
+    ];
+
+    // State Variables
+    let selectedImageSrc = PRESETS[0].url;
+    let currentImage = new Image();
+    currentImage.crossOrigin = "anonymous";
+
+    let boardState = [];
+    let selectedTileIndex = null;
+    let edgesMap = { horizontal: [], vertical: [] };
+    
+    let moves = 0;
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let isGameActive = false;
+    let soundEnabled = true;
+
+    // Web Audio Context
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+
+        if (type === 'select') {
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'swap') {
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(500, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } else if (type === 'correct') {
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === 'win') {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.frequency.setValueAtTime(freq, now + idx * 0.1);
+            g.gain.setValueAtTime(0.25, now + idx * 0.1);
+            g.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+            o.start(now + idx * 0.1);
+            o.stop(now + idx * 0.1 + 0.25);
+          });
+        }
+      } catch (e) {
+        console.warn('Audio error:', e);
+      }
+    }
+
+    // DOM Elements
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const presetContainer = document.getElementById('preset-container');
+    const imageUploadInput = document.getElementById('image-upload');
+    const selectedPreviewImg = document.getElementById('selected-preview-img');
+    const btnStartGame = document.getElementById('btn-start-game');
+    const btnBackToMenu = document.getElementById('btn-back-to-menu');
+    
+    const gridContainer = document.getElementById('grid-container');
+    const btnShuffle = document.getElementById('btn-shuffle');
+    const btnToggleRef = document.getElementById('btn-toggle-ref');
+    const btnCloseRef = document.getElementById('btn-close-ref');
+    const referenceModal = document.getElementById('reference-modal');
+    const referenceImgPreview = document.getElementById('reference-img-preview');
+    
+    const timerDisplay = document.getElementById('timer-display');
+    const movesDisplay = document.getElementById('moves-display');
+    const placedDisplay = document.getElementById('placed-display');
+    
+    const winModal = document.getElementById('win-modal');
+    const winFullImage = document.getElementById('win-full-image');
+    const winTime = document.getElementById('win-time');
+    const winMoves = document.getElementById('win-moves');
+    const btnPlayAgain = document.getElementById('btn-play-again');
+    const btnChooseAnother = document.getElementById('btn-choose-another');
+    const btnSound = document.getElementById('btn-sound');
+    const soundIcon = document.getElementById('sound-icon');
+
+    function initPresets() {
+      presetContainer.innerHTML = '';
+      PRESETS.forEach((preset, index) => {
+        const btn = document.createElement('button');
+        btn.className = `relative rounded-xl overflow-hidden border-2 transition-all h-12 bg-slate-100 group ${index === 0 ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-slate-200 hover:border-slate-300'}`;
+        btn.title = preset.label;
+
+        const img = document.createElement('img');
+        img.src = preset.url;
+        img.alt = preset.label;
+        img.className = 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-300';
+
+        btn.appendChild(img);
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#preset-container button').forEach(b => {
+            b.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
+            b.classList.add('border-slate-200');
+          });
+          btn.classList.remove('border-slate-200');
+          btn.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
+          setSelection(preset.url);
+        });
+
+        presetContainer.appendChild(btn);
+      });
+      setSelection(PRESETS[0].url);
+    }
+
+    function setSelection(url) {
+      selectedImageSrc = url;
+      selectedPreviewImg.src = url;
+    }
+
+    function switchToGameScreen() {
+      startScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      gameScreen.classList.add('flex');
+      
+      referenceImgPreview.src = selectedImageSrc;
+      winFullImage.src = selectedImageSrc;
+      
+      currentImage = new Image();
+      currentImage.crossOrigin = "anonymous";
+      currentImage.onload = () => {
+        setupPuzzle();
+      };
+      currentImage.onerror = () => {
+        currentImage.src = `https://placehold.co/800x800/6366f1/ffffff?text=拼圖圖片`;
+      };
+      currentImage.src = selectedImageSrc;
+    }
+
+    function switchToStartScreen() {
+      stopTimer();
+      isGameActive = false;
+      winModal.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      gameScreen.classList.remove('flex');
+      startScreen.classList.remove('hidden');
+    }
+
+    function startTimer() {
+      stopTimer();
+      secondsElapsed = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+      timerDisplay.textContent = `${mins}:${secs}`;
+    }
+
+    function resetStats() {
+      moves = 0;
+      movesDisplay.textContent = moves;
+      selectedTileIndex = null;
+      winModal.classList.add('hidden');
+    }
+
+    // Generate random jigsaw edges
+    function generateJigsawEdges() {
+      const hEdges = [];
+      for (let r = 0; r < GRID_SIZE - 1; r++) {
+        hEdges[r] = [];
+        for (let c = 0; c < GRID_SIZE; c++) {
+          hEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+        }
+      }
+
+      const vEdges = [];
+      for (let r = 0; r < GRID_SIZE; r++) {
+        vEdges[r] = [];
+        for (let c = 0; c < GRID_SIZE - 1; c++) {
+          vEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+        }
+      }
+
+      edgesMap = { horizontal: hEdges, vertical: vEdges };
+    }
+
+    function drawJigsawPath(ctx, w, h, padding, topEdge, rightEdge, bottomEdge, leftEdge) {
+      const x0 = padding;
+      const y0 = padding;
+      const x1 = padding + w;
+      const y1 = padding + h;
+      
+      const tabSize = Math.min(w, h) * 0.22;
+
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+
+      // Top Edge
+      if (topEdge === 0) {
+        ctx.lineTo(x1, y0);
+      } else {
+        const dir = topEdge;
+        ctx.lineTo(x0 + w * 0.35, y0);
+        ctx.bezierCurveTo(x0 + w * 0.35, y0 - dir * tabSize * 0.2, x0 + w * 0.4, y0 - dir * tabSize, x0 + w * 0.5, y0 - dir * tabSize);
+        ctx.bezierCurveTo(x0 + w * 0.6, y0 - dir * tabSize, x0 + w * 0.65, y0 - dir * tabSize * 0.2, x0 + w * 0.65, y0);
+        ctx.lineTo(x1, y0);
+      }
+
+      // Right Edge
+      if (rightEdge === 0) {
+        ctx.lineTo(x1, y1);
+      } else {
+        const dir = rightEdge;
+        ctx.lineTo(x1, y0 + h * 0.35);
+        ctx.bezierCurveTo(x1 + dir * tabSize * 0.2, y0 + h * 0.35, x1 + dir * tabSize, y0 + h * 0.4, x1 + dir * tabSize, y0 + h * 0.5);
+        ctx.bezierCurveTo(x1 + dir * tabSize, y0 + h * 0.6, x1 + dir * tabSize * 0.2, y0 + h * 0.65, x1, y0 + h * 0.65);
+        ctx.lineTo(x1, y1);
+      }
+
+      // Bottom Edge
+      if (bottomEdge === 0) {
+        ctx.lineTo(x0, y1);
+      } else {
+        const dir = bottomEdge;
+        ctx.lineTo(x0 + w * 0.65, y1);
+        ctx.bezierCurveTo(x0 + w * 0.65, y1 + dir * tabSize * 0.2, x0 + w * 0.6, y1 + dir * tabSize, x0 + w * 0.5, y1 + dir * tabSize);
+        ctx.bezierCurveTo(x0 + w * 0.4, y1 + dir * tabSize, x0 + w * 0.35, y1 + dir * tabSize * 0.2, x0 + w * 0.35, y1);
+        ctx.lineTo(x0, y1);
+      }
+
+      // Left Edge
+      if (leftEdge === 0) {
+        ctx.lineTo(x0, y0);
+      } else {
+        const dir = leftEdge;
+        ctx.lineTo(x0, y0 + h * 0.65);
+        ctx.bezierCurveTo(x0 - dir * tabSize * 0.2, y0 + h * 0.65, x0 - dir * tabSize, y0 + h * 0.6, x0 - dir * tabSize, y0 + h * 0.5);
+        ctx.bezierCurveTo(x0 - dir * tabSize, y0 + h * 0.4, x0 - dir * tabSize * 0.2, y0 + h * 0.35, x0, y0 + h * 0.35);
+        ctx.lineTo(x0, y0);
+      }
+
+      ctx.closePath();
+    }
+
+    function setupPuzzle() {
+      resetStats();
+      stopTimer();
+      isGameActive = false;
+
+      gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
+      
+      const headerHeight = 60;
+      const paddingMargin = 40;
+
+      const viewportMaxW = Math.min(window.innerWidth - 32, 520);
+      const viewportMaxH = window.innerHeight - headerHeight - paddingMargin;
+      
+      const imgAspect = currentImage.width / currentImage.height;
+      let boardW = Math.max(260, Math.min(viewportMaxW, viewportMaxH * imgAspect));
+      let boardH = boardW / imgAspect;
+
+      if (boardH > viewportMaxH) {
+        boardH = viewportMaxH;
+        boardW = boardH * imgAspect;
+      }
+
+      gridContainer.style.width = `${boardW}px`;
+      gridContainer.style.height = `${boardH}px`;
+
+      const pieceWidth = Math.floor(currentImage.width / GRID_SIZE);
+      const pieceHeight = Math.floor(currentImage.height / GRID_SIZE);
+
+      generateJigsawEdges();
+      boardState = [];
+
+      const tabPaddingRatio = 0.25;
+      const paddingX = pieceWidth * tabPaddingRatio;
+      const paddingY = pieceHeight * tabPaddingRatio;
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const index = r * GRID_SIZE + c;
+          
+          const topEdge = (r === 0) ? 0 : -edgesMap.horizontal[r - 1][c];
+          const rightEdge = (c === GRID_SIZE - 1) ? 0 : edgesMap.vertical[r][c];
+          const bottomEdge = (r === GRID_SIZE - 1) ? 0 : edgesMap.horizontal[r][c];
+          const leftEdge = (c === 0) ? 0 : -edgesMap.vertical[r][c - 1];
+
+          const canvas = document.createElement('canvas');
+          canvas.width = pieceWidth + paddingX * 2;
+          canvas.height = pieceHeight + paddingY * 2;
+          const ctx = canvas.getContext('2d');
+
+          drawJigsawPath(ctx, pieceWidth, pieceHeight, paddingX, topEdge, rightEdge, bottomEdge, leftEdge);
+          ctx.clip();
+
+          ctx.drawImage(
+            currentImage,
+            c * pieceWidth - paddingX, r * pieceHeight - paddingY, 
+            pieceWidth + paddingX * 2, pieceHeight + paddingY * 2,
+            0, 0, 
+            pieceWidth + paddingX * 2, pieceHeight + paddingY * 2
+          );
+
+          ctx.lineWidth = Math.max(2, Math.min(pieceWidth, pieceHeight) * 0.04);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.stroke();
+
+          ctx.lineWidth = Math.max(1, Math.min(pieceWidth, pieceHeight) * 0.02);
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+          ctx.stroke();
+
+          boardState.push({
+            correctIdx: index,
+            currentIdx: index,
+            canvas: canvas
+          });
+        }
+      }
+
+      shufflePieces();
+    }
+
+    function shufflePieces() {
+      let isSolved = true;
+      
+      while (isSolved) {
+        for (let i = boardState.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
+        }
+        isSolved = boardState.every((item, idx) => item.correctIdx === idx);
+      }
+
+      boardState.forEach((item, idx) => {
+        item.currentIdx = idx;
+      });
+
+      renderBoard();
+      resetStats();
+      startTimer();
+      isGameActive = true;
+    }
+
+    function renderBoard() {
+      gridContainer.innerHTML = '';
+      let correctCount = 0;
+
+      boardState.forEach((tileData, visualIndex) => {
+        const isCorrect = tileData.correctIdx === visualIndex;
+        if (isCorrect) correctCount++;
+
+        const tileEl = document.createElement('div');
+        tileEl.className = `puzzle-tile relative aspect-auto cursor-pointer border-none select-none flex items-center justify-center ${
+          selectedTileIndex === visualIndex ? 'tile-selected' : ''
+        }`;
+        
+        tileEl.dataset.index = visualIndex;
+        tileEl.draggable = true;
+
+        const img = document.createElement('img');
+        img.src = tileData.canvas.toDataURL();
+        img.className = 'w-full h-full object-contain pointer-events-none block scale-[1.38]';
+        tileEl.appendChild(img);
+
+        if (isCorrect) {
+          const badge = document.createElement('div');
+          badge.className = 'absolute top-1 right-1 bg-emerald-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-md z-20';
+          badge.innerHTML = '<i class="fa-solid fa-check"></i>';
+          tileEl.appendChild(badge);
+        }
+
+        tileEl.addEventListener('click', () => handleTileClick(visualIndex));
+
+        tileEl.addEventListener('dragstart', (e) => {
+          if (!isGameActive) return;
+          e.dataTransfer.setData('text/plain', visualIndex.toString());
+          tileEl.classList.add('tile-dragging');
+          playSound('select');
+        });
+
+        tileEl.addEventListener('dragend', () => {
+          tileEl.classList.remove('tile-dragging');
+        });
+
+        tileEl.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        tileEl.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+          if (visualIndex !== selectedTileIndex) {
+            tileEl.classList.add('opacity-80', 'scale-105');
+          }
+        });
+
+        tileEl.addEventListener('dragleave', () => {
+          tileEl.classList.remove('opacity-80', 'scale-105');
+        });
+
+        tileEl.addEventListener('drop', (e) => {
+          e.preventDefault();
+          tileEl.classList.remove('opacity-80', 'scale-105');
+          const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+          if (!isNaN(sourceIndex) && sourceIndex !== visualIndex) {
+            swapTiles(sourceIndex, visualIndex);
+          }
+        });
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        tileEl.addEventListener('touchstart', (e) => {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        tileEl.addEventListener('touchend', (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          const touchEndY = e.changedTouches[0].clientY;
+          
+          const diffX = Math.abs(touchEndX - touchStartX);
+          const diffY = Math.abs(touchEndY - touchStartY);
+
+          if (diffX > 10 || diffY > 10) {
+            const targetEl = document.elementFromPoint(touchEndX, touchEndY);
+            const parentTile = targetEl?.closest('.puzzle-tile');
+            if (parentTile && parentTile.dataset.index !== undefined) {
+              const targetIndex = parseInt(parentTile.dataset.index, 10);
+              if (targetIndex !== visualIndex) {
+                swapTiles(visualIndex, targetIndex);
+              }
+            }
+          }
+        }, { passive: true });
+
+        gridContainer.appendChild(tileEl);
+      });
+
+      placedDisplay.textContent = `${correctCount}/${TOTAL_PIECES}`;
+
+      if (isGameActive && correctCount === TOTAL_PIECES) {
+        handleWin();
+      }
+    }
+
+    function handleTileClick(index) {
+      if (!isGameActive) return;
+
+      if (selectedTileIndex === null) {
+        selectedTileIndex = index;
+        playSound('select');
+        renderBoard();
+      } else if (selectedTileIndex === index) {
+        selectedTileIndex = null;
+        renderBoard();
+      } else {
+        const prevSelected = selectedTileIndex;
+        selectedTileIndex = null;
+        swapTiles(prevSelected, index);
+      }
+    }
+
+    function swapTiles(idx1, idx2) {
+      [boardState[idx1], boardState[idx2]] = [boardState[idx2], boardState[idx1]];
+      
+      moves++;
+      movesDisplay.textContent = moves;
+
+      const idx1Correct = boardState[idx1].correctIdx === idx1;
+      const idx2Correct = boardState[idx2].correctIdx === idx2;
+
+      if (idx1Correct || idx2Correct) {
+        playSound('correct');
+      } else {
+        playSound('swap');
+      }
+
+      renderBoard();
+    }
+
+    function handleWin() {
+      isGameActive = false;
+      stopTimer();
+      playSound('win');
+
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+      }
+
+      winTime.textContent = timerDisplay.textContent;
+      winMoves.textContent = moves;
+      setTimeout(() => {
+        winModal.classList.remove('hidden');
+      }, 300);
+    }
+
+    // Event Listeners
+    imageUploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.querySelectorAll('#preset-container button').forEach(b => {
+            b.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
+            b.classList.add('border-slate-200');
+          });
+          setSelection(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    btnStartGame.addEventListener('click', () => {
+      playSound('select');
+      switchToGameScreen();
+    });
+
+    btnBackToMenu.addEventListener('click', () => {
+      playSound('select');
+      switchToStartScreen();
+    });
+
+    btnChooseAnother.addEventListener('click', () => {
+      switchToStartScreen();
+    });
+
+    btnShuffle.addEventListener('click', () => {
+      if (boardState.length > 0) {
+        playSound('select');
+        shufflePieces();
+      }
+    });
+
+    btnToggleRef.addEventListener('click', () => {
+      playSound('select');
+      referenceModal.classList.remove('hidden');
+    });
+
+    btnCloseRef.addEventListener('click', () => {
+      referenceModal.classList.add('hidden');
+    });
+
+    referenceModal.addEventListener('click', (e) => {
+      if (e.target === referenceModal) {
+        referenceModal.classList.add('hidden');
+      }
+    });
+
+    btnPlayAgain.addEventListener('click', () => {
+      winModal.classList.add('hidden');
+      shufflePieces();
+    });
+
+    btnSound.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundIcon.className = soundEnabled ? 'fa-solid fa-volume-high text-emerald-500' : 'fa-solid fa-volume-xmark text-slate-400';
+    });
+
+    window.addEventListener('resize', () => {
+      if (!gameScreen.classList.contains('hidden') && currentImage.complete && currentImage.width > 0) {
+        setupPuzzle();
+      }
+    });
+
+    window.onload = () => {
+      initPresets();
+    };
+  </script>
+</body>
+</html>
