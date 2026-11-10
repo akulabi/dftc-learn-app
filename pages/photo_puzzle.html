@@ -38,7 +38,7 @@
     <!-- Header -->
     <header class="text-center py-1.5 shrink-0">
       <div id="selected-diff-badge" class="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 px-3 py-0.5 rounded-full text-indigo-600 text-xs font-bold mb-1">
-        🧩 簡單 (16塊)
+        🧩 簡單 (9格)
       </div>
       <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800 tracking-tight">照片拼圖大師</h1>
       <p class="text-xs text-slate-500 mt-0.5">選擇預設圖片或上傳本地相片開始挑戰</p>
@@ -67,17 +67,17 @@
             ⚙️ 選擇難易度
           </label>
           <div class="grid grid-cols-3 gap-1.5" id="difficulty-selector">
-            <button data-grid="4" class="diff-btn py-1.5 px-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-600 shadow-sm transition-all flex flex-col items-center">
+            <button data-grid="3" class="diff-btn py-1.5 px-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border border-indigo-600 shadow-sm transition-all flex flex-col items-center">
               <span>簡單</span>
-              <span class="text-[10px] font-normal opacity-90">16塊</span>
+              <span class="text-[10px] font-normal opacity-90">9格</span>
+            </button>
+            <button data-grid="4" class="diff-btn py-1.5 px-2 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold border border-slate-200 transition-all flex flex-col items-center">
+              <span>普通</span>
+              <span class="text-[10px] text-slate-400 font-normal">16格</span>
             </button>
             <button data-grid="5" class="diff-btn py-1.5 px-2 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold border border-slate-200 transition-all flex flex-col items-center">
-              <span>普通</span>
-              <span class="text-[10px] text-slate-400 font-normal">25塊</span>
-            </button>
-            <button data-grid="6" class="diff-btn py-1.5 px-2 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-bold border border-slate-200 transition-all flex flex-col items-center">
               <span>困難</span>
-              <span class="text-[10px] text-slate-400 font-normal">36塊</span>
+              <span class="text-[10px] text-slate-400 font-normal">25格</span>
             </button>
           </div>
         </div>
@@ -140,7 +140,7 @@
           👣 <span id="moves-display" class="font-bold text-slate-800">0</span>步
         </div>
         <div class="flex items-center gap-0.5 text-slate-600">
-          🔒 <span id="lock-display" class="font-bold text-emerald-600">0</span>/<span id="total-lock-display">16</span>
+          🔒 <span id="lock-display" class="font-bold text-emerald-600">0</span>/<span id="total-lock-display">9</span>
         </div>
       </div>
 
@@ -283,9 +283,9 @@
     let puzzleImage = new Image();
     let soundEnabled = true;
 
-    // Grid Parameters, Padding & Spacing
-    let GRID_SIZE = 4;
-    let TOTAL_PIECES = 16;
+    // Grid Parameters (Default 3x3 = 9 pieces)
+    let GRID_SIZE = 3;
+    let TOTAL_PIECES = 9;
     let GRID_GAP = 6;           // Physical spacing between puzzle cells
     let BOARD_PADDING = 20;     // Outer margin space on canvas so side tabs are never trimmed
     let pieceWidth = 0;
@@ -497,7 +497,7 @@
       }
     });
 
-    // DIFFICULTY SELECTION LOGIC
+    // DIFFICULTY SELECTION LOGIC (3x3 = 9格, 4x4 = 16格, 5x5 = 25格)
     difficultyButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         playSound('select');
@@ -517,7 +517,7 @@
           }
         });
 
-        const diffLabels = { 4: '簡單 (16塊)', 5: '普通 (25塊)', 6: '困難 (36塊)' };
+        const diffLabels = { 3: '簡單 (9格)', 4: '普通 (16格)', 5: '困難 (25格)' };
         selectedDiffBadge.innerHTML = `🧩 ${diffLabels[grid]}`;
         totalLockDisplay.textContent = TOTAL_PIECES;
       });
