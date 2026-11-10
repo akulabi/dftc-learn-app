@@ -283,9 +283,10 @@
     let puzzleImage = new Image();
     let soundEnabled = true;
 
-    // Grid Parameters
+    // Grid Parameters & Spacing
     let GRID_SIZE = 4;
     let TOTAL_PIECES = 16;
+    let GRID_GAP = 6; // Physical spacing between puzzle cells
     let pieceWidth = 0;
     let pieceHeight = 0;
     let canvasWidth = 0;
@@ -526,81 +527,108 @@
       edges.horizontal = [];
       edges.vertical = [];
 
+      // Horizontal internal edges between (c) and (c+1)
       for (let r = 0; r < GRID_SIZE; r++) {
         edges.horizontal[r] = [];
         for (let c = 0; c < GRID_SIZE - 1; c++) {
+          // 1 = right piece gets socket (-1), left piece gets tab (+1)
           edges.horizontal[r][c] = Math.random() < 0.5 ? 1 : -1;
         }
       }
 
+      // Vertical internal edges between (r) and (r+1)
       for (let r = 0; r < GRID_SIZE - 1; r++) {
         edges.vertical[r] = [];
         for (let c = 0; c < GRID_SIZE; c++) {
+          // 1 = top piece gets tab (+1), bottom piece gets socket (-1)
           edges.vertical[r][c] = Math.random() < 0.5 ? 1 : -1;
         }
       }
     }
 
-    // DRAW JIGSAW PATH WITH BEZIER LOCK TABS
+    // DRAW PERFECT COMPLEMENTARY JIGSAW PATH WITH BEZIER LOCK TABS
     function drawPiecePath(ctxPath, r, c, w, h, tSize) {
+      // Top edge: neighbor above (r-1, c) shares vertical[r-1][c]
+      // If vertical[r-1][c] is +1 (downwards tab for top piece), this bottom piece receives -1 (upwards socket).
       const topTab = r > 0 ? -edges.vertical[r - 1][c] : 0;
+      
+      // Right edge: shares horizontal[r][c]
+      // If +1, tab points right (+x). If -1, socket points left (-x).
       const rightTab = c < GRID_SIZE - 1 ? edges.horizontal[r][c] : 0;
+      
+      // Bottom edge: shares vertical[r][c]
+      // If +1, tab points down (+y). If -1, socket points up (-y).
       const bottomTab = r < GRID_SIZE - 1 ? edges.vertical[r][c] : 0;
+      
+      // Left edge: neighbor to left (r, c-1) shares horizontal[r][c-1]
+      // If horizontal[r][c-1] is +1 (rightwards tab for left piece), this piece receives -1 (leftwards socket).
       const leftTab = c > 0 ? -edges.horizontal[r][c - 1] : 0;
 
       ctxPath.beginPath();
       ctxPath.moveTo(0, 0);
 
-      // Top Edge
+      // 1. Top Edge: (0, 0) -> (w, 0)
+      // Positive dir (+1) = outward (up / -y), Negative dir (-1) = inward (down / +y)
       if (topTab === 0) {
         ctxPath.lineTo(w, 0);
       } else {
-        const dir = topTab;
+        const dir = -topTab; // -1 extends up (-y), +1 extends down (+y)
         ctxPath.lineTo(w * 0.35, 0);
-        ctxPath.bezierCurveTo(w * 0.35, dir * tSize, w * 0.45, dir * tSize * 1.5, w * 0.5, dir * tSize * 1.5);
-        ctxPath.bezierCurveTo(w * 0.55, dir * tSize * 1.5, w * 0.65, dir * tSize, w * 0.65, 0);
+        ctxPath.bezierCurveTo(w * 0.35, dir * tSize, w * 0.44, dir * tSize * 1.35, w * 0.5, dir * tSize * 1.35);
+        ctxPath.bezierCurveTo(w * 0.56, dir * tSize * 1.35, w * 0.65, dir * tSize, w * 0.65, 0);
         ctxPath.lineTo(w, 0);
       }
 
-      // Right Edge
+      // 2. Right Edge: (w, 0) -> (w, h)
+      // Positive dir (+1) = outward (right / +x), Negative dir (-1) = inward (left / -x)
       if (rightTab === 0) {
         ctxPath.lineTo(w, h);
       } else {
         const dir = rightTab;
         ctxPath.lineTo(w, h * 0.35);
-        ctxPath.bezierCurveTo(w + dir * tSize, h * 0.35, w + dir * tSize * 1.5, h * 0.45, w + dir * tSize * 1.5, h * 0.5);
-        ctxPath.bezierCurveTo(w + dir * tSize * 1.5, h * 0.55, w + dir * tSize, h * 0.65, w, h * 0.65);
+        ctxPath.bezierCurveTo(w + dir * tSize, h * 0.35, w + dir * tSize * 1.35, h * 0.44, w + dir * tSize * 1.35, h * 0.5);
+        ctxPath.bezierCurveTo(w + dir * tSize * 1.35, h * 0.56, w + dir * tSize, h * 0.65, w, h * 0.65);
         ctxPath.lineTo(w, h);
       }
 
-      // Bottom Edge
+      // 3. Bottom Edge: (w, h) -> (0, h)
+      // Positive dir (+1) = outward (down / +y), Negative dir (-1) = inward (up / -y)
       if (bottomTab === 0) {
         ctxPath.lineTo(0, h);
       } else {
         const dir = bottomTab;
         ctxPath.lineTo(w * 0.65, h);
-        ctxPath.bezierCurveTo(w * 0.65, h + dir * tSize, w * 0.55, h + dir * tSize * 1.5, w * 0.5, h + dir * tSize * 1.5);
-        ctxPath.bezierCurveTo(w * 0.45, h + dir * tSize * 1.5, w * 0.35, h + dir * tSize, w * 0.35, h);
+        ctxPath.bezierCurveTo(w * 0.65, h + dir * tSize, w * 0.56, h + dir * tSize * 1.35, w * 0.5, h + dir * tSize * 1.35);
+        ctxPath.bezierCurveTo(w * 0.44, h + dir * tSize * 1.35, w * 0.35, h + dir * tSize, w * 0.35, h);
         ctxPath.lineTo(0, h);
       }
 
-      // Left Edge
+      // 4. Left Edge: (0, h) -> (0, 0)
+      // Positive dir (+1) = outward (left / -x), Negative dir (-1) = inward (right / +x)
       if (leftTab === 0) {
         ctxPath.lineTo(0, 0);
       } else {
-        const dir = leftTab;
+        const dir = -leftTab; // -1 extends left (-x), +1 extends right (+x)
         ctxPath.lineTo(0, h * 0.65);
-        ctxPath.bezierCurveTo(dir * tSize, h * 0.65, dir * tSize * 1.5, h * 0.55, dir * tSize * 1.5, h * 0.5);
-        ctxPath.bezierCurveTo(dir * tSize * 1.5, h * 0.45, dir * tSize, h * 0.35, 0, h * 0.35);
+        ctxPath.bezierCurveTo(dir * tSize, h * 0.65, dir * tSize * 1.35, h * 0.56, dir * tSize * 1.35, h * 0.5);
+        ctxPath.bezierCurveTo(dir * tSize * 1.35, h * 0.44, dir * tSize, h * 0.35, 0, h * 0.35);
         ctxPath.lineTo(0, 0);
       }
 
       ctxPath.closePath();
     }
 
+    // HELPER TO GET PIECE CANVAS COORDINATES WITH GAP SPACING
+    function getSlotPosition(r, c) {
+      const totalGapW = (GRID_SIZE - 1) * GRID_GAP;
+      const totalGapH = (GRID_SIZE - 1) * GRID_GAP;
+      const x = c * pieceWidth + c * GRID_GAP + (canvasWidth - (GRID_SIZE * pieceWidth + totalGapW)) / 2;
+      const y = r * pieceHeight + r * GRID_GAP + (canvasHeight - (GRID_SIZE * pieceHeight + totalGapH)) / 2;
+      return { x, y };
+    }
+
     // SETUP PUZZLE BOARD & CANVASES
     function setupPuzzle() {
-      // Maximize canvas workspace
       const wrapperW = canvasWrapper.clientWidth - 4;
       const wrapperH = canvasWrapper.clientHeight - 4;
       
@@ -619,8 +647,11 @@
       puzzleCanvas.width = canvasWidth;
       puzzleCanvas.height = canvasHeight;
 
-      pieceWidth = canvasWidth / GRID_SIZE;
-      pieceHeight = canvasHeight / GRID_SIZE;
+      const availableW = canvasWidth - (GRID_SIZE - 1) * GRID_GAP;
+      const availableH = canvasHeight - (GRID_SIZE - 1) * GRID_GAP;
+
+      pieceWidth = availableW / GRID_SIZE;
+      pieceHeight = availableH / GRID_SIZE;
       tabSize = Math.min(pieceWidth, pieceHeight) * 0.22;
 
       generateJigsawEdges();
@@ -631,27 +662,33 @@
           const id = r * GRID_SIZE + c;
 
           const pCanvas = document.createElement('canvas');
-          const margin = tabSize * 1.8;
+          const margin = tabSize * 1.5;
           pCanvas.width = pieceWidth + margin * 2;
           pCanvas.height = pieceHeight + margin * 2;
           const pCtx = pCanvas.getContext('2d');
 
+          // Translate to center piece path within canvas with margin padding
           pCtx.translate(margin, margin);
           drawPiecePath(pCtx, r, c, pieceWidth, pieceHeight, tabSize);
           pCtx.clip();
 
-          const srcX = (c * puzzleImage.width) / GRID_SIZE;
-          const srcY = (r * puzzleImage.height) / GRID_SIZE;
-          const srcW = puzzleImage.width / GRID_SIZE;
-          const srcH = puzzleImage.height / GRID_SIZE;
+          // Calculate image source rectangle including tab margin padding
+          const scaleX = puzzleImage.width / availableW;
+          const scaleY = puzzleImage.height / availableH;
 
+          const srcX = c * pieceWidth * scaleX - margin * scaleX;
+          const srcY = r * pieceHeight * scaleY - margin * scaleY;
+          const srcW = (pieceWidth + margin * 2) * scaleX;
+          const srcH = (pieceHeight + margin * 2) * scaleY;
+
+          // Draw image cropped to full tab region so tabs contain true image pixels
           pCtx.drawImage(
             puzzleImage,
             srcX, srcY, srcW, srcH,
-            0, 0, pieceWidth, pieceHeight
+            -margin, -margin, pieceWidth + margin * 2, pieceHeight + margin * 2
           );
 
-          pCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          pCtx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
           pCtx.lineWidth = 2;
           pCtx.stroke();
 
@@ -701,23 +738,23 @@
       return lockCount;
     }
 
-    // RENDER CANVAS
+    // RENDER CANVAS WITH PIECE SPACING
     function renderBoard() {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+      // Render grid cell background slots
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
-          const x = c * pieceWidth;
-          const y = r * pieceHeight;
+          const { x, y } = getSlotPosition(r, c);
           const slotIndex = r * GRID_SIZE + c;
 
-          ctx.fillStyle = (r + c) % 2 === 0 ? '#f8fafc' : '#f1f5f9';
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#f8fafc' : '#e2e8f0';
           ctx.fillRect(x, y, pieceWidth, pieceHeight);
 
           ctx.save();
           ctx.translate(x, y);
           ctx.strokeStyle = '#cbd5e1';
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 1.5;
           drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
           ctx.stroke();
           ctx.restore();
@@ -725,14 +762,18 @@
           if (lockedSlots[slotIndex]) {
             ctx.save();
             ctx.translate(x, y);
-            ctx.fillStyle = 'rgba(34, 197, 94, 0.08)';
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
             drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
             ctx.fill();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
             ctx.restore();
           }
         }
       }
 
+      // Render Puzzle Pieces
       for (let slot = 0; slot < TOTAL_PIECES; slot++) {
         const pieceId = boardState[slot];
         if (pieceId === null) continue;
@@ -740,13 +781,14 @@
         const piece = pieces[pieceId];
         const r = Math.floor(slot / GRID_SIZE);
         const c = slot % GRID_SIZE;
-        const x = c * pieceWidth - piece.margin;
-        const y = r * pieceHeight - piece.margin;
+        const { x: slotX, y: slotY } = getSlotPosition(r, c);
+        const drawX = slotX - piece.margin;
+        const drawY = slotY - piece.margin;
 
         if (selectedIndex === slot) {
           ctx.save();
-          ctx.translate(c * pieceWidth, r * pieceHeight);
-          ctx.fillStyle = 'rgba(99, 102, 241, 0.25)';
+          ctx.translate(slotX, slotY);
+          ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
           drawPiecePath(ctx, r, c, pieceWidth, pieceHeight, tabSize);
           ctx.fill();
           ctx.strokeStyle = '#6366f1';
@@ -755,12 +797,12 @@
           ctx.restore();
         }
 
-        ctx.drawImage(piece.canvas, x, y);
+        ctx.drawImage(piece.canvas, drawX, drawY);
 
         if (lockedSlots[slot]) {
-          const badgeX = c * pieceWidth + pieceWidth - 10;
-          const badgeY = r * pieceHeight + 10;
-          ctx.fillStyle = '#22c55e';
+          const badgeX = slotX + pieceWidth - 12;
+          const badgeY = slotY + 12;
+          ctx.fillStyle = '#10b981';
           ctx.beginPath();
           ctx.arc(badgeX, badgeY, 5, 0, Math.PI * 2);
           ctx.fill();
@@ -773,14 +815,20 @@
       const scaleX = canvasWidth / rect.width;
       const scaleY = canvasHeight / rect.height;
 
-      const x = (clientX - rect.left) * scaleX;
-      const y = (clientY - rect.top) * scaleY;
+      const touchX = (clientX - rect.left) * scaleX;
+      const touchY = (clientY - rect.top) * scaleY;
 
-      if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) return null;
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const { x, y } = getSlotPosition(r, c);
+          if (touchX >= x - GRID_GAP / 2 && touchX <= x + pieceWidth + GRID_GAP / 2 &&
+              touchY >= y - GRID_GAP / 2 && touchY <= y + pieceHeight + GRID_GAP / 2) {
+            return r * GRID_SIZE + c;
+          }
+        }
+      }
 
-      const col = Math.floor(x / pieceWidth);
-      const row = Math.floor(y / pieceHeight);
-      return row * GRID_SIZE + col;
+      return null;
     }
 
     function swapSlots(slotA, slotB) {
