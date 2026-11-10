@@ -271,11 +271,11 @@
 
     // PRESET IMAGES
     const PRESET_IMAGES = [
-      { id: 'preset-1', name: '大自然', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80', fallback: createFallbackSvg('大自然', '#059669', '#10b981') },
-      { id: 'preset-2', name: '可愛貓咪', url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80', fallback: createFallbackSvg('可愛貓咪', '#d97706', '#f59e0b') },
-      { id: 'preset-3', name: '抽象藝術', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80', fallback: createFallbackSvg('抽象藝術', '#7c3aed', '#8b5cf6') },
-      { id: 'preset-4', name: '都市夜景', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80', fallback: createFallbackSvg('都市夜景', '#1e293b', '#3b82f6') },
-      { id: 'preset-5', name: '名畫繪畫', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80', fallback: createFallbackSvg('名畫繪畫', '#b91c1c', '#ef4444') }
+      { id: 'preset-1', name: '大自然', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=90', fallback: createFallbackSvg('大自然', '#059669', '#10b981') },
+      { id: 'preset-2', name: '可愛貓咪', url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=1600&q=90', fallback: createFallbackSvg('可愛貓咪', '#d97706', '#f59e0b') },
+      { id: 'preset-3', name: '抽象藝術', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=1600&q=90', fallback: createFallbackSvg('抽象藝術', '#7c3aed', '#8b5cf6') },
+      { id: 'preset-4', name: '都市夜景', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1600&q=90', fallback: createFallbackSvg('都市夜景', '#1e293b', '#3b82f6') },
+      { id: 'preset-5', name: '名畫繪畫', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1600&q=90', fallback: createFallbackSvg('名畫繪畫', '#b91c1c', '#ef4444') }
     ];
 
     // GLOBAL STATE
@@ -613,6 +613,7 @@
 
     // SETUP PUZZLE BOARD & CANVASES
     function setupPuzzle() {
+      const dpr = window.devicePixelRatio || 1;
       const wrapperW = canvasWrapper.clientWidth - 8;
       const wrapperH = canvasWrapper.clientHeight - 8;
       
@@ -628,8 +629,16 @@
         canvasHeight = maxW / imgAspect;
       }
 
-      puzzleCanvas.width = canvasWidth;
-      puzzleCanvas.height = canvasHeight;
+      // High-DPI canvas buffer resolution scaling
+      puzzleCanvas.width = Math.floor(canvasWidth * dpr);
+      puzzleCanvas.height = Math.floor(canvasHeight * dpr);
+      puzzleCanvas.style.width = `${canvasWidth}px`;
+      puzzleCanvas.style.height = `${canvasHeight}px`;
+
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       // BOARD_PADDING prevents side/outer tabs from being trimmed off canvas
       const innerW = canvasWidth - BOARD_PADDING * 2;
@@ -652,9 +661,14 @@
 
           const pCanvas = document.createElement('canvas');
           const margin = tabSize * 1.6;
-          pCanvas.width = pieceWidth + margin * 2;
-          pCanvas.height = pieceHeight + margin * 2;
+          
+          pCanvas.width = Math.floor((pieceWidth + margin * 2) * dpr);
+          pCanvas.height = Math.floor((pieceHeight + margin * 2) * dpr);
+          
           const pCtx = pCanvas.getContext('2d');
+          pCtx.scale(dpr, dpr);
+          pCtx.imageSmoothingEnabled = true;
+          pCtx.imageSmoothingQuality = 'high';
 
           pCtx.translate(margin, margin);
           drawPiecePathByIdentity(pCtx, pieceObj, pieceWidth, pieceHeight, tabSize);
@@ -726,7 +740,14 @@
 
     // RENDER CANVAS WITH PIECE SPACING AND DYNAMIC MOVING TABS
     function renderBoard() {
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
+      ctx.restore();
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       // Render grid cell background slots
       for (let r = 0; r < GRID_SIZE; r++) {
@@ -777,7 +798,11 @@
           ctx.restore();
         }
 
-        ctx.drawImage(piece.canvas, drawX, drawY);
+        ctx.drawImage(
+          piece.canvas,
+          0, 0, piece.canvas.width, piece.canvas.height,
+          drawX, drawY, (pieceWidth + piece.margin * 2), (pieceHeight + piece.margin * 2)
+        );
 
         if (lockedSlots[slot]) {
           const badgeX = slotX + pieceWidth - 10;
