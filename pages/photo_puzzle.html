@@ -1,287 +1,232 @@
+<path id="primary_file_change" path="index.html">
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>照片拼圖大師 (16塊拼圖)</title>
-  <!-- Tailwind CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>照片拼圖大師 Photo Puzzle Master</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Canvas Confetti for Win Effect -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Outfit', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857',
-            }
-          }
-        }
-      }
-    }
-  </script>
   <style>
     body {
+      user-select: none;
+      -webkit-user-select: none;
       touch-action: manipulation;
     }
-    .tile-shadow {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-    }
-    .tile-dragging {
-      opacity: 0.5;
-      transform: scale(0.95);
-    }
-    .tile-selected {
-      outline: 3px solid #6366f1;
-      outline-offset: -2px;
-      z-index: 10;
-      border-radius: 4px;
-    }
-    .puzzle-tile {
-      transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out;
-      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.25));
-    }
-    .puzzle-tile:hover {
-      filter: drop-shadow(0px 4px 8px rgba(99, 102, 241, 0.35));
+    .board-glow {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans">
 
-  <!-- SCREEN 1: START / IMAGE SELECTION SCREEN -->
-  <div id="start-screen" class="h-[100dvh] w-full flex flex-col justify-between p-3 sm:p-5 max-w-4xl mx-auto overflow-hidden">
+  <!-- ==================== PAGE 1: START & SELECTION ==================== -->
+  <div id="start-screen" class="flex-1 flex flex-col justify-between p-3 max-w-md mx-auto w-full h-full overflow-y-auto">
     
-    <!-- Top Header -->
-    <header class="text-center py-1 shrink-0">
-      <div class="inline-flex items-center space-x-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200 mb-1">
-        <div class="p-1 bg-gradient-to-tr from-indigo-500 to-sky-400 rounded-lg text-white leading-none">
-          <i class="fa-solid fa-puzzle-piece text-xs sm:text-base"></i>
-        </div>
-        <span class="text-sm sm:text-base font-bold bg-gradient-to-r from-indigo-600 to-sky-600 bg-clip-text text-transparent">照片拼圖大師</span>
-      </div>
-      <h2 class="text-lg sm:text-2xl font-bold text-slate-800 tracking-tight">選擇拼圖圖片</h2>
-      <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">上傳照片或選擇範例，開始 16 塊拼圖！</p>
-    </header>
+    <!-- Title -->
+    <div class="text-center pt-2">
+      <h1 class="text-2xl font-black tracking-wide text-slate-800">照片拼圖大師</h1>
+      <p class="text-xs text-slate-500 mt-1">選取圖片或上傳本地照片</p>
+    </div>
 
-    <!-- Main Selection Area -->
-    <main class="flex-1 my-2 flex flex-col md:flex-row gap-3 items-center justify-center overflow-hidden min-h-0">
+    <!-- Main Selection Zone -->
+    <div class="flex-1 flex flex-col justify-center gap-3 my-2">
       
-      <!-- Upload Box & Presets Grid -->
-      <div class="w-full md:w-1/2 bg-white rounded-2xl p-3 border border-slate-200/80 shadow-md flex flex-col gap-2 shrink-0">
-        
-        <!-- Local Upload Input -->
+      <!-- Upload Button -->
+      <label class="flex flex-col items-center justify-center p-3 border-2 border-dashed border-blue-400/60 rounded-xl bg-blue-50/50 hover:bg-blue-100/50 transition cursor-pointer group">
+        <div class="flex items-center gap-2 text-blue-600 group-hover:scale-105 transition transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span class="font-bold text-sm">選擇本地照片</span>
+        </div>
+        <input type="file" id="image-input" accept="image/*" class="hidden">
+      </label>
+
+      <!-- Preset Galleries -->
+      <div>
+        <p class="text-xs font-semibold text-slate-500 mb-1.5">精選圖庫</p>
+        <div class="grid grid-cols-5 gap-1.5" id="preset-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Preview Thumbnail (Hidden when no image selected) -->
+      <div id="selected-preview-container" class="hidden flex flex-col items-center">
+        <div class="relative group cursor-pointer border-2 border-blue-500 rounded-lg overflow-hidden shadow-md max-h-36" onclick="openLightbox(selectedImageSrc)">
+          <img id="selected-preview-img" class="h-32 w-auto object-cover" alt="Selected Preview">
+          <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold">點擊放大</div>
+        </div>
+        <span class="text-[10px] text-slate-400 mt-1">已選擇圖片（點擊可查看大圖）</span>
+      </div>
+
+      <!-- Difficulty Selector -->
+      <div>
+        <p class="text-xs font-semibold text-slate-500 mb-1.5">選擇難度</p>
+        <div class="grid grid-cols-3 gap-2" id="difficulty-buttons">
+          <button onclick="setDifficulty(16, this)" class="diff-btn active py-1.5 rounded-lg border text-xs font-bold transition bg-blue-600 text-white border-blue-600 shadow-sm">簡單 (16塊)</button>
+          <button onclick="setDifficulty(25, this)" class="diff-btn py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">普通 (25塊)</button>
+          <button onclick="setDifficulty(36, this)" class="diff-btn py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">困難 (36塊)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Start Button (Disabled by default if no image selected) -->
+    <div class="pb-2">
+      <button id="start-btn" disabled onclick="startGame()" class="w-full py-2.5 rounded-xl font-bold text-sm shadow-md transition transform active:scale-95 bg-slate-300 text-slate-500 cursor-not-allowed">
+        開始遊戲
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ==================== PAGE 2: GAME SCREEN ==================== -->
+  <div id="game-screen" class="hidden flex-1 flex flex-col h-full w-full max-w-xl mx-auto overflow-hidden">
+    
+    <!-- Top Action Ribbon -->
+    <div class="flex items-center justify-between px-3 py-1 bg-white border-b border-slate-200 shadow-xs z-10 text-xs">
+      <button onclick="returnToStart()" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-1 font-semibold">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        返回
+      </button>
+
+      <!-- Stats Bar -->
+      <div class="flex items-center gap-3 bg-slate-100 px-2.5 py-1 rounded-full text-slate-700 font-medium">
+        <div>⏱️ <span id="timer-display" class="font-bold text-slate-900">00:00</span></div>
+        <div class="w-px h-3 bg-slate-300"></div>
+        <div>步數 <span id="moves-display" class="font-bold text-blue-600">0</span></div>
+        <div class="w-px h-3 bg-slate-300"></div>
+        <div>鎖定 <span id="locks-display" class="font-bold text-emerald-600">0/16</span></div>
+      </div>
+
+      <!-- Controls Right -->
+      <div class="flex items-center gap-1">
+        <button onclick="openOriginalPhotoModal()" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg" title="原圖">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+        </button>
+        <button id="sound-btn" onclick="toggleSound()" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg" title="靜音">
+          <svg id="sound-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"></path></svg>
+        </button>
+        <button onclick="resetPuzzle()" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg" title="重置">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div id="canvas-wrapper" class="flex-1 flex items-center justify-center p-2 relative bg-slate-100/50 overflow-hidden">
+      <canvas id="puzzle-canvas" class="border border-slate-300 rounded-xl bg-white shadow-md cursor-pointer transition-shadow duration-300"></canvas>
+    </div>
+
+    <!-- Minimal Bottom Bar -->
+    <div class="bg-white border-t border-slate-200 py-1 px-3 text-center text-[11px] text-slate-400 font-medium">
+      點擊兩塊拼圖交換位置；放入正確位置自動鎖定
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ORIGINAL PHOTO ==================== -->
+  <div id="original-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl p-3 max-w-sm w-full shadow-xl flex flex-col items-center">
+      <div class="flex justify-between items-center w-full mb-2">
+        <h3 class="font-bold text-slate-800 text-xs">原圖對照</h3>
+        <button onclick="closeOriginalPhotoModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+      </div>
+      <img id="modal-original-img" class="max-h-64 rounded-lg border border-slate-200 object-contain cursor-pointer hover:opacity-90 transition" alt="Original Photo" onclick="openLightbox(selectedImageSrc)">
+      <p class="text-[10px] text-slate-400 mt-1">點擊圖片檢視全螢幕大圖</p>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: LIGHTBOX FULLSCREEN ==================== -->
+  <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-2 cursor-pointer" onclick="closeLightbox()">
+    <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-2xl font-bold bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center">✕</button>
+    <img id="lightbox-img" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Fullscreen View">
+  </div>
+
+  <!-- ==================== MODAL: VICTORY ==================== -->
+  <div id="victory-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-4 max-w-xs w-full shadow-2xl text-center transform transition-all scale-100">
+      <div class="text-3xl mb-1">🎉</div>
+      <h2 class="text-lg font-black text-slate-800">挑戰成功！</h2>
+      <p class="text-xs text-slate-500 mb-3">你已完美完成這幅拼圖！</p>
+      
+      <div class="my-2 border border-slate-100 rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow transition" onclick="openLightbox(selectedImageSrc)">
+        <img id="victory-final-img" class="w-full max-h-40 object-cover" alt="Completed Puzzle">
+      </div>
+
+      <div class="bg-blue-50 rounded-lg p-2.5 flex justify-around my-3 text-xs">
         <div>
-          <label for="image-upload" class="flex flex-col items-center justify-center gap-1 w-full py-2.5 px-2 border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-xl cursor-pointer bg-indigo-50/40 hover:bg-indigo-50/80 transition-all text-xs font-medium text-slate-700">
-            <i class="fa-solid fa-cloud-arrow-up text-indigo-500 text-xl"></i>
-            <span class="font-semibold text-indigo-600 text-xs">上傳本機照片</span>
-            <span class="text-[10px] text-slate-400">支援 PNG, JPG, WEBP</span>
-            <input id="image-upload" type="file" accept="image/*" class="hidden" />
-          </label>
+          <div class="text-slate-400 text-[10px]">總用時</div>
+          <div id="victory-time" class="font-extrabold text-blue-600">00:00</div>
         </div>
-
-        <div class="flex items-center gap-2 text-slate-400 text-[11px]">
-          <div class="h-px bg-slate-200 flex-1"></div>
-          <span>或選擇範例</span>
-          <div class="h-px bg-slate-200 flex-1"></div>
-        </div>
-
-        <!-- Presets Grid -->
-        <div class="grid grid-cols-4 gap-1.5" id="preset-container">
-          <!-- Populated by JS -->
-        </div>
-
-      </div>
-
-      <!-- Live Selected Image Preview Panel -->
-      <div class="w-full md:w-1/2 bg-white rounded-2xl p-3 border border-slate-200/80 shadow-md flex flex-col items-center justify-center flex-1 min-h-0 max-h-[220px] md:max-h-full">
-        <span class="text-[11px] font-semibold text-slate-500 mb-1.5 flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-eye text-indigo-500"></i> 已選擇圖片預覽
-        </span>
-        <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center p-1.5">
-          <img id="selected-preview-img" src="" alt="圖片預覽" class="max-h-full max-w-full object-contain rounded-lg shadow-sm">
+        <div class="w-px bg-blue-200"></div>
+        <div>
+          <div class="text-slate-400 text-[10px]">總步數</div>
+          <div id="victory-moves" class="font-extrabold text-blue-600">0</div>
         </div>
       </div>
 
-    </main>
-
-    <!-- Start Button Action Bar -->
-    <footer class="py-1 shrink-0 flex justify-center">
-      <button id="btn-start-game" class="w-full max-w-xs py-2.5 px-5 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-        <i class="fa-solid fa-play"></i> 開始拼圖遊戲
-      </button>
-    </footer>
-
-  </div>
-
-  <!-- SCREEN 2: PUZZLE GAMEPLAY SCREEN -->
-  <div id="game-screen" class="hidden h-[100dvh] w-full flex-col">
-    
-    <!-- Game Top Header Bar -->
-    <header class="w-full bg-white border-b border-slate-200 shrink-0 px-2 sm:px-4 py-1.5 shadow-sm">
-      <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-1.5">
-        
-        <!-- Left: Back Button -->
-        <div class="flex items-center">
-          <button id="btn-back-to-menu" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition-all flex items-center gap-1 border border-slate-200 active:scale-95" title="返回選擇頁">
-            <i class="fa-solid fa-arrow-left text-[11px]"></i>
-            <span class="text-[11px] sm:text-xs">更換照片</span>
-          </button>
-        </div>
-
-        <!-- Center: Live Stats Display -->
-        <div class="flex items-center space-x-2 sm:space-x-3 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 text-[11px] sm:text-xs">
-          <div class="flex items-center space-x-1">
-            <i class="fa-regular fa-clock text-indigo-500"></i>
-            <span id="timer-display" class="font-mono font-bold text-xs text-slate-800">00:00</span>
-          </div>
-          <div class="h-3 w-px bg-slate-300"></div>
-          <div class="flex items-center space-x-1">
-            <i class="fa-solid fa-arrow-rotate-left text-sky-500"></i>
-            <span id="moves-display" class="font-mono font-bold text-xs text-slate-800">0</span>
-          </div>
-          <div class="h-3 w-px bg-slate-300"></div>
-          <div class="flex items-center space-x-1">
-            <i class="fa-solid fa-bullseye text-emerald-500"></i>
-            <span id="placed-display" class="font-mono font-bold text-xs text-emerald-600">0/16</span>
-          </div>
-        </div>
-
-        <!-- Right Side Quick Actions -->
-        <div class="flex items-center space-x-1">
-          <button id="btn-toggle-ref" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1 active:scale-95" title="查看原圖">
-            <i class="fa-solid fa-eye text-indigo-500 text-[11px]"></i>
-            <span class="text-[11px] hidden xs:inline sm:inline">原圖</span>
-          </button>
-
-          <button id="btn-shuffle" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center gap-1 active:scale-95" title="打亂重來">
-            <i class="fa-solid fa-shuffle text-sky-500 text-[11px]"></i>
-          </button>
-
-          <button id="btn-sound" class="p-1 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-all flex items-center active:scale-95">
-            <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-500 text-[11px]"></i>
-          </button>
-        </div>
-
-      </div>
-    </header>
-
-    <!-- Gameplay Workspace -->
-    <main class="flex-1 w-full max-w-6xl mx-auto p-2 flex flex-col items-center justify-center overflow-hidden min-h-0">
-      
-      <!-- Puzzle Board Outer Container -->
-      <div class="relative flex items-center justify-center max-w-full max-h-full">
-        <div id="puzzle-board" class="relative bg-white p-1.5 sm:p-2.5 rounded-xl border border-slate-200 shadow-lg transition-all duration-300 max-w-full max-h-full">
-          <!-- Inner Tile Grid -->
-          <div id="grid-container" class="grid gap-0.5 sm:gap-1 relative select-none">
-            <!-- Rendered by JS -->
-          </div>
-        </div>
-      </div>
-
-    </main>
-
-  </div>
-
-  <!-- REFERENCE IMAGE MODAL OVERLAY -->
-  <div id="reference-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-    <div class="bg-white rounded-2xl p-3 sm:p-4 max-w-xs sm:max-w-sm w-full border border-slate-200 shadow-2xl relative flex flex-col items-center max-h-[85dvh]">
-      <button id="btn-close-ref" class="absolute top-2.5 right-2.5 text-slate-400 hover:text-slate-600 p-1 rounded-lg bg-slate-100 text-xs">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <h3 class="text-slate-800 font-bold text-xs sm:text-sm mb-2 flex items-center gap-1.5">
-        <i class="fa-solid fa-image text-indigo-500"></i> 完整參考原圖
-      </h3>
-      <div class="w-full flex-1 min-h-0 flex justify-center items-center overflow-hidden rounded-xl bg-slate-50 border border-slate-200 p-1">
-        <img id="reference-img-preview" src="" alt="參考原圖" class="max-h-[60dvh] object-contain rounded-lg">
+      <div class="flex gap-2">
+        <button onclick="closeVictoryModal(); resetPuzzle();" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">再玩一次</button>
+        <button onclick="closeVictoryModal(); returnToStart();" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition">選擇新圖</button>
       </div>
     </div>
   </div>
 
-  <!-- VICTORY OVERLAY MODAL (Show Full Completed Picture) -->
-  <div id="win-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-3">
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 max-w-xs sm:max-w-md w-full text-center shadow-2xl relative flex flex-col items-center max-h-[88dvh]">
-      
-      <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-1 shadow-inner text-lg font-black shrink-0">
-        <i class="fa-solid fa-trophy"></i>
-      </div>
-      
-      <h2 class="text-lg font-bold text-slate-800 mb-0.5">恭喜完成拼圖！</h2>
-      <p class="text-slate-500 text-[11px] mb-2">太棒了！這是您拼好的完整照片：</p>
-      
-      <!-- Full Completed Picture Container -->
-      <div class="w-full flex-1 min-h-0 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden mb-2 p-1 flex items-center justify-center">
-        <img id="win-full-image" src="" alt="完成照片" class="max-h-[30dvh] object-contain rounded-lg shadow-sm">
-      </div>
-
-      <!-- Stats Summary -->
-      <div class="grid grid-cols-2 gap-2 w-full bg-slate-50 p-2 rounded-xl border border-slate-200/80 mb-3 shrink-0">
-        <div class="flex flex-col items-center">
-          <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">耗費時間</span>
-          <span id="win-time" class="text-sm font-mono font-bold text-indigo-600">00:00</span>
-        </div>
-        <div class="flex flex-col items-center">
-          <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">移動步數</span>
-          <span id="win-moves" class="text-sm font-mono font-bold text-sky-600">0</span>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex gap-2 w-full shrink-0">
-        <button id="btn-play-again" class="flex-1 py-2 px-2 bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-semibold text-xs rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1">
-          <i class="fa-solid fa-rotate-right"></i> 再玩一次
-        </button>
-        <button id="btn-choose-another" class="flex-1 py-2 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1">
-          <i class="fa-solid fa-images"></i> 選擇其他圖片
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- JavaScript App Logic -->
+  <!-- ==================== JAVASCRIPT ==================== -->
   <script>
-    // App Constants
-    const TOTAL_PIECES = 16;
-    const GRID_SIZE = 4;
-    
-    // Default Preset Images (Updated with highly reliable high-res image sources)
+    // Preset fallback SVGs
+    const createFallbackSvg = (title, bg1, bg2) => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+        <defs>
+          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="${bg1}" />
+            <stop offset="100%" stop-color="${bg2}" />
+          </linearGradient>
+        </defs>
+        <rect width="600" height="600" fill="url(#g)" />
+        <circle cx="300" cy="240" r="120" fill="white" opacity="0.2"/>
+        <text x="300" y="440" font-family="sans-serif" font-size="42" font-weight="bold" fill="white" text-anchor="middle">${title}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    };
+
     const PRESETS = [
-      { id: 'nature', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80', label: '自然風景' },
-      { id: 'city', url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&auto=format&fit=crop&q=80', label: '霓虹城市' },
-      { id: 'animal', url: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&auto=format&fit=crop&q=80', label: '野生動物' },
-      { id: 'art', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=80', label: '抽象藝術' }
+      { id: 'nature', title: '大自然', url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80', fallback: createFallbackSvg('大自然', '#059669', '#10b981') },
+      { id: 'cat', title: '可愛貓咪', url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80', fallback: createFallbackSvg('可愛貓咪', '#d97706', '#f59e0b') },
+      { id: 'abstract', title: '抽象藝術', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80', fallback: createFallbackSvg('抽象藝術', '#7c3aed', '#8b5cf6') },
+      { id: 'city', title: '都市夜景', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80', fallback: createFallbackSvg('都市夜景', '#1e293b', '#3b82f6') },
+      { id: 'art', title: '名畫繪畫', url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80', fallback: createFallbackSvg('名畫繪畫', '#b91c1c', '#ef4444') }
     ];
 
     // State Variables
-    let selectedImageSrc = PRESETS[0].url;
-    let currentImage = new Image();
-    currentImage.crossOrigin = "anonymous";
+    let GRID_SIZE = 4;
+    let TOTAL_PIECES = 16;
+    let selectedImageSrc = null;
+    let loadedImage = null;
+    let soundEnabled = true;
 
-    let boardState = [];
-    let selectedTileIndex = null;
-    let edgesMap = { horizontal: [], vertical: [] };
-    
-    let moves = 0;
+    let pieceWidth = 0;
+    let pieceHeight = 0;
+    let pieces = [];
+    let selectedPieceIndex = null;
+    let lockedCount = 0;
+    let moveCount = 0;
     let timerInterval = null;
     let secondsElapsed = 0;
     let isGameActive = false;
-    let soundEnabled = true;
 
-    // Web Audio Context
+    // Canvas Elements
+    const canvas = document.getElementById('puzzle-canvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = document.getElementById('canvas-wrapper');
+
+    // UI Elements
+    const startBtn = document.getElementById('start-btn');
+    const selectedPreviewContainer = document.getElementById('selected-preview-container');
+    const selectedPreviewImg = document.getElementById('selected-preview-img');
+
+    // Web Audio API
     let audioCtx = null;
-
     function getAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -294,13 +239,16 @@
       try {
         const ctx = getAudioContext();
         if (ctx.state === 'suspended') ctx.resume();
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
+
         const now = ctx.currentTime;
 
         if (type === 'select') {
+          osc.type = 'sine';
           osc.frequency.setValueAtTime(400, now);
           osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
           gain.gain.setValueAtTime(0.15, now);
@@ -308,565 +256,529 @@
           osc.start(now);
           osc.stop(now + 0.08);
         } else if (type === 'swap') {
+          osc.type = 'triangle';
           osc.frequency.setValueAtTime(300, now);
-          osc.frequency.exponentialRampToValueAtTime(500, now + 0.12);
+          osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
           gain.gain.setValueAtTime(0.2, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
           osc.start(now);
           osc.stop(now + 0.12);
-        } else if (type === 'correct') {
+        } else if (type === 'lock') {
+          osc.type = 'sine';
           osc.frequency.setValueAtTime(523.25, now);
           osc.frequency.setValueAtTime(659.25, now + 0.08);
           gain.gain.setValueAtTime(0.2, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
           osc.start(now);
           osc.stop(now + 0.2);
-        } else if (type === 'win') {
+        } else if (type === 'victory') {
           const notes = [523.25, 659.25, 783.99, 1046.50];
           notes.forEach((freq, idx) => {
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.connect(g);
-            g.connect(ctx.destination);
-            o.frequency.setValueAtTime(freq, now + idx * 0.1);
-            g.gain.setValueAtTime(0.25, now + idx * 0.1);
-            g.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
-            o.start(now + idx * 0.1);
-            o.stop(now + idx * 0.1 + 0.25);
+            const oscV = ctx.createOscillator();
+            const gainV = ctx.createGain();
+            oscV.connect(gainV);
+            gainV.connect(ctx.destination);
+            oscV.type = 'triangle';
+            oscV.frequency.setValueAtTime(freq, now + idx * 0.1);
+            gainV.gain.setValueAtTime(0.25, now + idx * 0.1);
+            gainV.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+            oscV.start(now + idx * 0.1);
+            oscV.stop(now + idx * 0.1 + 0.25);
           });
         }
-      } catch (e) {
-        console.warn('Audio error:', e);
-      }
+      } catch (e) {}
     }
 
-    // DOM Elements
-    const startScreen = document.getElementById('start-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const presetContainer = document.getElementById('preset-container');
-    const imageUploadInput = document.getElementById('image-upload');
-    const selectedPreviewImg = document.getElementById('selected-preview-img');
-    const btnStartGame = document.getElementById('btn-start-game');
-    const btnBackToMenu = document.getElementById('btn-back-to-menu');
-    
-    const gridContainer = document.getElementById('grid-container');
-    const btnShuffle = document.getElementById('btn-shuffle');
-    const btnToggleRef = document.getElementById('btn-toggle-ref');
-    const btnCloseRef = document.getElementById('btn-close-ref');
-    const referenceModal = document.getElementById('reference-modal');
-    const referenceImgPreview = document.getElementById('reference-img-preview');
-    
-    const timerDisplay = document.getElementById('timer-display');
-    const movesDisplay = document.getElementById('moves-display');
-    const placedDisplay = document.getElementById('placed-display');
-    
-    const winModal = document.getElementById('win-modal');
-    const winFullImage = document.getElementById('win-full-image');
-    const winTime = document.getElementById('win-time');
-    const winMoves = document.getElementById('win-moves');
-    const btnPlayAgain = document.getElementById('btn-play-again');
-    const btnChooseAnother = document.getElementById('btn-choose-another');
-    const btnSound = document.getElementById('btn-sound');
-    const soundIcon = document.getElementById('sound-icon');
-
+    // Initialize Presets
     function initPresets() {
-      presetContainer.innerHTML = '';
+      const container = document.getElementById('preset-container');
+      container.innerHTML = '';
       PRESETS.forEach((preset, index) => {
-        const btn = document.createElement('button');
-        btn.className = `relative rounded-xl overflow-hidden border-2 transition-all h-12 bg-slate-100 group ${index === 0 ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-slate-200 hover:border-slate-300'}`;
-        btn.title = preset.label;
+        const item = document.createElement('div');
+        item.className = 'preset-item cursor-pointer border-2 border-transparent rounded-lg overflow-hidden bg-slate-200 aspect-square hover:opacity-90 transition relative';
+        item.onclick = () => selectPreset(preset.url, item);
 
         const img = document.createElement('img');
         img.src = preset.url;
-        img.alt = preset.label;
-        img.className = 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-300';
+        img.alt = preset.title;
+        img.className = 'w-full h-full object-cover';
+        img.onerror = () => { img.src = preset.fallback; };
 
-        btn.appendChild(img);
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#preset-container button').forEach(b => {
-            b.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-            b.classList.add('border-slate-200');
-          });
-          btn.classList.remove('border-slate-200');
-          btn.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-          setSelection(preset.url);
-        });
+        const label = document.createElement('div');
+        label.className = 'absolute bottom-0 inset-x-0 bg-black/50 text-white text-[9px] text-center py-0.5 font-medium truncate px-0.5';
+        label.innerText = preset.title;
 
-        presetContainer.appendChild(btn);
+        item.appendChild(img);
+        item.appendChild(label);
+        container.appendChild(item);
       });
-      setSelection(PRESETS[0].url);
     }
 
-    function setSelection(url) {
+    function selectPreset(url, element) {
+      document.querySelectorAll('.preset-item').forEach(el => el.classList.remove('border-blue-600', 'ring-2', 'ring-blue-400'));
+      if (element) element.classList.add('border-blue-600', 'ring-2', 'ring-blue-400');
+      
       selectedImageSrc = url;
-      selectedPreviewImg.src = url;
+      updatePreviewAndStartButton();
+      playSound('select');
     }
 
-    function switchToGameScreen() {
-      startScreen.classList.add('hidden');
-      gameScreen.classList.remove('hidden');
-      gameScreen.classList.add('flex');
-      
-      referenceImgPreview.src = selectedImageSrc;
-      winFullImage.src = selectedImageSrc;
-      
-      currentImage = new Image();
-      currentImage.crossOrigin = "anonymous";
-      currentImage.onload = () => {
-        setupPuzzle();
-      };
-      currentImage.onerror = () => {
-        currentImage.src = `https://placehold.co/800x800/6366f1/ffffff?text=拼圖圖片`;
-      };
-      currentImage.src = selectedImageSrc;
-    }
-
-    function switchToStartScreen() {
-      stopTimer();
-      isGameActive = false;
-      winModal.classList.add('hidden');
-      gameScreen.classList.add('hidden');
-      gameScreen.classList.remove('flex');
-      startScreen.classList.remove('hidden');
-    }
-
-    function startTimer() {
-      stopTimer();
-      secondsElapsed = 0;
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        secondsElapsed++;
-        updateTimerDisplay();
-      }, 1000);
-    }
-
-    function stopTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-
-    function updateTimerDisplay() {
-      const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
-      const secs = (secondsElapsed % 60).toString().padStart(2, '0');
-      timerDisplay.textContent = `${mins}:${secs}`;
-    }
-
-    function resetStats() {
-      moves = 0;
-      movesDisplay.textContent = moves;
-      selectedTileIndex = null;
-      winModal.classList.add('hidden');
-    }
-
-    // Generate random jigsaw edges
-    function generateJigsawEdges() {
-      const hEdges = [];
-      for (let r = 0; r < GRID_SIZE - 1; r++) {
-        hEdges[r] = [];
-        for (let c = 0; c < GRID_SIZE; c++) {
-          hEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
-        }
-      }
-
-      const vEdges = [];
-      for (let r = 0; r < GRID_SIZE; r++) {
-        vEdges[r] = [];
-        for (let c = 0; c < GRID_SIZE - 1; c++) {
-          vEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
-        }
-      }
-
-      edgesMap = { horizontal: hEdges, vertical: vEdges };
-    }
-
-    function drawJigsawPath(ctx, w, h, padding, topEdge, rightEdge, bottomEdge, leftEdge) {
-      const x0 = padding;
-      const y0 = padding;
-      const x1 = padding + w;
-      const y1 = padding + h;
-      
-      const tabSize = Math.min(w, h) * 0.22;
-
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-
-      // Top Edge
-      if (topEdge === 0) {
-        ctx.lineTo(x1, y0);
-      } else {
-        const dir = topEdge;
-        ctx.lineTo(x0 + w * 0.35, y0);
-        ctx.bezierCurveTo(x0 + w * 0.35, y0 - dir * tabSize * 0.2, x0 + w * 0.4, y0 - dir * tabSize, x0 + w * 0.5, y0 - dir * tabSize);
-        ctx.bezierCurveTo(x0 + w * 0.6, y0 - dir * tabSize, x0 + w * 0.65, y0 - dir * tabSize * 0.2, x0 + w * 0.65, y0);
-        ctx.lineTo(x1, y0);
-      }
-
-      // Right Edge
-      if (rightEdge === 0) {
-        ctx.lineTo(x1, y1);
-      } else {
-        const dir = rightEdge;
-        ctx.lineTo(x1, y0 + h * 0.35);
-        ctx.bezierCurveTo(x1 + dir * tabSize * 0.2, y0 + h * 0.35, x1 + dir * tabSize, y0 + h * 0.4, x1 + dir * tabSize, y0 + h * 0.5);
-        ctx.bezierCurveTo(x1 + dir * tabSize, y0 + h * 0.6, x1 + dir * tabSize * 0.2, y0 + h * 0.65, x1, y0 + h * 0.65);
-        ctx.lineTo(x1, y1);
-      }
-
-      // Bottom Edge
-      if (bottomEdge === 0) {
-        ctx.lineTo(x0, y1);
-      } else {
-        const dir = bottomEdge;
-        ctx.lineTo(x0 + w * 0.65, y1);
-        ctx.bezierCurveTo(x0 + w * 0.65, y1 + dir * tabSize * 0.2, x0 + w * 0.6, y1 + dir * tabSize, x0 + w * 0.5, y1 + dir * tabSize);
-        ctx.bezierCurveTo(x0 + w * 0.4, y1 + dir * tabSize, x0 + w * 0.35, y1 + dir * tabSize * 0.2, x0 + w * 0.35, y1);
-        ctx.lineTo(x0, y1);
-      }
-
-      // Left Edge
-      if (leftEdge === 0) {
-        ctx.lineTo(x0, y0);
-      } else {
-        const dir = leftEdge;
-        ctx.lineTo(x0, y0 + h * 0.65);
-        ctx.bezierCurveTo(x0 - dir * tabSize * 0.2, y0 + h * 0.65, x0 - dir * tabSize, y0 + h * 0.6, x0 - dir * tabSize, y0 + h * 0.5);
-        ctx.bezierCurveTo(x0 - dir * tabSize, y0 + h * 0.4, x0 - dir * tabSize * 0.2, y0 + h * 0.35, x0, y0 + h * 0.35);
-        ctx.lineTo(x0, y0);
-      }
-
-      ctx.closePath();
-    }
-
-    function setupPuzzle() {
-      resetStats();
-      stopTimer();
-      isGameActive = false;
-
-      gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
-      
-      const headerHeight = 52;
-      const paddingMargin = 32;
-
-      const viewportMaxW = Math.min(window.innerWidth - 24, 500);
-      const viewportMaxH = window.innerHeight - headerHeight - paddingMargin;
-      
-      const imgAspect = currentImage.width / currentImage.height;
-      let boardW = Math.max(220, Math.min(viewportMaxW, viewportMaxH * imgAspect));
-      let boardH = boardW / imgAspect;
-
-      if (boardH > viewportMaxH) {
-        boardH = viewportMaxH;
-        boardW = boardH * imgAspect;
-      }
-
-      gridContainer.style.width = `${boardW}px`;
-      gridContainer.style.height = `${boardH}px`;
-
-      const pieceWidth = Math.floor(currentImage.width / GRID_SIZE);
-      const pieceHeight = Math.floor(currentImage.height / GRID_SIZE);
-
-      generateJigsawEdges();
-      boardState = [];
-
-      const tabPaddingRatio = 0.25;
-      const paddingX = pieceWidth * tabPaddingRatio;
-      const paddingY = pieceHeight * tabPaddingRatio;
-
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-          const index = r * GRID_SIZE + c;
-          
-          const topEdge = (r === 0) ? 0 : -edgesMap.horizontal[r - 1][c];
-          const rightEdge = (c === GRID_SIZE - 1) ? 0 : edgesMap.vertical[r][c];
-          const bottomEdge = (r === GRID_SIZE - 1) ? 0 : edgesMap.horizontal[r][c];
-          const leftEdge = (c === 0) ? 0 : -edgesMap.vertical[r][c - 1];
-
-          const canvas = document.createElement('canvas');
-          canvas.width = pieceWidth + paddingX * 2;
-          canvas.height = pieceHeight + paddingY * 2;
-          const ctx = canvas.getContext('2d');
-
-          drawJigsawPath(ctx, pieceWidth, pieceHeight, paddingX, topEdge, rightEdge, bottomEdge, leftEdge);
-          ctx.clip();
-
-          ctx.drawImage(
-            currentImage,
-            c * pieceWidth - paddingX, r * pieceHeight - paddingY, 
-            pieceWidth + paddingX * 2, pieceHeight + paddingY * 2,
-            0, 0, 
-            pieceWidth + paddingX * 2, pieceHeight + paddingY * 2
-          );
-
-          ctx.lineWidth = Math.max(2, Math.min(pieceWidth, pieceHeight) * 0.04);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-          ctx.stroke();
-
-          ctx.lineWidth = Math.max(1, Math.min(pieceWidth, pieceHeight) * 0.02);
-          ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-          ctx.stroke();
-
-          boardState.push({
-            correctIdx: index,
-            currentIdx: index,
-            canvas: canvas
-          });
-        }
-      }
-
-      shufflePieces();
-    }
-
-    function shufflePieces() {
-      let isSolved = true;
-      
-      while (isSolved) {
-        for (let i = boardState.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
-        }
-        isSolved = boardState.every((item, idx) => item.correctIdx === idx);
-      }
-
-      boardState.forEach((item, idx) => {
-        item.currentIdx = idx;
-      });
-
-      renderBoard();
-      resetStats();
-      startTimer();
-      isGameActive = true;
-    }
-
-    function renderBoard() {
-      gridContainer.innerHTML = '';
-      let correctCount = 0;
-
-      boardState.forEach((tileData, visualIndex) => {
-        const isCorrect = tileData.correctIdx === visualIndex;
-        if (isCorrect) correctCount++;
-
-        const tileEl = document.createElement('div');
-        tileEl.className = `puzzle-tile relative aspect-auto cursor-pointer border-none select-none flex items-center justify-center ${
-          selectedTileIndex === visualIndex ? 'tile-selected' : ''
-        }`;
-        
-        tileEl.dataset.index = visualIndex;
-        tileEl.draggable = true;
-
-        const img = document.createElement('img');
-        img.src = tileData.canvas.toDataURL();
-        img.className = 'w-full h-full object-contain pointer-events-none block scale-[1.38]';
-        tileEl.appendChild(img);
-
-        if (isCorrect) {
-          const badge = document.createElement('div');
-          badge.className = 'absolute top-1 right-1 bg-emerald-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-md z-20';
-          badge.innerHTML = '<i class="fa-solid fa-check"></i>';
-          tileEl.appendChild(badge);
-        }
-
-        tileEl.addEventListener('click', () => handleTileClick(visualIndex));
-
-        tileEl.addEventListener('dragstart', (e) => {
-          if (!isGameActive) return;
-          e.dataTransfer.setData('text/plain', visualIndex.toString());
-          tileEl.classList.add('tile-dragging');
-          playSound('select');
-        });
-
-        tileEl.addEventListener('dragend', () => {
-          tileEl.classList.remove('tile-dragging');
-        });
-
-        tileEl.addEventListener('dragover', (e) => {
-          e.preventDefault();
-        });
-
-        tileEl.addEventListener('dragenter', (e) => {
-          e.preventDefault();
-          if (visualIndex !== selectedTileIndex) {
-            tileEl.classList.add('opacity-80', 'scale-105');
-          }
-        });
-
-        tileEl.addEventListener('dragleave', () => {
-          tileEl.classList.remove('opacity-80', 'scale-105');
-        });
-
-        tileEl.addEventListener('drop', (e) => {
-          e.preventDefault();
-          tileEl.classList.remove('opacity-80', 'scale-105');
-          const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-          if (!isNaN(sourceIndex) && sourceIndex !== visualIndex) {
-            swapTiles(sourceIndex, visualIndex);
-          }
-        });
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        tileEl.addEventListener('touchstart', (e) => {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        tileEl.addEventListener('touchend', (e) => {
-          const touchEndX = e.changedTouches[0].clientX;
-          const touchEndY = e.changedTouches[0].clientY;
-          
-          const diffX = Math.abs(touchEndX - touchStartX);
-          const diffY = Math.abs(touchEndY - touchStartY);
-
-          if (diffX > 10 || diffY > 10) {
-            const targetEl = document.elementFromPoint(touchEndX, touchEndY);
-            const parentTile = targetEl?.closest('.puzzle-tile');
-            if (parentTile && parentTile.dataset.index !== undefined) {
-              const targetIndex = parseInt(parentTile.dataset.index, 10);
-              if (targetIndex !== visualIndex) {
-                swapTiles(visualIndex, targetIndex);
-              }
-            }
-          }
-        }, { passive: true });
-
-        gridContainer.appendChild(tileEl);
-      });
-
-      placedDisplay.textContent = `${correctCount}/${TOTAL_PIECES}`;
-
-      if (isGameActive && correctCount === TOTAL_PIECES) {
-        handleWin();
-      }
-    }
-
-    function handleTileClick(index) {
-      if (!isGameActive) return;
-
-      if (selectedTileIndex === null) {
-        selectedTileIndex = index;
-        playSound('select');
-        renderBoard();
-      } else if (selectedTileIndex === index) {
-        selectedTileIndex = null;
-        renderBoard();
-      } else {
-        const prevSelected = selectedTileIndex;
-        selectedTileIndex = null;
-        swapTiles(prevSelected, index);
-      }
-    }
-
-    function swapTiles(idx1, idx2) {
-      [boardState[idx1], boardState[idx2]] = [boardState[idx2], boardState[idx1]];
-      
-      moves++;
-      movesDisplay.textContent = moves;
-
-      const idx1Correct = boardState[idx1].correctIdx === idx1;
-      const idx2Correct = boardState[idx2].correctIdx === idx2;
-
-      if (idx1Correct || idx2Correct) {
-        playSound('correct');
-      } else {
-        playSound('swap');
-      }
-
-      renderBoard();
-    }
-
-    function handleWin() {
-      isGameActive = false;
-      stopTimer();
-      playSound('win');
-
-      if (typeof confetti === 'function') {
-        confetti({
-          particleCount: 120,
-          spread: 80,
-          origin: { y: 0.6 }
-        });
-      }
-
-      winTime.textContent = timerDisplay.textContent;
-      winMoves.textContent = moves;
-      setTimeout(() => {
-        winModal.classList.remove('hidden');
-      }, 300);
-    }
-
-    // Event Listeners
-    imageUploadInput.addEventListener('change', (e) => {
+    // File Input Handler
+    document.getElementById('image-input').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          document.querySelectorAll('#preset-container button').forEach(b => {
-            b.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/20');
-            b.classList.add('border-slate-200');
-          });
-          setSelection(event.target.result);
+          document.querySelectorAll('.preset-item').forEach(el => el.classList.remove('border-blue-600', 'ring-2', 'ring-blue-400'));
+          selectedImageSrc = event.target.result;
+          updatePreviewAndStartButton();
+          playSound('select');
         };
         reader.readAsDataURL(file);
       }
     });
 
-    btnStartGame.addEventListener('click', () => {
-      playSound('select');
-      switchToGameScreen();
-    });
-
-    btnBackToMenu.addEventListener('click', () => {
-      playSound('select');
-      switchToStartScreen();
-    });
-
-    btnChooseAnother.addEventListener('click', () => {
-      switchToStartScreen();
-    });
-
-    btnShuffle.addEventListener('click', () => {
-      if (boardState.length > 0) {
-        playSound('select');
-        shufflePieces();
+    // Update UI when an image is selected or unselected
+    function updatePreviewAndStartButton() {
+      if (selectedImageSrc) {
+        selectedPreviewImg.src = selectedImageSrc;
+        selectedPreviewContainer.classList.remove('hidden');
+        
+        // Enable Start Button
+        startBtn.disabled = false;
+        startBtn.className = "w-full py-2.5 rounded-xl font-bold text-sm shadow-md transition transform active:scale-95 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer";
+      } else {
+        selectedPreviewContainer.classList.add('hidden');
+        
+        // Disable Start Button
+        startBtn.disabled = true;
+        startBtn.className = "w-full py-2.5 rounded-xl font-bold text-sm shadow-md transition transform active:scale-95 bg-slate-300 text-slate-500 cursor-not-allowed";
       }
-    });
+    }
 
-    btnToggleRef.addEventListener('click', () => {
+    // Difficulty selection
+    function setDifficulty(piecesCount, btn) {
+      TOTAL_PIECES = piecesCount;
+      GRID_SIZE = Math.sqrt(piecesCount);
+      document.querySelectorAll('.diff-btn').forEach(b => {
+        b.className = 'diff-btn py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50';
+      });
+      btn.className = 'diff-btn active py-1.5 rounded-lg border text-xs font-bold transition bg-blue-600 text-white border-blue-600 shadow-sm';
+      document.getElementById('locks-display').innerText = `0/${TOTAL_PIECES}`;
       playSound('select');
-      referenceModal.classList.remove('hidden');
-    });
+    }
 
-    btnCloseRef.addEventListener('click', () => {
-      referenceModal.classList.add('hidden');
-    });
+    // Start Game
+    function startGame() {
+      if (!selectedImageSrc) return;
 
-    referenceModal.addEventListener('click', (e) => {
-      if (e.target === referenceModal) {
-        referenceModal.classList.add('hidden');
+      loadedImage = new Image();
+      loadedImage.crossOrigin = "anonymous";
+      loadedImage.onload = () => {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        setupPuzzle();
+        startTimer();
+      };
+      loadedImage.onerror = () => {
+        alert('圖片載入失敗，請嘗試切換其他圖片。');
+      };
+      loadedImage.src = selectedImageSrc;
+    }
+
+    function returnToStart() {
+      stopTimer();
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    // Dynamic Edge Generator for Interlocking Locks
+    function generateEdges() {
+      const horizontal = [];
+      const vertical = [];
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        horizontal[r] = [];
+        for (let c = 0; c < GRID_SIZE - 1; c++) {
+          horizontal[r][c] = Math.random() < 0.5 ? 1 : -1;
+        }
       }
-    });
 
-    btnPlayAgain.addEventListener('click', () => {
-      winModal.classList.add('hidden');
+      for (let r = 0; r < GRID_SIZE - 1; r++) {
+        vertical[r] = [];
+        for (let c = 0; c < GRID_SIZE; c++) {
+          vertical[r][c] = Math.random() < 0.5 ? 1 : -1;
+        }
+      }
+
+      return { horizontal, vertical };
+    }
+
+    function setupPuzzle() {
+      const maxW = wrapper.clientWidth - 16;
+      const maxH = wrapper.clientHeight - 16;
+
+      let width = maxW;
+      let height = maxH;
+
+      const imgAspect = loadedImage.width / loadedImage.height;
+      if (width / height > imgAspect) {
+        width = height * imgAspect;
+      } else {
+        height = width / imgAspect;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      pieceWidth = width / GRID_SIZE;
+      pieceHeight = height / GRID_SIZE;
+
+      const { horizontal, vertical } = generateEdges();
+
+      pieces = [];
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const index = r * GRID_SIZE + c;
+          const top = r === 0 ? 0 : -vertical[r - 1][c];
+          const right = c === GRID_SIZE - 1 ? 0 : horizontal[r][c];
+          const bottom = r === GRID_SIZE - 1 ? 0 : vertical[r][c];
+          const left = c === 0 ? 0 : -horizontal[r][c - 1];
+
+          pieces.push({
+            correctIndex: index,
+            currentIndex: index,
+            row: r,
+            col: c,
+            top, right, bottom, left,
+            locked: false
+          });
+        }
+      }
+
       shufflePieces();
+      moveCount = 0;
+      selectedPieceIndex = null;
+      updateStats();
+      draw();
+    }
+
+    function shufflePieces() {
+      do {
+        for (let i = pieces.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tempIndex = pieces[i].currentIndex;
+          pieces[i].currentIndex = pieces[j].currentIndex;
+          pieces[j].currentIndex = tempIndex;
+        }
+      } while (checkSolvedSilent());
+
+      lockedCount = 0;
+      pieces.forEach(p => {
+        if (p.currentIndex === p.correctIndex) {
+          p.locked = true;
+          lockedCount++;
+        } else {
+          p.locked = false;
+        }
+      });
+    }
+
+    function checkSolvedSilent() {
+      return pieces.every(p => p.currentIndex === p.correctIndex);
+    }
+
+    // Path Drawing Function
+    function drawPiecePath(ctx, x, y, w, h, edges) {
+      const { top, right, bottom, left } = edges;
+      const tabSize = Math.min(w, h) * 0.22;
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+
+      // Top Edge
+      if (top !== 0) {
+        ctx.lineTo(x + w * 0.35, y);
+        ctx.bezierCurveTo(x + w * 0.35, y + top * tabSize, x + w * 0.65, y + top * tabSize, x + w * 0.65, y);
+      }
+      ctx.lineTo(x + w, y);
+
+      // Right Edge
+      if (right !== 0) {
+        ctx.lineTo(x + w, y + h * 0.35);
+        ctx.bezierCurveTo(x + w + right * tabSize, y + h * 0.35, x + w + right * tabSize, y + h * 0.65, x + w, y + h * 0.65);
+      }
+      ctx.lineTo(x + w, y + h);
+
+      // Bottom Edge
+      if (bottom !== 0) {
+        ctx.lineTo(x + w * 0.65, y + h);
+        ctx.bezierCurveTo(x + w * 0.65, y + h + bottom * tabSize, x + w * 0.35, y + h + bottom * tabSize, x + w * 0.35, y + h);
+      }
+      ctx.lineTo(x, y + h);
+
+      // Left Edge
+      if (left !== 0) {
+        ctx.lineTo(x, y + h * 0.65);
+        ctx.bezierCurveTo(x + left * tabSize, y + h * 0.65, x + left * tabSize, y + h * 0.35, x, y + h * 0.35);
+      }
+      ctx.lineTo(x, y);
+      ctx.closePath();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background grid guide lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let r = 0; r <= GRID_SIZE; r++) {
+        ctx.beginPath();
+        ctx.moveTo(0, r * pieceHeight);
+        ctx.lineTo(canvas.width, r * pieceHeight);
+        ctx.stroke();
+      }
+      for (let c = 0; c <= GRID_SIZE; c++) {
+        ctx.beginPath();
+        ctx.moveTo(c * pieceWidth, 0);
+        ctx.lineTo(c * pieceWidth, canvas.height);
+        ctx.stroke();
+      }
+
+      // Draw Unlocked Pieces
+      pieces.forEach((piece, slotIndex) => {
+        const currentSlot = piece.currentIndex;
+        if (!piece.locked && currentSlot !== selectedPieceIndex) {
+          drawSinglePiece(piece, currentSlot);
+        }
+      });
+
+      // Draw Locked Pieces
+      pieces.forEach((piece) => {
+        if (piece.locked) {
+          drawSinglePiece(piece, piece.currentIndex);
+        }
+      });
+
+      // Draw Selected Piece Highlight
+      if (selectedPieceIndex !== null) {
+        const piece = pieces.find(p => p.currentIndex === selectedPieceIndex);
+        if (piece) {
+          drawSinglePiece(piece, selectedPieceIndex, true);
+        }
+      }
+    }
+
+    function drawSinglePiece(piece, slotIndex, isSelected = false) {
+      const targetRow = Math.floor(slotIndex / GRID_SIZE);
+      const targetCol = slotIndex % GRID_SIZE;
+      const targetX = targetCol * pieceWidth;
+      const targetY = targetRow * pieceHeight;
+
+      const sourceX = piece.col * (loadedImage.width / GRID_SIZE);
+      const sourceY = piece.row * (loadedImage.height / GRID_SIZE);
+      const sourceW = loadedImage.width / GRID_SIZE;
+      const sourceH = loadedImage.height / GRID_SIZE;
+
+      ctx.save();
+      drawPiecePath(ctx, targetX, targetY, pieceWidth, pieceHeight, piece);
+      ctx.clip();
+
+      ctx.drawImage(loadedImage, sourceX, sourceY, sourceW, sourceH, targetX, targetY, pieceWidth, pieceHeight);
+
+      if (piece.locked) {
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
+        ctx.fill();
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      } else if (isSelected) {
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.fill();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // Interaction Handlers
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const col = Math.floor(clickX / pieceWidth);
+      const row = Math.floor(clickY / pieceHeight);
+      
+      if (col < 0 || col >= GRID_SIZE || row < 0 || row >= GRID_SIZE) return;
+
+      const clickedSlotIndex = row * GRID_SIZE + col;
+      const clickedPiece = pieces.find(p => p.currentIndex === clickedSlotIndex);
+
+      if (clickedPiece && clickedPiece.locked) return;
+
+      if (selectedPieceIndex === null) {
+        selectedPieceIndex = clickedSlotIndex;
+        playSound('select');
+      } else if (selectedPieceIndex === clickedSlotIndex) {
+        selectedPieceIndex = null;
+        playSound('select');
+      } else {
+        swapPieces(selectedPieceIndex, clickedSlotIndex);
+        selectedPieceIndex = null;
+      }
+
+      draw();
     });
 
-    btnSound.addEventListener('click', () => {
+    function swapPieces(slot1, slot2) {
+      const p1 = pieces.find(p => p.currentIndex === slot1);
+      const p2 = pieces.find(p => p.currentIndex === slot2);
+
+      if (!p1 || !p2 || p1.locked || p2.locked) return;
+
+      p1.currentIndex = slot2;
+      p2.currentIndex = slot1;
+
+      moveCount++;
+      playSound('swap');
+
+      let justLocked = false;
+      [p1, p2].forEach(p => {
+        if (!p.locked && p.currentIndex === p.correctIndex) {
+          p.locked = true;
+          lockedCount++;
+          justLocked = true;
+        }
+      });
+
+      if (justLocked) playSound('lock');
+
+      updateStats();
+      checkSolved();
+    }
+
+    function checkSolved() {
+      const isSolved = pieces.every(p => p.currentIndex === p.correctIndex);
+      if (isSolved) {
+        stopTimer();
+        playSound('victory');
+        triggerConfetti();
+
+        // Reveal Full Picture on Canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
+
+        setTimeout(() => {
+          document.getElementById('victory-time').innerText = formatTime(secondsElapsed);
+          document.getElementById('victory-moves').innerText = moveCount;
+          document.getElementById('victory-final-img').src = selectedImageSrc;
+          document.getElementById('victory-modal').classList.remove('hidden');
+        }, 500);
+      }
+    }
+
+    function resetPuzzle() {
+      if (loadedImage) {
+        setupPuzzle();
+        stopTimer();
+        startTimer();
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('moves-display').innerText = moveCount;
+      document.getElementById('locks-display').innerText = `${lockedCount}/${TOTAL_PIECES}`;
+    }
+
+    // Timer Functions
+    function startTimer() {
+      secondsElapsed = 0;
+      document.getElementById('timer-display').innerText = "00:00";
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        document.getElementById('timer-display').innerText = formatTime(secondsElapsed);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function toggleSound() {
       soundEnabled = !soundEnabled;
-      soundIcon.className = soundEnabled ? 'fa-solid fa-volume-high text-emerald-500' : 'fa-solid fa-volume-xmark text-slate-400';
-    });
+      const soundIcon = document.getElementById('sound-icon');
+      if (soundEnabled) {
+        soundIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"></path>`;
+      } else {
+        soundIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>`;
+      }
+    }
 
+    // Modal & Lightbox Helpers
+    function openOriginalPhotoModal() {
+      document.getElementById('modal-original-img').src = selectedImageSrc;
+      document.getElementById('original-modal').classList.remove('hidden');
+    }
+
+    function closeOriginalPhotoModal() {
+      document.getElementById('original-modal').classList.add('hidden');
+    }
+
+    function openLightbox(src) {
+      if (!src) return;
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-modal').classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victory-modal').classList.add('hidden');
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+    }
+
+    // Window Resize Handler
     window.addEventListener('resize', () => {
-      if (!gameScreen.classList.contains('hidden') && currentImage.complete && currentImage.width > 0) {
+      if (loadedImage && !document.getElementById('game-screen').classList.contains('hidden')) {
         setupPuzzle();
       }
     });
 
+    // Escape Key Handler for Modals
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLightbox();
+        closeOriginalPhotoModal();
+      }
+    });
+
+    // Init on load
     window.onload = () => {
       initPresets();
+      updatePreviewAndStartButton();
     };
   </script>
 </body>
 </html>
+</path>
