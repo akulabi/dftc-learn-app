@@ -17,7 +17,7 @@
       color: #4A3E3D;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    
+
     /* Custom Scrollbar for container */
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -31,7 +31,7 @@
       border-radius: 4px;
     }
 
-    /* 九宮格 (3x3 Grid) SVG background */
+    /* 九宮格 (3x3 Dashed Grid + Faint Diagonals) SVG Background */
     .jiugong-grid-bg {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23FAF6F0'/%3E%3Cline x1='40' y1='0' x2='40' y2='120' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='80' y1='0' x2='80' y2='120' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='40' x2='120' y2='40' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='80' x2='120' y2='80' stroke='%23D8C4B4' stroke-width='1.2' stroke-dasharray='3,3'/%3E%3Cline x1='0' y1='0' x2='120' y2='120' stroke='%23EADCD0' stroke-width='1' stroke-dasharray='2,2'/%3E%3Cline x1='120' y1='0' x2='0' y2='120' stroke='%23EADCD0' stroke-width='1' stroke-dasharray='2,2'/%3E%3Crect x='1' y='1' width='118' height='118' fill='none' stroke='%23D8C4B4' stroke-width='2'/%3E%3C/svg%3E");
       background-size: cover;
@@ -46,55 +46,68 @@
 </head>
 <body class="h-dvh min-h-[100vh] w-full flex flex-col justify-between overflow-hidden select-none bg-[#F8F3ED] text-[#4A3E3D]">
 
-  <!-- TOP HEADER / INPUT SECTION -->
+  <!-- TOP HEADER & TEXT INPUT SECTION -->
   <header class="flex-none w-full max-w-5xl mx-auto pt-3 px-3 flex flex-col items-center gap-2">
     <div class="w-full bg-[#FAF5E9] border-2 border-[#E6D5C3] rounded-full px-4 py-1.5 shadow-sm text-center flex items-center justify-center gap-2">
       <i class="fa-solid fa-pen-nib text-[#C88A4B]"></i>
       <h1 class="text-lg sm:text-xl font-medium tracking-wide text-[#5C4033]">中文筆劃練習</h1>
     </div>
 
-    <!-- Text input box -->
+    <!-- Centered Text Input with Clear Button -->
     <div class="w-full relative">
       <input 
         type="text" 
         id="textInput" 
         value="中文筆劃練習" 
-        placeholder="請輸入文字..."
-        class="w-full px-4 py-2 sm:py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
+        placeholder="請輸入中文單字或句子..."
+        class="w-full px-10 py-2 sm:py-2.5 rounded-xl border-2 border-[#E6D5C3] bg-white focus:outline-none focus:border-[#C88A4B] text-center text-base sm:text-lg shadow-inner text-[#4A3E3D]"
       />
+      <button 
+        type="button" 
+        id="clearInputBtn" 
+        title="清除文字"
+        aria-label="清除文字"
+        class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#E6D5C3] hover:bg-[#C88A4B] text-[#5C4033] hover:text-white flex items-center justify-center text-xs transition active:scale-90"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
   </header>
 
-  <!-- MIDDLE CHARACTER GRID -->
+  <!-- MIDDLE RESPONSIVE CHARACTER GRID -->
   <main class="flex-1 min-h-0 w-full max-w-5xl mx-auto px-2 sm:px-3 my-2 overflow-hidden flex flex-col">
     <div 
       id="gridContainer" 
-      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-2.5 sm:p-4 overflow-y-auto custom-scrollbar flex flex-wrap gap-2 sm:gap-3 content-start justify-center shadow-inner"
+      class="w-full h-full bg-[#F4EDE2] border-2 border-[#E2D2C1] rounded-2xl p-2 sm:p-3 overflow-y-auto custom-scrollbar flex flex-wrap gap-1.5 sm:gap-2 content-start justify-center shadow-inner"
     >
-      <!-- Hanzi Writer cards generated dynamically here -->
+      <!-- Character boxes generated dynamically here -->
     </div>
   </main>
 
-  <!-- BOTTOM CONTROL BAR -->
+  <!-- BOTTOM MOBILE-SAFE CONTROL BAR -->
   <footer class="flex-none w-full max-w-5xl mx-auto px-2 sm:px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sticky bottom-0 z-50">
     <div class="bg-[#EBDCCB] border-2 border-[#D8C4B4] rounded-2xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-md">
       
+      <!-- Rewind / Reset Button -->
+      <button 
+        type="button"
+        id="rewindBtn" 
+        class="w-10 h-10 sm:w-11 sm:h-11 bg-[#D9C4B0] hover:bg-[#CBB49E] text-[#5C4033] rounded-full flex items-center justify-center text-sm sm:text-base transition active:scale-95 shadow flex-none"
+        title="重置"
+        aria-label="重置"
+      >
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+
       <!-- Play / Pause Button -->
       <button 
+        type="button"
         id="playPauseBtn" 
         class="w-10 h-10 sm:w-12 sm:h-12 bg-[#C88A4B] hover:bg-[#B3783C] text-white rounded-full flex items-center justify-center text-base sm:text-xl transition active:scale-95 shadow flex-none"
         title="播放/暫停"
+        aria-label="播放或暫停"
       >
         <i class="fa-solid fa-play ml-0.5" id="playIcon"></i>
-      </button>
-
-      <!-- Rewind / Reset Button -->
-      <button 
-        id="rewindBtn" 
-        class="w-9 h-9 sm:w-10 sm:h-10 bg-[#D9C4B0] hover:bg-[#CBB49E] text-[#5C4033] rounded-full flex items-center justify-center text-sm sm:text-base transition active:scale-95 shadow flex-none"
-        title="重置"
-      >
-        <i class="fa-solid fa-rotate-left"></i>
       </button>
 
       <!-- Timeline Seek Slider -->
@@ -105,15 +118,17 @@
           min="0" 
           value="0" 
           step="1" 
+          aria-label="進度條"
           class="w-full h-2 bg-[#D5C2B1] rounded-lg appearance-none cursor-pointer accent-[#C88A4B]" 
         />
       </div>
 
-      <!-- Speed Control Dropdown -->
+      <!-- Stroke Speed Selector -->
       <div class="relative flex-none">
         <select 
           id="speedSelect" 
-          class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs sm:text-sm focus:outline-none cursor-pointer shadow-sm"
+          aria-label="筆劃速度"
+          class="bg-[#FAF6F0] text-[#5C4033] font-medium border-2 border-[#D8C4B4] rounded-xl px-2 py-1.5 sm:px-2.5 text-xs sm:text-sm focus:outline-none cursor-pointer shadow-sm"
         >
           <option value="0.25">0.25x 慢速</option>
           <option value="0.5">0.5x 慢速</option>
@@ -128,10 +143,11 @@
     </div>
   </footer>
 
-  <!-- SCRIPT LOGIC -->
+  <!-- APPLICATION SCRIPT -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const textInput = document.getElementById('textInput');
+      const clearInputBtn = document.getElementById('clearInputBtn');
       const gridContainer = document.getElementById('gridContainer');
       const playPauseBtn = document.getElementById('playPauseBtn');
       const playIcon = document.getElementById('playIcon');
@@ -140,45 +156,67 @@
       const speedSelect = document.getElementById('speedSelect');
 
       let charList = [];
-      let writers = []; 
+      let writers = []; // Stores HanziWriter instances or null (for punctuation / missing words)
       let currentIndex = 0;
       let isPlaying = false;
       let currentSpeed = 1.0;
       let animationSessionToken = 0;
 
-      // Cantonese Text-To-Speech (粵語發音: zh-HK)
-      function speakCantonese(char) {
-        if (!('speechSynthesis' in window) || !isHanzi(char)) return;
-        
-        // Cancel any active speech utterance immediately
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(char);
-        utterance.lang = 'zh-HK';
-        utterance.rate = Math.min(Math.max(currentSpeed * 0.9, 0.5), 1.5);
-
-        // Explicitly target Cantonese voices if available
-        const voices = window.speechSynthesis.getVoices();
-        const cantoneseVoice = voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK' || v.lang === 'yue-HK') ||
-                               voices.find(v => v.lang.startsWith('zh-HK'));
-        if (cantoneseVoice) {
-          utterance.voice = cantoneseVoice;
-        }
-
-        window.speechSynthesis.speak(utterance);
-      }
-
-      function isHanzi(char) {
+      /**
+       * Check if a character is a CJK Chinese character
+       */
+      function isChineseChar(char) {
         return /[\u4e00-\u9fa5\u3400-\u4dbf\uf900-\ufaff]/.test(char);
       }
 
-      function createWriterForChar(char, targetId) {
+      /**
+       * Speak a Chinese character in Cantonese (zh-HK) using Web Speech API
+       */
+      function speakCantonese(char) {
+        if (!('speechSynthesis' in window) || !isChineseChar(char)) return;
+
+        try {
+          window.speechSynthesis.cancel();
+
+          const utterance = new SpeechSynthesisUtterance(char);
+          utterance.lang = 'zh-HK';
+          utterance.rate = Math.min(Math.max(currentSpeed * 0.9, 0.5), 1.5);
+
+          const voices = window.speechSynthesis.getVoices();
+          const cantoneseVoice =
+            voices.find(v => v.lang === 'zh-HK' || v.lang === 'zh-Hant-HK' || v.lang === 'yue-HK') ||
+            voices.find(v => v.lang.toLowerCase().startsWith('zh-hk')) ||
+            voices.find(v => v.lang.toLowerCase().startsWith('zh-tw'));
+
+          if (cantoneseVoice) {
+            utterance.voice = cantoneseVoice;
+          }
+
+          window.speechSynthesis.speak(utterance);
+        } catch (err) {
+          console.warn('Speech synthesis error:', err);
+        }
+      }
+
+      /**
+       * Render fallback static serif typography inside a box (used for punctuation or missing stroke data)
+       */
+      function renderFallbackCharacter(container, char) {
+        container.className = 'w-full h-full flex items-center justify-center font-serif text-6xl sm:text-7xl font-bold text-[#4A3E3D] select-none';
+        container.innerText = char;
+      }
+
+      /**
+       * Initialize a HanziWriter instance inside target container with primary HK dataset & CDN fallback
+       */
+      function createWriterForChar(char, targetId, index) {
         const container = document.getElementById(targetId);
+        if (!container) return null;
         container.innerHTML = '';
 
-        if (!isHanzi(char)) {
-          container.className = 'w-full h-full flex items-center justify-center text-6xl sm:text-7xl font-serif text-[#000000]';
-          container.innerText = char;
+        // Non-Chinese characters / punctuation render directly as centered serif symbols
+        if (!isChineseChar(char)) {
+          renderFallbackCharacter(container, char);
           return null;
         }
 
@@ -186,53 +224,70 @@
         const cardSize = parentCard ? parentCard.clientWidth : 144;
         const writerSize = Math.max(125, cardSize - 4);
 
-        return HanziWriter.create(targetId, char, {
-          width: writerSize,
-          height: writerSize,
-          padding: 2,
-          showOutline: true,
-          strokeColor: '#000000',
-          outlineColor: '#E0E0E0',
-          drawingColor: '#000000',
-          strokeAnimationSpeed: currentSpeed, 
-          delayBetweenStrokes: 200 / currentSpeed,
-          charDataLoader: (charToLoad, onComplete, onError) => {
-            const hkUrl = `/hanzi-writer-data-hk/data/${charToLoad}.json`;
-            const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${charToLoad}.json`;
+        try {
+          return HanziWriter.create(targetId, char, {
+            width: writerSize,
+            height: writerSize,
+            padding: 2,
+            showOutline: true,
+            strokeColor: '#000000',
+            outlineColor: '#E0E0E0',
+            drawingColor: '#000000',
+            strokeAnimationSpeed: currentSpeed,
+            delayBetweenStrokes: 200 / currentSpeed,
+            charDataLoader: (charToLoad, onComplete) => {
+              const hkUrl = `/hanzi-writer-data-hk/data/${charToLoad}.json`;
+              const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${charToLoad}.json`;
 
-            fetch(hkUrl)
-              .then(res => {
-                if (!res.ok) throw new Error('HK data fetch failed');
-                return res.json();
-              })
-              .then(onComplete)
-              .catch(() => {
-                fetch(cdnUrl)
-                  .then(res => {
-                    if (!res.ok) throw new Error('CDN data fetch failed');
-                    return res.json();
-                  })
-                  .then(onComplete)
-                  .catch(err => {
-                    if (onError) onError(err);
-                    container.innerHTML = `<span class="text-gray-400 text-xs">${charToLoad}</span>`;
-                  });
-              });
-          }
-        });
+              // 1. Try local Hong Kong stroke dataset first
+              fetch(hkUrl)
+                .then(res => {
+                  if (!res.ok) throw new Error('Local HK dataset not found');
+                  return res.json();
+                })
+                .then(onComplete)
+                .catch(() => {
+                  // 2. Fallback to standard jsDelivr CDN
+                  fetch(cdnUrl)
+                    .then(res => {
+                      if (!res.ok) throw new Error('CDN dataset not found');
+                      return res.json();
+                    })
+                    .then(onComplete)
+                    .catch(() => {
+                      // 3. Word not found anywhere: mark writer null and render static serif character so playback never hangs
+                      writers[index] = null;
+                      renderFallbackCharacter(container, charToLoad);
+                    });
+                });
+            }
+          });
+        } catch (err) {
+          console.error('HanziWriter creation failed:', err);
+          renderFallbackCharacter(container, char);
+          return null;
+        }
       }
 
+      /**
+       * Render all character cards into the responsive flex-wrap container
+       */
       function renderGrid() {
         stopAnimation();
         gridContainer.innerHTML = '';
         writers = [];
-        
-        charList = textInput.value.split('');
+
+        const rawText = textInput.value;
+        clearInputBtn.classList.toggle('hidden', rawText.length === 0);
+
+        // Filter out newline/control characters while preserving spaces/punctuation if desired, or split directly
+        charList = rawText.replace(/[\r\n]/g, '').split('');
 
         if (charList.length === 0) {
           gridContainer.innerHTML = `
-            <div class="col-span-full py-16 text-center text-[#9E8B7D] font-medium">
-              請在上方輸入欄輸入文字...
+            <div class="w-full h-full flex flex-col items-center justify-center text-[#9E8B7D] font-medium py-12 gap-2">
+              <i class="fa-regular fa-keyboard text-3xl text-[#C88A4B]/60"></i>
+              <span>請在上方輸入欄輸入中文單字或句子...</span>
             </div>
           `;
           seekBar.max = 0;
@@ -246,9 +301,9 @@
 
         charList.forEach((char, idx) => {
           const card = document.createElement('div');
-          card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-xl p-0.5 flex items-center justify-center cursor-pointer transition-all duration-200 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 relative shadow-sm hover:border-[#C88A4B] shrink-0 overflow-hidden';
+          card.className = 'jiugong-grid-bg border-2 border-[#E2D2C1] rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 relative shadow-sm hover:border-[#C88A4B] shrink-0 overflow-hidden';
           card.id = `card-${idx}`;
-          
+
           const targetDiv = document.createElement('div');
           targetDiv.id = `writer-target-${idx}`;
           targetDiv.className = 'w-full h-full flex items-center justify-center';
@@ -260,20 +315,22 @@
 
           gridContainer.appendChild(card);
 
-          const writer = createWriterForChar(char, targetDiv.id);
+          const writer = createWriterForChar(char, targetDiv.id, idx);
           writers.push(writer);
         });
 
         highlightCard(currentIndex);
       }
 
+      /**
+       * Highlight the currently active card and auto-scroll it smoothly to the center of the viewport
+       */
       function highlightCard(index) {
-        writers.forEach((_, idx) => {
+        charList.forEach((_, idx) => {
           const card = document.getElementById(`card-${idx}`);
           if (card) {
             if (idx === index) {
               card.classList.add('card-active');
-              // Auto-scrolls card into center of screen
               card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             } else {
               card.classList.remove('card-active');
@@ -283,55 +340,70 @@
         seekBar.value = index;
       }
 
+      /**
+       * Sequentially animate character strokes and pronounce each character in Cantonese
+       */
       function playCurrentSequence(sessionToken) {
         if (!isPlaying || sessionToken !== animationSessionToken) return;
-        if (currentIndex >= writers.length) {
+        if (currentIndex >= charList.length) {
           stopAnimation();
           return;
         }
 
         highlightCard(currentIndex);
-        const charToSpeak = charList[currentIndex];
-        
-        // Cantonese voice playback
-        speakCantonese(charToSpeak);
+        const currentChar = charList[currentIndex];
+
+        // Speak Chinese characters in Cantonese even if stroke data was missing
+        if (isChineseChar(currentChar)) {
+          speakCantonese(currentChar);
+        }
 
         const currentWriter = writers[currentIndex];
 
+        // If punctuation or missing stroke dataset (writers[index] === null), pause briefly and continue without hanging
         if (!currentWriter) {
           setTimeout(() => {
             if (isPlaying && sessionToken === animationSessionToken) {
               currentIndex++;
-              if (currentIndex < writers.length) {
+              if (currentIndex < charList.length) {
                 playCurrentSequence(sessionToken);
               } else {
                 stopAnimation();
               }
             }
-          }, 300 / currentSpeed);
+          }, 450 / currentSpeed);
           return;
         }
+
+        // Guard against slow/unloaded character data hanging animateCharacter
+        let stepCompleted = false;
+        const advanceNext = () => {
+          if (stepCompleted) return;
+          stepCompleted = true;
+          if (isPlaying && sessionToken === animationSessionToken) {
+            currentIndex++;
+            if (currentIndex < charList.length) {
+              playCurrentSequence(sessionToken);
+            } else {
+              stopAnimation();
+            }
+          }
+        };
 
         currentWriter.hideCharacter();
         currentWriter.animateCharacter({
           strokeAnimationSpeed: currentSpeed,
           delayBetweenStrokes: 200 / currentSpeed,
-          onComplete: () => {
-            if (isPlaying && sessionToken === animationSessionToken) {
-              currentIndex++;
-              if (currentIndex < writers.length) {
-                playCurrentSequence(sessionToken);
-              } else {
-                stopAnimation();
-              }
-            }
-          }
+          onComplete: advanceNext
         });
       }
 
+      /**
+       * Start or resume sequential playback
+       */
       function startAnimation() {
-        if (writers.length === 0) return;
-        if (currentIndex >= writers.length) currentIndex = 0;
+        if (charList.length === 0) return;
+        if (currentIndex >= charList.length) currentIndex = 0;
 
         isPlaying = true;
         playIcon.className = 'fa-solid fa-pause';
@@ -339,6 +411,9 @@
         playCurrentSequence(animationSessionToken);
       }
 
+      /**
+       * Stop/Pause animation and cancel active speech synthesis immediately
+       */
       function stopAnimation() {
         isPlaying = false;
         playIcon.className = 'fa-solid fa-play ml-0.5';
@@ -349,14 +424,18 @@
         writers.forEach(w => w && w.pauseAnimation());
       }
 
+      /**
+       * Jump directly to a character index via card click or seek slider
+       */
       function jumpToCharacter(index, startPlaying = false) {
         stopAnimation();
         currentIndex = index;
-        
+
         writers.forEach((w, idx) => {
-          if (idx < index && w) {
+          if (!w) return;
+          if (idx < index) {
             w.showCharacter();
-          } else if (w) {
+          } else {
             w.hideCharacter();
             w.showOutline();
           }
@@ -369,26 +448,38 @@
         }
       }
 
+      /**
+       * Rewind back to the first character
+       */
       function rewind() {
         stopAnimation();
         currentIndex = 0;
-        writers.forEach(w => w && w.hideCharacter());
+        writers.forEach(w => {
+          if (w) {
+            w.hideCharacter();
+            w.showOutline();
+          }
+        });
         highlightCard(0);
       }
 
+      /**
+       * Destroy and recreate writers when stroke speed or viewport size changes
+       */
       function recreateWritersAndResume() {
         const werePlaying = isPlaying;
         stopAnimation();
 
         writers = charList.map((char, idx) => {
           const targetId = `writer-target-${idx}`;
-          return createWriterForChar(char, targetId);
+          return createWriterForChar(char, targetId, idx);
         });
 
         writers.forEach((w, idx) => {
-          if (idx < currentIndex && w) {
+          if (!w) return;
+          if (idx < currentIndex) {
             w.showCharacter();
-          } else if (w) {
+          } else {
             w.hideCharacter();
             w.showOutline();
           }
@@ -399,7 +490,14 @@
         }
       }
 
+      // Event Listeners
       textInput.addEventListener('input', () => renderGrid());
+
+      clearInputBtn.addEventListener('click', () => {
+        textInput.value = '';
+        renderGrid();
+        textInput.focus();
+      });
 
       playPauseBtn.addEventListener('click', () => {
         if (isPlaying) {
@@ -424,7 +522,9 @@
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-          recreateWritersAndResume();
+          if (charList.length > 0) {
+            recreateWritersAndResume();
+          }
         }, 200);
       });
 
@@ -434,6 +534,7 @@
         };
       }
 
+      // Initial render
       renderGrid();
     });
   </script>
