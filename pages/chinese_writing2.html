@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>中文兩字詞語書寫練習</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Hanzi Writer CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <!-- Google Fonts: Noto Sans TC & KaiTi fallback for authentic stroke aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fdfbf7;
+            color: #2D3748;
+            overscroll-behavior: none;
+        }
+
+        /* Prevent scrolling/zooming when drawing inside the grid */
+        .writing-pad {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Traditional Chinese Tianzige / Mizige SVG background styling */
+        .grid-bg {
+            background-color: #FFFDF9;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' fill='none' stroke='%23E53E3E' stroke-width='4'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='%23FC8181' stroke-width='1.5' stroke-dasharray='6,6'/%3E%3Cline x1='50%25' y1='0' x2='50%25' y2='100%25' stroke='%23FC8181' stroke-width='1.5' stroke-dasharray='6,6'/%3E%3Cline x1='0' y1='0' x2='100%25' y2='100%25' stroke='%23FEB2B2' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='100%25' y1='0' x2='0' y2='100%25' stroke='%23FEB2B2' stroke-width='1' stroke-dasharray='6,6'/%3E%3C/svg%3E");
+            background-size: 100% 100%;
+        }
+
+        /* Gentle shake animation on incorrect stroke */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
+
+        /* Sound wave animation */
+        @keyframes soundWave {
+            0%, 100% { transform: scaleY(0.4); }
+            50% { transform: scaleY(1); }
+        }
+        .wave-bar {
+            animation: soundWave 0.6s ease-in-out infinite;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+
+        /* Active grid glow */
+        .active-grid {
+            box-shadow: 0 0 0 4px rgba(237, 137, 54, 0.45), 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: #DD6B20 !important;
+        }
+
+        .completed-grid {
+            box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.45);
+            background-color: #F0FFF4;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-200">
+
+    <!-- Top Navigation & Stats Bar -->
+    <header class="bg-white shadow-sm border-b border-amber-100 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- App Title -->
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-xl shadow-sm">
+                    寫
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-gray-800 leading-tight">中文詞語聽寫練習</h1>
+                    <p class="text-xs text-gray-500 hidden sm:block">先聆聽兩字詞語，再依筆順寫入大方格內</p>
+                </div>
+            </div>
+
+            <!-- Progress & Stats -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Progress Pill -->
+                <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-bold text-amber-800">
+                    <span>進度</span>
+                    <span id="progress-text" class="text-amber-600">1 / 10</span>
+                </div>
+
+                <!-- Stars Pill -->
+                <div class="bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-full flex items-center gap-1 text-sm font-bold text-yellow-800">
+                    <svg class="w-4 h-4 text-yellow-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <span id="score-text">0</span>
+                </div>
+
+                <!-- Word Bank Manager Button -->
+                <button onclick="openWordBankModal()" class="bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl text-sm font-semibold transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span>詞語庫</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:py-6 flex flex-col items-center justify-center gap-5">
+        
+        <!-- Audio & Language Control Bar -->
+        <div class="w-full bg-white rounded-2xl shadow-sm border border-amber-100 p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <!-- Left: Play Audio Button & Visual Wave -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
+                <button id="btn-speak" onclick="speakCurrentWord()" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold px-5 py-3 rounded-xl shadow-md shadow-amber-500/20 transition flex items-center gap-2.5 text-base sm:text-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                    <span>重聽讀音</span>
+                </button>
+
+                <!-- Speaking Wave Indicator -->
+                <div id="speaking-indicator" class="hidden items-center gap-1 h-8 px-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <span class="w-1 h-4 bg-amber-500 rounded-full wave-bar"></span>
+                    <span class="w-1 h-5 bg-amber-500 rounded-full wave-bar"></span>
+                    <span class="w-1 h-3 bg-amber-500 rounded-full wave-bar"></span>
+                    <span class="w-1 h-4 bg-amber-500 rounded-full wave-bar"></span>
+                    <span class="text-xs font-bold text-amber-700 ml-1">正在朗讀...</span>
+                </div>
+            </div>
+
+            <!-- Right: Dialect & Speed Settings -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+                <!-- Dialect Toggle -->
+                <div class="inline-flex rounded-xl bg-gray-100 p-1">
+                    <button id="lang-yue" onclick="setLanguage('zh-HK')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-white text-amber-700 shadow-sm">
+                        粵語
+                    </button>
+                    <button id="lang-cmn" onclick="setLanguage('zh-CN')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition text-gray-600 hover:text-gray-800">
+                        普通話
+                    </button>
+                </div>
+
+                <!-- Speed Toggle -->
+                <button id="btn-speed" onclick="toggleSpeed()" class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm font-bold transition flex items-center gap-1" title="切換語速">
+                    <span>語速：</span>
+                    <span id="speed-label" class="text-amber-700">正常</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status & Instruction Banner -->
+        <div class="text-center space-y-1">
+            <div id="status-message" class="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-800 font-bold text-sm sm:text-base transition-all">
+                請細心聆聽詞語，然後在左邊方格寫出第一個字
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                <span>本題失誤：<strong id="mistake-count" class="text-red-500">0</strong> 次</span>
+                <span>•</span>
+                <span id="meaning-hint" class="text-gray-600 font-medium">提示分類：日常詞語</span>
+                <span>•</span>
+                <span id="data-source-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-xs">
+                    字庫來源：載入中...
+                </span>
+            </div>
+        </div>
+
+        <!-- Two Large Writing Grids Container -->
+        <div class="w-full flex flex-row items-center justify-center gap-3 sm:gap-8 my-1">
+            
+            <!-- Character 1 Box -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <span id="badge-0" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white">第一字</span>
+                    <span id="status-0" class="text-xs font-bold text-amber-600">書寫中...</span>
+                </div>
+                <div id="box-wrapper-0" onclick="focusCharacter(0)" class="relative rounded-2xl border-4 border-red-400 bg-white shadow-lg transition-all duration-200 overflow-hidden active-grid cursor-pointer">
+                    <div id="grid-0" class="writing-pad grid-bg"></div>
+                    <!-- Loading Spinner Overlay -->
+                    <div id="loader-0" class="absolute inset-0 bg-white/80 flex items-center justify-center hidden">
+                        <div class="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Character 2 Box -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <span id="badge-1" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-300 text-gray-700">第二字</span>
+                    <span id="status-1" class="text-xs font-bold text-gray-400">等待中</span>
+                </div>
+                <div id="box-wrapper-1" onclick="focusCharacter(1)" class="relative rounded-2xl border-4 border-red-300 bg-white shadow-md transition-all duration-200 overflow-hidden opacity-90 cursor-pointer">
+                    <div id="grid-1" class="writing-pad grid-bg"></div>
+                    <!-- Loading Spinner Overlay -->
+                    <div id="loader-1" class="absolute inset-0 bg-white/80 flex items-center justify-center hidden">
+                        <div class="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Controls Bar -->
+        <div class="w-full max-w-xl grid grid-cols-3 gap-2.5 sm:gap-4 mt-1">
+            <button onclick="showStrokeHint()" class="bg-sky-50 hover:bg-sky-100 active:scale-95 border border-sky-200 text-sky-700 font-bold py-3 px-3 rounded-xl transition flex flex-col sm:flex-row items-center justify-center gap-1.5 text-sm sm:text-base shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <span>筆順提示</span>
+            </button>
+
+            <button onclick="resetCurrentWord()" class="bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200 text-rose-700 font-bold py-3 px-3 rounded-xl transition flex flex-col sm:flex-row items-center justify-center gap-1.5 text-sm sm:text-base shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>重新書寫</span>
+            </button>
+
+            <button onclick="nextWord()" class="bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 text-emerald-700 font-bold py-3 px-3 rounded-xl transition flex flex-col sm:flex-row items-center justify-center gap-1.5 text-sm sm:text-base shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                <span>跳過 / 下一題</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-xs text-gray-400">
+        筆順資料庫由 Hanzi Writer 提供 • 支援觸控螢幕及滑鼠書寫
+    </footer>
+
+    <!-- Celebration Modal (Shown when both characters are completed) -->
+    <div id="celebration-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border-4 border-amber-300 transform transition-all scale-95" id="celebration-card">
+            <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <svg class="w-10 h-10 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <h2 class="text-2xl font-black text-gray-800 mb-1">太棒了！寫對了！</h2>
+            <p class="text-sm text-gray-500 mb-4">你已經完成這個詞語的書寫練習</p>
+            
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl py-4 px-6 mb-4">
+                <div id="modal-word-display" class="text-5xl font-black text-amber-800 tracking-widest mb-2">蘋果</div>
+                <div id="modal-word-hint" class="text-xs font-bold text-amber-600">分類：水果食物</div>
+            </div>
+
+            <div class="flex justify-center gap-4 text-sm text-gray-600 mb-6">
+                <div>失誤次數：<span id="modal-mistakes" class="font-bold text-gray-800">0</span></div>
+                <div>•</div>
+                <div>獲得星星：<span id="modal-stars" class="font-bold text-yellow-600">+3 ⭐</span></div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="speakCurrentWord()" class="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-3 rounded-xl transition">
+                    再聽一次
+                </button>
+                <button onclick="proceedNextFromModal()" class="flex-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl shadow-md shadow-emerald-500/20 transition">
+                    下一題 ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Word Bank Modal -->
+    <div id="wordbank-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-gray-800">詞語庫與自訂詞語</h3>
+                <button onclick="closeWordBankModal()" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Add Custom 2-Character Word Form -->
+            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 mb-4">
+                <label class="block text-sm font-bold text-amber-900 mb-2">新增自訂兩字詞語（繁體中文）</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="custom-word-input" maxlength="2" placeholder="輸入兩個中文字 (如: 蝴蝶)" class="flex-1 px-3.5 py-2.5 rounded-xl border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-base font-bold bg-white">
+                    <input type="text" id="custom-hint-input" maxlength="12" placeholder="提示/分類 (選填)" class="sm:w-36 px-3.5 py-2.5 rounded-xl border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm bg-white">
+                    <button onclick="addCustomWord()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-xl transition whitespace-nowrap">
+                        新增
+                    </button>
+                </div>
+                <p id="custom-word-error" class="text-xs text-red-600 font-bold mt-1.5 hidden"></p>
+            </div>
+
+            <!-- Word List -->
+            <div class="flex-1 overflow-y-auto pr-1 space-y-2" id="word-list-container">
+                <!-- Populated dynamically via JS -->
+            </div>
+
+            <div class="border-t border-gray-100 pt-3 mt-4 flex justify-between items-center">
+                <button onclick="resetDefaultWords()" class="text-xs text-gray-500 hover:text-red-600 underline">
+                    恢復預設詞語庫
+                </button>
+                <button onclick="closeWordBankModal()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold px-5 py-2 rounded-xl text-sm">
+                    完成
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Box (Replaces alert()) -->
+    <div id="toast-box" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        提示訊息
+    </div>
+
+    <script>
+        /**
+         * Curated Default Word Bank (Traditional Chinese 2-character primary school words)
+         */
+        const DEFAULT_WORDS = [
+            { word: "學習", hint: "校園生活" },
+            { word: "快樂", hint: "心情感受" },
+            { word: "朋友", hint: "人際關係" },
+            { word: "太陽", hint: "自然天空" },
+            { word: "老師", hint: "校園人物" },
+            { word: "書包", hint: "學習用品" },
+            { word: "謝謝", hint: "禮貌用語" },
+            { word: "家庭", hint: "親情溫暖" },
+            { word: "公園", hint: "休閒地方" },
+            { word: "蘋果", hint: "水果食物" },
+            { word: "蝴蝶", hint: "昆蟲動物" },
+            { word: "彩虹", hint: "天氣現象" },
+            { word: "運動", hint: "健康活動" },
+            { word: "閱讀", hint: "良好習慣" },
+            { word: "勇敢", hint: "優秀品格" }
+        ];
+
+        // Application State
+        let wordBank = [...DEFAULT_WORDS];
+        let currentIndex = 0;
+        let writers = [null, null];
+        let charCompleted = [false, false];
+        let charSources = ['loading', 'loading']; // 'hk' | 'cdn' | 'error'
+        let activeCharIndex = 0;
+        let currentMistakes = 0;
+        let totalStars = 0;
+
+        // Speech Synthesis State
+        let speechLang = 'zh-HK'; // 'zh-HK' (Cantonese) or 'zh-CN' (Mandarin)
+        let speechRate = 0.85;    // 0.85 (Normal for kids) or 0.55 (Slow)
+        let isSlowSpeed = false;
+
+        // Audio Context for subtle sound effects (chime / error buzz)
+        let audioCtx = null;
+
+        /**
+         * Calculate responsive square grid size based on viewport (240px-280px on tablet/desktop)
+         */
+        function getResponsiveGridSize() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            let maxWidthPerBox = (vw - 56) / 2;
+            if (vw >= 768) {
+                maxWidthPerBox = 280;
+            } else if (vw >= 640) {
+                maxWidthPerBox = 240;
+            }
+            let maxHeightPerBox = vh * 0.42;
+            return Math.floor(Math.max(150, Math.min(maxWidthPerBox, maxHeightPerBox, 280)));
+        }
+
+        /**
+         * Update the character data source badge (Local HK stroke data vs CDN fallback)
+         */
+        function updateDataSourceBadge() {
+            const badge = document.getElementById('data-source-badge');
+            if (!badge) return;
+
+            if (charSources.includes('loading')) {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium text-xs";
+                badge.textContent = "字庫來源：載入中...";
+                return;
+            }
+
+            if (charSources[0] === 'hk' && charSources[1] === 'hk') {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs";
+                badge.textContent = "字庫來源：本地香港筆順庫 (/hanzi-writer-hk)";
+            } else if (charSources[0] === 'cdn' && charSources[1] === 'cdn') {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-700 font-bold text-xs";
+                badge.textContent = "字庫來源：CDN 備援字庫";
+            } else if (charSources.includes('hk') && charSources.includes('cdn')) {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 font-bold text-xs";
+                badge.textContent = "字庫來源：本地香港庫 + CDN 備援";
+            } else {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 border border-red-200 text-red-700 font-bold text-xs";
+                badge.textContent = "字庫來源：部分字元載入失敗";
+            }
+        }
+
+        /**
+         * Load a 2-character word into the two Hanzi Writer boxes
+         */
+        function loadWord(index, autoSpeak = true) {
+            if (wordBank.length === 0) {
+                wordBank = [...DEFAULT_WORDS];
+            }
+            currentIndex = index % wordBank.length;
+            const item = wordBank[currentIndex];
+            const chars = Array.from(item.word);
+
+            // Reset state for new word
+            charCompleted = [false, false];
+            charSources = ['loading', 'loading'];
+            activeCharIndex = 0;
+            currentMistakes = 0;
+            updateStatsUI();
+            updateDataSourceBadge();
+
+            document.getElementById('meaning-hint').textContent = `提示分類：${item.hint || '日常詞語'}`;
+            updateInstructionBanner("請細心聆聽詞語，然後在左邊方格寫出第一個字", "orange");
+
+            const gridSize = getResponsiveGridSize();
+
+            // Initialize both grids
+            for (let i = 0; i < 2; i++) {
+                const gridEl = document.getElementById(`grid-${i}`);
+                const wrapperEl = document.getElementById(`box-wrapper-${i}`);
+                const loaderEl = document.getElementById(`loader-${i}`);
+
+                gridEl.innerHTML = '';
+                gridEl.style.width = `${gridSize}px`;
+                gridEl.style.height = `${gridSize}px`;
+                wrapperEl.classList.remove('completed-grid', 'active-grid', 'opacity-90');
+                loaderEl.classList.remove('hidden');
+
+                const char = chars[i];
+
+                // Create HanziWriter instance with custom local-first -> CDN fallback loader
+                writers[i] = HanziWriter.create(`grid-${i}`, char, {
+                    width: gridSize,
+                    height: gridSize,
+                    padding: Math.round(gridSize * 0.08),
+                    showOutline: false,          // Strict: Hide outline initially
+                    showCharacter: false,        // Strict: Hide completed character initially
+                    strokeColor: '#1e293b',      // Slate-800 dark ink color for drawn strokes
+                    radicalColor: '#1e293b',     // Keep uniform ink color
+                    outlineColor: '#CBD5E0',     // Faint grey when hint is triggered
+                    highlightColor: '#3182CE',   // Blue flash on hint
+                    drawingWidth: 28,            // Thick comfortable brush stroke
+                    showHintAfterMisses: 3,      // Gently hint after 3 misses on same stroke
+                    highlightOnComplete: true,   // Flash character upon completion
+                    charDataLoader: (character, onComplete, onError) => {
+                        const encodedChar = encodeURIComponent(character);
+                        const localUrl = `/hanzi-writer-hk/data/${encodedChar}.json`;
+                        const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodedChar}.json`;
+
+                        // Step 1: Try local Hong Kong stroke data repository first
+                        fetch(localUrl)
+                            .then(res => {
+                                if (!res.ok) {
+                                    throw new Error(`Local stroke data HTTP ${res.status}`);
+                                }
+                                return res.json();
+                            })
+                            .then(data => {
+                                loaderEl.classList.add('hidden');
+                                charSources[i] = 'hk';
+                                updateDataSourceBadge();
+                                onComplete(data);
+                            })
+                            .catch(() => {
+                                // Step 2: Fallback to official Hanzi Writer CDN
+                                fetch(cdnUrl)
+                                    .then(res => {
+                                        if (!res.ok) {
+                                            throw new Error(`CDN stroke data HTTP ${res.status}`);
+                                        }
+                                        return res.json();
+                                    })
+                                    .then(data => {
+                                        loaderEl.classList.add('hidden');
+                                        charSources[i] = 'cdn';
+                                        updateDataSourceBadge();
+                                        onComplete(data);
+                                    })
+                                    .catch(err => {
+                                        loaderEl.classList.add('hidden');
+                                        charSources[i] = 'error';
+                                        updateDataSourceBadge();
+                                        showToast(`無法載入「${character}」的筆順資料`);
+                                        console.error(err);
+                                        if (typeof onError === 'function') {
+                                            onError(err);
+                                        }
+                                    });
+                            });
+                    }
+                });
+
+                // Start quiz immediately on both, so user can write in box 0 first (or tap box 1)
+                startQuizForChar(i);
+            }
+
+            updateBoxFocusVisuals();
+
+            if (autoSpeak) {
+                // Slight delay ensures UI renders smoothly before audio speaks
+                setTimeout(() => {
+                    speakCurrentWord();
+                }, 350);
+            }
+        }
+
+        /**
+         * Start HanziWriter Quiz Mode for character index (0 or 1)
+         */
+        function startQuizForChar(idx) {
+            if (!writers[idx]) return;
+
+            writers[idx].quiz({
+                onMistake: function(strokeData) {
+                    // Incorrect stroke: HanziWriter automatically does NOT render it
+                    currentMistakes++;
+                    updateStatsUI();
+                    playTone('error');
+
+                    // Gentle shake feedback on the grid box
+                    const wrapper = document.getElementById(`box-wrapper-${idx}`);
+                    wrapper.classList.remove('animate-shake');
+                    void wrapper.offsetWidth; // trigger reflow
+                    wrapper.classList.add('animate-shake');
+
+                    // Ensure focus indicator updates if user tapped box 2 directly
+                    if (activeCharIndex !== idx && !charCompleted[idx]) {
+                        activeCharIndex = idx;
+                        updateBoxFocusVisuals();
+                    }
+
+                    const remainingHint = 3 - (strokeData.mistakesOnStroke % 3);
+                    if (strokeData.mistakesOnStroke >= 3) {
+                        updateInstructionBanner(`筆劃不正確喔！請跟著藍色提示筆順再試一次`, "red");
+                    } else {
+                        updateInstructionBanner(`筆劃不正確，不會顯示。請再試一次（再錯 ${remainingHint} 次會顯示提示）`, "red");
+                    }
+                },
+                onCorrectStroke: function(strokeData) {
+                    // Correct stroke: HanziWriter locks and displays the stroke
+                    playTone('stroke');
+
+                    if (activeCharIndex !== idx && !charCompleted[idx]) {
+                        activeCharIndex = idx;
+                        updateBoxFocusVisuals();
+                    }
+
+                    const strokesLeft = strokeData.strokesRemaining;
+                    if (strokesLeft > 0) {
+                        updateInstructionBanner(`寫得好！還剩 ${strokesLeft} 筆完成這個字`, "blue");
+                    }
+                },
+                onComplete: function(summaryData) {
+                    charCompleted[idx] = true;
+                    playTone('charComplete');
+                    updateBoxFocusVisuals();
+
+                    if (charCompleted[0] && charCompleted[1]) {
+                        // Both characters completed!
+                        handleWordComplete();
+                    } else {
+                        // Move focus automatically to the remaining character
+                        const nextIdx = charCompleted[0] ? 1 : 0;
+                        activeCharIndex = nextIdx;
+                        updateBoxFocusVisuals();
+                        const label = nextIdx === 1 ? "右邊第二個字" : "左邊第一個字";
+                        updateInstructionBanner(`太棒了！現在請在${label}方格繼續書寫`, "emerald");
+                    }
+                }
+            });
+        }
+
+        /**
+         * Update visual borders and badges for Character 0 and Character 1 boxes
+         */
+        function updateBoxFocusVisuals() {
+            for (let i = 0; i < 2; i++) {
+                const wrapper = document.getElementById(`box-wrapper-${i}`);
+                const badge = document.getElementById(`badge-${i}`);
+                const status = document.getElementById(`status-${i}`);
+
+                wrapper.classList.remove('active-grid', 'completed-grid', 'opacity-90');
+
+                if (charCompleted[i]) {
+                    wrapper.classList.add('completed-grid');
+                    badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500 text-white";
+                    status.className = "text-xs font-bold text-emerald-600";
+                    status.textContent = "已完成 ✓";
+                } else if (activeCharIndex === i) {
+                    wrapper.classList.add('active-grid');
+                    badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white";
+                    status.className = "text-xs font-bold text-amber-600";
+                    status.textContent = "書寫中...";
+                } else {
+                    wrapper.classList.add('opacity-90');
+                    badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-300 text-gray-700";
+                    status.className = "text-xs font-bold text-gray-400";
+                    status.textContent = "請書寫";
+                }
+            }
+        }
+
+        /**
+         * Allow user to click/tap either box to focus it
+         */
+        function focusCharacter(idx) {
+            if (!charCompleted[idx]) {
+                activeCharIndex = idx;
+                updateBoxFocusVisuals();
+            }
+        }
+
+        /**
+         * Triggered when both characters in the word are successfully written
+         */
+        function handleWordComplete() {
+            playTone('wordComplete');
+
+            // Calculate stars earned (3 stars for 0 mistakes, 2 for <=2 mistakes, 1 otherwise)
+            let earnedStars = 3;
+            if (currentMistakes > 3) earnedStars = 1;
+            else if (currentMistakes > 0) earnedStars = 2;
+
+            totalStars += earnedStars;
+            localStorage.setItem('zh_writing_stars', totalStars);
+            document.getElementById('score-text').textContent = totalStars;
+
+            // Populate and show celebration modal
+            const item = wordBank[currentIndex];
+            document.getElementById('modal-word-display').textContent = item.word;
+            document.getElementById('modal-word-hint').textContent = `分類：${item.hint || '日常詞語'}`;
+            document.getElementById('modal-mistakes').textContent = currentMistakes;
+            document.getElementById('modal-stars').textContent = `+${earnedStars} ⭐`;
+
+            const modal = document.getElementById('celebration-modal');
+            const card = document.getElementById('celebration-card');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 20);
+
+            // Speak the word again to reinforce audio-visual memory
+            setTimeout(() => speakCurrentWord(), 400);
+        }
+
+        /**
+         * Close celebration modal and advance to next word
+         */
+        function proceedNextFromModal() {
+            const modal = document.getElementById('celebration-modal');
+            const card = document.getElementById('celebration-card');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                nextWord();
+            }, 150);
+        }
+
+        /**
+         * Show brief outline hint on the currently active character
+         */
+        function showStrokeHint() {
+            const targetIdx = !charCompleted[activeCharIndex] ? activeCharIndex : (!charCompleted[0] ? 0 : 1);
+            if (charCompleted[0] && charCompleted[1]) return;
+
+            if (writers[targetIdx]) {
+                writers[targetIdx].showOutline();
+                updateInstructionBanner("已顯示筆順輪廓提示（1.5秒後自動隱藏）", "blue");
+                setTimeout(() => {
+                    if (writers[targetIdx] && !charCompleted[targetIdx]) {
+                        writers[targetIdx].hideOutline();
+                    }
+                }, 1500);
+            }
+        }
+
+        /**
+         * Reset current 2-character word
+         */
+        function resetCurrentWord() {
+            loadWord(currentIndex, false);
+            showToast("已重設本題方格");
+        }
+
+        /**
+         * Advance to next word in the word bank
+         */
+        function nextWord() {
+            loadWord(currentIndex + 1, true);
+        }
+
+        /**
+         * Pronounce the current 2-character word using Web Speech API
+         */
+        function speakCurrentWord() {
+            if (!('speechSynthesis' in window)) {
+                showToast("您的瀏覽器不支援語音朗讀功能");
+                return;
+            }
+
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+
+            const item = wordBank[currentIndex];
+            const utterance = new SpeechSynthesisUtterance(item.word);
+            utterance.lang = speechLang;
+            utterance.rate = speechRate;
+            utterance.pitch = 1.05;
+
+            // Attempt to select the best matching voice for zh-HK or zh-CN
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                const exactMatch = voices.find(v => v.lang.replace('_', '-').toLowerCase() === speechLang.toLowerCase());
+                const partialMatch = voices.find(v => v.lang.toLowerCase().startsWith(speechLang.split('-')[0].toLowerCase()));
+                if (exactMatch) {
+                    utterance.voice = exactMatch;
+                } else if (partialMatch && speechLang === 'zh-CN') {
+                    utterance.voice = partialMatch;
+                }
+            }
+
+            const indicator = document.getElementById('speaking-indicator');
+
+            utterance.onstart = () => {
+                indicator.classList.remove('hidden');
+                indicator.classList.add('flex');
+            };
+
+            utterance.onend = () => {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('flex');
+            };
+
+            utterance.onerror = () => {
+                indicator.classList.add('hidden');
+                indicator.classList.remove('flex');
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /**
+         * Toggle between Cantonese (zh-HK) and Mandarin (zh-CN)
+         */
+        function setLanguage(lang) {
+            speechLang = lang;
+            const btnYue = document.getElementById('lang-yue');
+            const btnCmn = document.getElementById('lang-cmn');
+
+            if (lang === 'zh-HK') {
+                btnYue.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-white text-amber-700 shadow-sm";
+                btnCmn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition text-gray-600 hover:text-gray-800";
+            } else {
+                btnCmn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition bg-white text-amber-700 shadow-sm";
+                btnYue.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition text-gray-600 hover:text-gray-800";
+            }
+
+            speakCurrentWord();
+        }
+
+        /**
+         * Toggle speech rate between Normal (0.85) and Slow (0.55)
+         */
+        function toggleSpeed() {
+            isSlowSpeed = !isSlowSpeed;
+            speechRate = isSlowSpeed ? 0.55 : 0.85;
+            document.getElementById('speed-label').textContent = isSlowSpeed ? "慢速" : "正常";
+            speakCurrentWord();
+        }
+
+        /**
+         * Update progress and mistake counters
+         */
+        function updateStatsUI() {
+            document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${wordBank.length}`;
+            document.getElementById('mistake-count').textContent = currentMistakes;
+        }
+
+        /**
+         * Update instruction pill banner color and text
+         */
+        function updateInstructionBanner(text, colorTheme) {
+            const banner = document.getElementById('status-message');
+            banner.textContent = text;
+            banner.className = "inline-block px-4 py-1.5 rounded-full font-bold text-sm sm:text-base transition-all ";
+
+            if (colorTheme === 'red') {
+                banner.className += "bg-red-100 text-red-700";
+            } else if (colorTheme === 'blue') {
+                banner.className += "bg-sky-100 text-sky-800";
+            } else if (colorTheme === 'emerald') {
+                banner.className += "bg-emerald-100 text-emerald-800";
+            } else {
+                banner.className += "bg-orange-100 text-orange-800";
+            }
+        }
+
+        /**
+         * Subtle Web Audio API synthesizer for stroke feedback (no external audio files needed)
+         */
+        function playTone(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'stroke') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08); // E5
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'error') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(140, now + 0.15);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else if (type === 'charComplete') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wordComplete') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now + i * 0.09);
+                        g.gain.setValueAtTime(0.12, now + i * 0.09);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.3);
+                        o.start(now + i * 0.09);
+                        o.stop(now + i * 0.09 + 0.3);
+                    });
+                }
+            } catch (e) {
+                // Ignore audio errors if blocked by browser autoplay policy
+            }
+        }
+
+        /**
+         * Word Bank Modal Management
+         */
+        function openWordBankModal() {
+            renderWordList();
+            const modal = document.getElementById('wordbank-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeWordBankModal() {
+            const modal = document.getElementById('wordbank-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('custom-word-error').classList.add('hidden');
+        }
+
+        function renderWordList() {
+            const container = document.getElementById('word-list-container');
+            container.innerHTML = '';
+
+            wordBank.forEach((item, idx) => {
+                const isCurrent = idx === currentIndex;
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 rounded-xl border ${isCurrent ? 'bg-amber-50 border-amber-300' : 'bg-gray-50 border-gray-200'}`;
+                
+                row.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-white border border-gray-200 text-xs font-bold flex items-center justify-center text-gray-500">${idx + 1}</span>
+                        <div>
+                            <span class="text-lg font-black text-gray-800 tracking-wider">${item.word}</span>
+                            <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-white text-gray-500 border border-gray-200">${item.hint || '自訂詞語'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="selectWordFromList(${idx})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${isCurrent ? 'bg-amber-500 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'}">
+                            ${isCurrent ? '練習中' : '選取練習'}
+                        </button>
+                        ${wordBank.length > 1 ? `
+                        <button onclick="deleteWord(${idx})" class="p-1.5 text-gray-400 hover:text-red-500 rounded-lg" title="刪除詞語">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>` : ''}
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addCustomWord() {
+            const wordInput = document.getElementById('custom-word-input');
+            const hintInput = document.getElementById('custom-hint-input');
+            const errorEl = document.getElementById('custom-word-error');
+
+            const word = wordInput.value.trim();
+            const hint = hintInput.value.trim() || "自訂詞語";
+
+            // Validate exactly 2 Chinese characters
+            const chineseRegex = /^[\u4e00-\u9fa5]{2}$/;
+            if (!chineseRegex.test(word)) {
+                errorEl.textContent = "請輸入剛好兩個繁體中文字（不含標點或空格）。";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            wordBank.unshift({ word, hint });
+            localStorage.setItem('zh_writing_words', JSON.stringify(wordBank));
+
+            wordInput.value = '';
+            hintInput.value = '';
+            renderWordList();
+            updateStatsUI();
+            showToast(`已新增詞語「${word}」`);
+        }
+
+        function selectWordFromList(idx) {
+            closeWordBankModal();
+            loadWord(idx, true);
+        }
+
+        function deleteWord(idx) {
+            if (wordBank.length <= 1) return;
+            wordBank.splice(idx, 1);
+            localStorage.setItem('zh_writing_words', JSON.stringify(wordBank));
+            if (currentIndex >= wordBank.length) {
+                currentIndex = 0;
+            }
+            renderWordList();
+            loadWord(currentIndex, false);
+        }
+
+        function resetDefaultWords() {
+            wordBank = [...DEFAULT_WORDS];
+            localStorage.removeItem('zh_writing_words');
+            currentIndex = 0;
+            renderWordList();
+            loadWord(0, false);
+            showToast("已恢復預設詞語庫");
+        }
+
+        /**
+         * Non-blocking Toast Message
+         */
+        let toastTimer;
+        function showToast(msg) {
+            const toast = document.getElementById('toast-box');
+            toast.textContent = msg;
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2200);
+        }
+
+        // Preload voices on browsers that load them asynchronously
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+    </script>
+</body>
+</html>
