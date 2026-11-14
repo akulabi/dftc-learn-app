@@ -374,10 +374,10 @@
 
             if (charSources[0] === 'hk' && charSources[1] === 'hk') {
                 badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs";
-                badge.textContent = "字庫來源：本地香港筆順庫 (/hanzi-writer-hk)";
+                badge.textContent = "字庫來源：本地香港筆順庫 (/hanzi-writer-data-hk)";
             } else if (charSources[0] === 'cdn' && charSources[1] === 'cdn') {
                 badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-700 font-bold text-xs";
-                badge.textContent = "字庫來源：CDN 備援字庫";
+                badge.textContent = "字庫來源：CDN 原始字庫";
             } else if (charSources.includes('hk') && charSources.includes('cdn')) {
                 badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 font-bold text-xs";
                 badge.textContent = "字庫來源：本地香港庫 + CDN 備援";
@@ -441,10 +441,10 @@
                     highlightOnComplete: true,   // Flash character upon completion
                     charDataLoader: (character, onComplete, onError) => {
                         const encodedChar = encodeURIComponent(character);
-                        const localUrl = `/hanzi-writer-hk/data/${encodedChar}.json`;
+                        const localUrl = `/hanzi-writer-data-hk/data/${encodedChar}.json`;
                         const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodedChar}.json`;
 
-                        // Step 1: Try local Hong Kong stroke data repository first
+                        // Step 1: Try local Hong Kong stroke data repository (/hanzi-writer-data-hk) first
                         fetch(localUrl)
                             .then(res => {
                                 if (!res.ok) {
@@ -459,7 +459,7 @@
                                 onComplete(data);
                             })
                             .catch(() => {
-                                // Step 2: Fallback to official Hanzi Writer CDN
+                                // Step 2: Fallback to original Hanzi Writer CDN data
                                 fetch(cdnUrl)
                                     .then(res => {
                                         if (!res.ok) {
@@ -980,6 +980,37 @@
                 window.speechSynthesis.getVoices();
             };
         }
+
+        // Initialize app state from localStorage and load the first word on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                const savedWords = localStorage.getItem('zh_writing_words');
+                if (savedWords) {
+                    const parsed = JSON.parse(savedWords);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        wordBank = parsed;
+                    }
+                }
+                const savedStars = localStorage.getItem('zh_writing_stars');
+                if (savedStars) {
+                    totalStars = parseInt(savedStars, 10) || 0;
+                    document.getElementById('score-text').textContent = totalStars;
+                }
+            } catch (e) {
+                console.warn('Could not read saved state:', e);
+            }
+
+            loadWord(0, true);
+        });
+
+        // Recalculate grid dimensions smoothly on viewport resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                loadWord(currentIndex, false);
+            }, 250);
+        });
     </script>
 </body>
 </html>
